@@ -60,28 +60,37 @@ func (a *App) Run() error {
 		serverErr <- server.ListenAndServe()
 	}()
 
+	return a.waitShutdown(server, serverErr)
+}
+
+func (a *App) waitShutdown(server *http.Server, serverErr <-chan error) error {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(stop)
 
 	select {
 	case err := <-serverErr:
 		if err != nil && err != http.ErrServerClosed {
-			return fmt.Errorf("httpx server failed: %w", err)
+			return fmt.Errorf("http server failed: %w", err)
 		}
 		return nil
 
 	case <-stop:
-		ctx, cancel := context.WithTimeout(context.Background(), a.cfg.GracefulTimeout)
-		defer cancel()
-
-		if err := server.Shutdown(ctx); err != nil {
-			return fmt.Errorf("shutdown server: %w", err)
-		}
-
-		if err := a.db.Close(); err != nil {
-			return fmt.Errorf("close db: %w", err)
-		}
-
-		return nil
+		return a.shutdown(server)
 	}
+}
+
+func (a *App) shutdown(server *http.Server) error {
+	ctx, cancel := context.WithTimeout(context.Background(), a.cfg.GracefulTimeout)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		return fmt.Errorf("shutdown server: %w", err)
+	}
+
+	if err := a.db.Close(); err != nil {
+		return fmt.Errorf("close db: %w", err)
+	}
+
+	return nil
 }

@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"eshkere/internal/handler/dto"
+	"eshkere/pkg/httpx"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -23,11 +25,37 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 }
 
 func (a *API) Register(w http.ResponseWriter, r *http.Request) {
-	return
+	var req dto.RegisterRequest
+
+	if err := httpx.DecodeJSON(r, &req); err != nil {
+		httpx.BadRequest(w, "invalid request")
+		return
+	}
+
+	if err := req.Validate(); err != nil {
+		httpx.BadRequest(w, err.Error())
+		return
+	}
+
+	advertiser := ToRegisterAdvertiserModel(req)
+	httpx.JSON(w, http.StatusOK, advertiser)
 }
 
 func (a *API) Login(w http.ResponseWriter, r *http.Request) {
-	return
+	var req dto.LoginRequest
+
+	if err := httpx.DecodeJSON(r, &req); err != nil {
+		httpx.BadRequest(w, "invalid request")
+		return
+	}
+
+	if err := req.Validate(); err != nil {
+		httpx.BadRequest(w, err.Error())
+		return
+	}
+
+	advertiser := ToLoginAdvertiserModel(req)
+	httpx.JSON(w, http.StatusOK, advertiser)
 }
 
 func (a *API) Logout(w http.ResponseWriter, r *http.Request) {

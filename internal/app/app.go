@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"eshkere/internal/config"
-	"eshkere/internal/handlers"
+	"eshkere/internal/handler"
 	"fmt"
 	"log"
 	"net/http"

@@ -51,11 +51,6 @@
 
 {name} -> id
 
-### `status`:
-{id} -> name
-
-{name} -> id
-
 ### `region`:
 {id} -> name
 

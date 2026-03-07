@@ -41,7 +41,7 @@ func New(configPath string) *App {
 
 func (a *App) Run() error {
 	router := mux.NewRouter()
-	
+
 	handlers.Register(router, handlers.NewAPI(handlers.APIConfig{
 		// Service: svc,
 		// Auth
@@ -66,7 +66,7 @@ func (a *App) Run() error {
 	select {
 	case err := <-serverErr:
 		if err != nil && err != http.ErrServerClosed {
-			return fmt.Errorf("http server failed: %w", err)
+			return fmt.Errorf("httpx server failed: %w", err)
 		}
 		return nil
 

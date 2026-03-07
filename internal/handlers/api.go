@@ -11,12 +11,12 @@ type Service interface {
 
 type APIConfig struct {
 	Service Service
-	// Auth http.HandleFunc
+	// Auth httpx.HandleFunc
 }
 
 type API struct {
 	service Service
-	// auth    http.HandlerFunc
+	// auth    httpx.HandlerFunc
 }
 
 func NewAPI(config APIConfig) *API {

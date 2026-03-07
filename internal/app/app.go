@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"eshkere/internal/config"
+	"eshkere/internal/handlers"
 	"fmt"
 	"log"
 	"net/http"
@@ -40,6 +41,11 @@ func New(configPath string) *App {
 
 func (a *App) Run() error {
 	router := mux.NewRouter()
+	
+	handlers.Register(router, handlers.NewAPI(handlers.APIConfig{
+		// Service: svc,
+		// Auth
+	}))
 
 	server := &http.Server{
 		Addr:         a.cfg.HTTPServer.Listen,

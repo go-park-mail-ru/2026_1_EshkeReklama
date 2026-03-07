@@ -1,0 +1,117 @@
+---
+config:
+  look: classic
+  theme: dark
+---
+erDiagram
+	direction LR
+	advertiser {
+		int id PK ""
+		string name  ""
+		string email  ""
+		string phone_number  ""
+		string password_hash  ""
+		string password_salt  ""
+		float balance  ""
+		date created_at  ""
+		date updated_at  ""
+	}
+
+	ad_campaign {
+		int id PK ""
+		int advertiser_id FK ""
+		int status_id FK ""
+		string name  ""
+		float daily_budget  ""
+		date created_at  ""
+		date updated_at  ""
+	}
+
+	ad {
+		int id PK ""
+		int group_id FK ""
+		int status_id FK ""
+		string title  ""
+		string short_desc  ""
+		string target_url  ""
+		date created_at  ""
+		date updated_at  ""
+	}
+
+	ad_action {
+		int id PK ""
+		int ad_id FK ""
+		int partner_site_id FK ""
+		int region_id FK ""
+		string action  ""
+		int age  ""
+		string gender  ""
+		date created_at  ""
+	}
+
+	partner {
+		int id PK ""
+		string name  ""
+		string email  ""
+		string phone_number  ""
+		string password_hash  ""
+		string password_salt  ""
+		float balance  ""
+		date created_at  ""
+		date updated_at  ""
+	}
+
+	partner_site {
+		int id PK ""
+		int partner_id FK ""
+		int topic_id FK ""
+		int region_id FK ""
+		int age_from  ""
+		int age_to  ""
+		string gender  ""
+		string url  ""
+		date created_at  ""
+		date updated_at  ""
+	}
+
+	topic {
+		int id PK ""
+		string name  ""
+	}
+
+	status {
+		int id PK ""
+		string name  ""
+	}
+
+	region {
+		int id PK ""
+		string name  ""
+	}
+
+	ad_group {
+		int id PK ""
+		int campaign_id FK ""
+		int topic_id FK ""
+		int region_id FK ""
+		string name  ""
+		int age_from  ""
+		int age_to  ""
+		string gender  ""
+		date created_at  ""
+		date updated_at  ""
+	}
+
+	advertiser||--o{ad_campaign:"manages"
+	ad_campaign||--o{ad_group:"contains"
+	ad_group||--o{ad:"groups"
+	ad||--o{ad_action:"generates"
+	partner||--o{partner_site:"owns"
+	partner_site||--o{ad_action:"records_on"
+	topic||--o{ad_group:"categorizes"
+	topic||--o{partner_site:"categorizes"
+	status||--o{ad:"shows status"
+	status||--o{ad_campaign:"shows status"
+	region||--o{partner_site:"shows region"
+	region||--o{ad_group:"shows region"
+	region||--o{ad_action:"shows region"

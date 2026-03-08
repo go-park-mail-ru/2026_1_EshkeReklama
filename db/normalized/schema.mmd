@@ -27,9 +27,22 @@ erDiagram
 		date updated_at  ""
 	}
 
+	ad_group {
+    		int id PK ""
+    		int ad_campaign_id FK ""
+    		int topic_id FK ""
+    		int region_id FK ""
+    		string name  ""
+    		int age_from  ""
+    		int age_to  ""
+    		string gender  ""
+    		date created_at  ""
+    		date updated_at  ""
+    	}
+
 	ad {
 		int id PK ""
-		int group_id FK ""
+		int ad_group_id FK ""
 		int status_id FK ""
 		string title  ""
 		string short_desc  ""
@@ -87,19 +100,6 @@ erDiagram
 	region {
 		int id PK ""
 		string name  ""
-	}
-
-	ad_group {
-		int id PK ""
-		int campaign_id FK ""
-		int topic_id FK ""
-		int region_id FK ""
-		string name  ""
-		int age_from  ""
-		int age_to  ""
-		string gender  ""
-		date created_at  ""
-		date updated_at  ""
 	}
 
 	advertiser||--o{ad_campaign:"manages"

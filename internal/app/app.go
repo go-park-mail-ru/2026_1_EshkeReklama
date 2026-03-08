@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"eshkere/internal/config"
 	"eshkere/internal/handler"
+	"eshkere/internal/session"
 	"fmt"
 	"log"
 	"net/http"
@@ -16,8 +17,9 @@ import (
 )
 
 type App struct {
-	cfg *config.Config
-	db  *sql.DB
+	cfg            *config.Config
+	db             *sql.DB
+	sessionManager *session.Manager
 	// TODO: closers []io.Closer
 	// TODO: starters []StartAsService
 }
@@ -33,9 +35,12 @@ func New(configPath string) *App {
 		log.Fatalf("Failed to init DB: %v", err)
 	}
 
+	sessionManager := session.NewManager()
+
 	return &App{
-		cfg: cfg,
-		db:  db,
+		cfg:            cfg,
+		db:             db,
+		sessionManager: sessionManager,
 	}
 }
 

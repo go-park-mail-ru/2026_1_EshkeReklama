@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"eshkere/internal/session"
+
 	"github.com/gorilla/mux"
 )
 
@@ -10,13 +12,13 @@ type Service interface {
 }
 
 type APIConfig struct {
-	Service Service
-	// Auth httpx.HandleFunc
+	Service        Service
+	SessionManager *session.Manager
 }
 
 type API struct {
-	service Service
-	// auth    httpx.HandlerFunc
+	service        Service
+	sessionManager *session.Manager
 }
 
 func NewAPI(config APIConfig) *API {

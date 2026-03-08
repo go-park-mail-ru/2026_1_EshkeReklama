@@ -30,5 +30,6 @@ func NewAPI(config APIConfig) *API {
 
 func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterAdvertiserHandlers(r)
+	a.RegisterAdsHandlers(r)
 	// другие хендлеры
 }

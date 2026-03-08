@@ -275,6 +275,17 @@ components:
         data:
           $ref: '#/components/schemas/User'
 
+    AdsListData:
+      type: object
+      properties:
+        advertiser_id:
+          type: integer
+          example: 1
+        ads:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ad'
+
     AdsListResponse:
       type: object
       properties:
@@ -282,9 +293,7 @@ components:
           type: string
           example: ok
         data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Ad'
+          $ref: '#/components/schemas/AdsListData'
 
     MessageResponse:
       type: object

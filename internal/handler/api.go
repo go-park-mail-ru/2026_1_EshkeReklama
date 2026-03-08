@@ -23,8 +23,8 @@ type API struct {
 
 func NewAPI(config APIConfig) *API {
 	return &API{
-		service: config.Service,
-		// auth
+		service:        config.Service,
+		sessionManager: config.SessionManager,
 	}
 }
 

@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -36,6 +37,7 @@ func New(configPath string) *App {
 	}
 
 	sessionManager := session.NewManager()
+	sessionManager.StartCleanup(5 * time.Minute)
 
 	return &App{
 		cfg:            cfg,
@@ -49,7 +51,7 @@ func (a *App) Run() error {
 
 	handlers.Register(router, handlers.NewAPI(handlers.APIConfig{
 		// Service: svc,
-		// Auth
+		SessionManager: a.sessionManager,
 	}))
 
 	server := &http.Server{

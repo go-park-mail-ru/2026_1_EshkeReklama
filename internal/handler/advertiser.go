@@ -40,7 +40,7 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 	// временно считаем, что пользователь создан
 	advertiserID := 1
 
-	if err := a.sessionManager.Create(w, advertiserID); err != nil {
+	if err := a.sessionManager.Create(w, r, advertiserID); err != nil {
 		httpx.InternalError(w)
 		return
 	}
@@ -67,10 +67,10 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Временно считаем, что пользователь найден и пароль верный
+	// временно считаем, что пользователь был
 	advertiserID := 1
 
-	if err := a.sessionManager.Create(w, advertiserID); err != nil {
+	if err := a.sessionManager.Create(w, r, advertiserID); err != nil {
 		httpx.InternalError(w)
 		return
 	}

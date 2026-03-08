@@ -33,7 +33,13 @@ func NewManager() *Manager {
 	}
 }
 
-func (m *Manager) Create(w http.ResponseWriter, advertiserID int) error {
+func (m *Manager) Create(w http.ResponseWriter, r *http.Request, advertiserID int) error {
+	if cookie, err := r.Cookie(CookieName); err == nil {
+		m.mu.Lock()
+		delete(m.sessions, cookie.Value)
+		m.mu.Unlock()
+	}
+
 	sessionID, err := generateSessionID()
 	if err != nil {
 		return err
@@ -62,26 +68,39 @@ func (m *Manager) Create(w http.ResponseWriter, advertiserID int) error {
 	return nil
 }
 
-func (m *Manager) Get(r *http.Request) (Session, error) {
+func (m *Manager) Get(w http.ResponseWriter, r *http.Request) (Session, error) {
 	cookie, err := r.Cookie(CookieName)
 	if err != nil {
 		return Session{}, ErrSessionNotFound
 	}
 
-	m.mu.RLock()
-	session, ok := m.sessions[cookie.Value]
-	m.mu.RUnlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
+	session, ok := m.sessions[cookie.Value]
 	if !ok {
 		return Session{}, ErrSessionNotFound
 	}
 
 	if time.Now().After(session.ExpiresAt) {
-		m.mu.Lock()
 		delete(m.sessions, cookie.Value)
-		m.mu.Unlock()
 		return Session{}, ErrSessionNotFound
 	}
+
+	//продлеваем, если пользак активен
+	newExpiresAt := time.Now().Add(SessionTTL)
+	session.ExpiresAt = newExpiresAt
+	m.sessions[cookie.Value] = session
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     CookieName,
+		Value:    cookie.Value,
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Expires:  newExpiresAt,
+		MaxAge:   int(SessionTTL.Seconds()),
+	})
 
 	return session, nil
 }

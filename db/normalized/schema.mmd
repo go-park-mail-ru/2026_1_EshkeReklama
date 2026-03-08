@@ -92,11 +92,6 @@ erDiagram
 		string name  ""
 	}
 
-	status {
-		int id PK ""
-		string name  ""
-	}
-
 	region {
 		int id PK ""
 		string name  ""
@@ -110,8 +105,6 @@ erDiagram
 	partner_site||--o{ad_action:"records_on"
 	topic||--o{ad_group:"categorizes"
 	topic||--o{partner_site:"categorizes"
-	status||--o{ad:"shows status"
-	status||--o{ad_campaign:"shows status"
 	region||--o{partner_site:"shows region"
 	region||--o{ad_group:"shows region"
 	region||--o{ad_action:"shows region"

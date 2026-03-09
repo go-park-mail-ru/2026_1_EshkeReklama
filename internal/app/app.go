@@ -32,17 +32,17 @@ func New(configPath string) *App {
 		log.Fatalf("Failed to read config: %v", err)
 	}
 
-	db, err := initDB(cfg.Postgres)
-	if err != nil {
-		log.Fatalf("Failed to init DB: %v", err)
-	}
+	//db, err := initDB(cfg.Postgres)
+	//if err != nil {
+	//	log.Fatalf("Failed to init DB: %v", err)
+	//}
 
 	sessionManager := session.NewManager()
 	sessionManager.StartCleanup(5 * time.Minute)
 
 	return &App{
-		cfg:            cfg,
-		db:             db,
+		cfg: cfg,
+		//db:             db,
 		sessionManager: sessionManager,
 	}
 }
@@ -66,6 +66,7 @@ func (a *App) Run() error {
 	serverErr := make(chan error, 1)
 
 	go func() {
+		log.Printf("server started on %s", server.Addr)
 		serverErr <- server.ListenAndServe()
 	}()
 

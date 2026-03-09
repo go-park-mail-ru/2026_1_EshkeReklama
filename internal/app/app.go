@@ -49,7 +49,6 @@ func New(configPath string) *App {
 
 func (a *App) Run() error {
 	router := mux.NewRouter().StrictSlash(true)
-	router.Use(middleware.CORS(a.cfg.CORS.AllowedOrigins))
 
 	handlers.Register(router, handlers.NewAPI(handlers.APIConfig{
 		// Service: svc,
@@ -58,7 +57,7 @@ func (a *App) Run() error {
 
 	server := &http.Server{
 		Addr:         a.cfg.HTTPServer.Listen,
-		Handler:      router,
+		Handler:      middleware.CORS(a.cfg.CORS.AllowedOrigins)(router),
 		ReadTimeout:  a.cfg.HTTPServer.ReadTimeout,
 		WriteTimeout: a.cfg.HTTPServer.WriteTimeout,
 	}

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"eshkere/internal/app"
+	"eshkere/internal"
 	"flag"
 	"log"
 

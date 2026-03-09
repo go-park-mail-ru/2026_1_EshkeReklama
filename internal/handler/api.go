@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"eshkere/internal/handler/dto"
 	"eshkere/internal/session"
+	"sync"
 
 	"github.com/gorilla/mux"
 )
@@ -33,3 +35,43 @@ func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterAdsHandlers(r)
 	// другие хендлеры
 }
+
+type User struct {
+	ID       int
+	Email    string
+	Phone    string
+	Password string
+}
+
+var (
+	usersByEmail = make(map[string]*User)
+	usersByPhone = make(map[string]*User)
+	userMu       sync.RWMutex
+	lastID       = 0
+)
+
+func init() {
+	// Твой захардкоженный аккаунт
+	lastID++
+	u := &User{
+		ID:       lastID,
+		Email:    "test@mail.com",
+		Phone:    "+79991234567",
+		Password: "123123",
+	}
+	usersByEmail[u.Email] = u
+	usersByPhone[u.Phone] = u
+}
+
+var (
+	// Мапа: AdvertiserID -> Список его кампаний
+	mockAds = map[int][]dto.AdResponse{
+		1: {
+			{ID: 1, Title: "iPhone 14", Description: "В отличном состоянии", Price: 70000},
+			{ID: 2, Title: "MacBook Air M1", Description: "Для работы", Price: 85000},
+		},
+		2: {
+			{ID: 3, Title: "PlayStation 5", Description: "Почти новая", Price: 50000},
+		},
+	}
+)

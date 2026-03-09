@@ -16,7 +16,7 @@ func (a *API) RegisterAdsHandlers(r *mux.Router) {
 
 	adsGroup.Use(middleware.Auth(a.sessionManager))
 	adsGroup.HandleFunc("", a.ListAds).Methods(http.MethodGet)
-	adsGroup.HandleFunc("/", a.ListAds).Methods(http.MethodGet)
+	// adsGroup.HandleFunc("/", a.ListAds).Methods(http.MethodGet)
 }
 
 func (a *API) ListAds(w http.ResponseWriter, r *http.Request) {
@@ -26,26 +26,10 @@ func (a *API) ListAds(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// примерчики
-	ads := []dto.AdResponse{
-		{
-			ID:          1,
-			Title:       "iPhone 14",
-			Description: "Телефон в хорошем состоянии",
-			Price:       70000,
-		},
-		{
-			ID:          2,
-			Title:       "MacBook Air M1",
-			Description: "Ноутбук для работы и учебы",
-			Price:       85000,
-		},
-		{
-			ID:          3,
-			Title:       "PlayStation 5",
-			Description: "Приставка, почти не использовалась",
-			Price:       50000,
-		},
+	// Достаем кампании именно для этого рекламодателя
+	ads, ok := mockAds[advertiserID]
+	if !ok {
+		ads = []dto.AdResponse{} // отдаем пустой список, если кампаний нет
 	}
 
 	resp := dto.ListAdsResponse{

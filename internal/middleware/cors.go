@@ -3,7 +3,6 @@ package middleware
 import "net/http"
 
 func CORS(allowedOrigins []string) func(http.Handler) http.Handler {
-
 	allowed := make(map[string]struct{}, len(allowedOrigins))
 	for _, origin := range allowedOrigins {
 		allowed[origin] = struct{}{}

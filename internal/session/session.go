@@ -62,7 +62,7 @@ func (m *Manager) Create(w http.ResponseWriter, r *http.Request, advertiserID in
 		HttpOnly: true,
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
-		// Secure:   true,
+		//Secure:   true,
 	})
 
 	return nil
@@ -121,7 +121,7 @@ func (m *Manager) Destroy(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   -1,
 		Expires:  time.Unix(0, 0),
 		SameSite: http.SameSiteLaxMode,
-		// Secure:   true,
+		//Secure:   true,
 	})
 }
 

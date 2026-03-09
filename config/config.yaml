@@ -11,3 +11,7 @@ postgres:
   password: ${POSTGRES_PASSWORD}
 
 graceful_timeout: 20s
+
+cors:
+  allowed_origins:
+    # - ...

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"eshkere/internal/config"
 	"eshkere/internal/handler"
+	"eshkere/internal/middleware"
 	"eshkere/internal/session"
 	"fmt"
 	"log"
@@ -48,6 +49,7 @@ func New(configPath string) *App {
 
 func (a *App) Run() error {
 	router := mux.NewRouter()
+	router.Use(middleware.CORS(a.cfg.CORS.AllowedOrigins))
 
 	handlers.Register(router, handlers.NewAPI(handlers.APIConfig{
 		// Service: svc,

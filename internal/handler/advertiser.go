@@ -32,11 +32,6 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := req.Validate(); err != nil {
-		httpx.BadRequest(w, err.Error())
-		return
-	}
-
 	// временно считаем, что пользователь создан
 	advertiserID := 1
 
@@ -59,11 +54,6 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 
 	if err := httpx.DecodeJSON(r, &req); err != nil {
 		httpx.BadRequest(w, "invalid request")
-		return
-	}
-
-	if err := req.Validate(); err != nil {
-		httpx.BadRequest(w, err.Error())
 		return
 	}
 

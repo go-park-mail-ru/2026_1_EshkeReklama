@@ -18,7 +18,7 @@ func main() {
 		log.Println(".env file not found")
 	}
 
-	application := app.New(*configPath)
+	application := internal.New(*configPath)
 	if err := application.Run(); err != nil {
 		log.Fatal(err)
 	}

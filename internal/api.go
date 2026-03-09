@@ -1,7 +1,6 @@
-package handlers
+package internal
 
 import (
-	"eshkere/internal/handler/dto"
 	"eshkere/internal/session"
 	"sync"
 
@@ -65,7 +64,7 @@ func init() {
 
 var (
 	// Мапа: AdvertiserID -> Список его кампаний
-	mockAds = map[int][]dto.AdResponse{
+	mockAds = map[int][]AdResponse{
 		1: {
 			{ID: 1, Title: "iPhone 14", Description: "В отличном состоянии", Price: 70000},
 			{ID: 2, Title: "MacBook Air M1", Description: "Для работы", Price: 85000},

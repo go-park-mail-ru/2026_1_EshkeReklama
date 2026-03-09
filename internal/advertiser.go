@@ -1,7 +1,6 @@
-package handlers
+package internal
 
 import (
-	"eshkere/internal/handler/dto"
 	"eshkere/pkg/httpx"
 	"net/http"
 
@@ -25,7 +24,7 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 }
 
 func (a *API) Register(w http.ResponseWriter, r *http.Request) {
-	var req dto.RegisterRequest
+	var req RegisterRequest
 	if err := httpx.DecodeJSON(r, &req); err != nil {
 		httpx.BadRequest(w, "invalid request")
 		return
@@ -54,7 +53,7 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.JSON(w, http.StatusOK, dto.RegisterResponse{
+	httpx.JSON(w, http.StatusOK, RegisterResponse{
 		ID:    newUser.ID,
 		Email: newUser.Email,
 		Phone: newUser.Phone,
@@ -62,7 +61,7 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) Login(w http.ResponseWriter, r *http.Request) {
-	var req dto.LoginRequest
+	var req LoginRequest
 	if err := httpx.DecodeJSON(r, &req); err != nil {
 		httpx.BadRequest(w, "invalid request")
 		return
@@ -86,7 +85,7 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.JSON(w, http.StatusOK, dto.LoginResponse{
+	httpx.JSON(w, http.StatusOK, LoginResponse{
 		ID:    user.ID,
 		Email: user.Email,
 		Phone: user.Phone,

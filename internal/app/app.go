@@ -48,7 +48,7 @@ func New(configPath string) *App {
 }
 
 func (a *App) Run() error {
-	router := mux.NewRouter()
+	router := mux.NewRouter().StrictSlash(true)
 	router.Use(middleware.CORS(a.cfg.CORS.AllowedOrigins))
 
 	handlers.Register(router, handlers.NewAPI(handlers.APIConfig{

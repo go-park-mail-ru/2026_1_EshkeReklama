@@ -14,4 +14,5 @@ graceful_timeout: 20s
 
 cors:
   allowed_origins:
-    # - ...
+    - "http://localhost:5501"
+    - "http://127.0.0.1:5501"

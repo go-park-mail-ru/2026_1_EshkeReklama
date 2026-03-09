@@ -5,7 +5,7 @@ import (
 	"eshkere/internal/config"
 	"fmt"
 
-	_ "github.com/jackc/pgx"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func initDB(cfg config.PostgresConfig) (*sql.DB, error) {

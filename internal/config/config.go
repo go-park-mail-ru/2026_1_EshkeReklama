@@ -21,9 +21,14 @@ type PostgresConfig struct {
 	Password string `yaml:"password"`
 }
 
+type CORSConfig struct {
+	AllowedOrigins []string `yaml:"allowed_origins"`
+}
+
 type Config struct {
 	HTTPServer      HTTPServerConfig `yaml:"http_server"`
 	Postgres        PostgresConfig   `yaml:"postgres"`
+	CORS            CORSConfig       `yaml:"cors"`
 	GracefulTimeout time.Duration    `yaml:"graceful_timeout"`
 }
 

@@ -1,2 +1,2 @@
 coverage:
-	go cover -v
+	go test ./... -coverpkg=./... -coverprofile=coverage.out && go tool cover -func=coverage.out | tail -n 1

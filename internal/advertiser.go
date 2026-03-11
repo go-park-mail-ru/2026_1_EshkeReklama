@@ -23,6 +23,15 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 	advertiserGroup.HandleFunc(LogoutURI, a.Logout).Methods(http.MethodPost)
 }
 
+// @Summary      Регистрация рекламодателя
+// @Description  Создает новый аккаунт и открывает сессию
+// @Tags         advertiser
+// @Accept       json
+// @Produce      json
+// @Param        input body      RegisterRequest  true  "Данные для регистрации"
+// @Success      200   {object}  RegisterResponse
+// @Failure      400   {object}  httpx.Error "Invalid request или User already exists"
+// @Router       /advertiser/register [post]
 func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 	var req RegisterRequest
 	if err := httpx.DecodeJSON(r, &req); err != nil {
@@ -30,23 +39,12 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userMu.Lock()
-	if _, exists := usersByEmail[req.Email]; exists {
-		userMu.Unlock()
+	if _, exists := a.repo.Users.GetByEmail(req.Email); exists {
 		httpx.BadRequest(w, "user already exists")
 		return
 	}
 
-	lastID++
-	newUser := &User{
-		ID:       lastID,
-		Email:    req.Email,
-		Phone:    req.Phone,
-		Password: req.Password,
-	}
-	usersByEmail[newUser.Email] = newUser
-	usersByPhone[newUser.Phone] = newUser
-	userMu.Unlock()
+	newUser := a.repo.Users.Create(req.Email, req.Phone, req.Password)
 
 	if err := a.sessionManager.Create(w, r, newUser.ID); err != nil {
 		httpx.InternalError(w)
@@ -60,6 +58,15 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summary      Вход рекламодателя
+// @Description  Аутентифицирует рекламодателя по email или телефону и паролю
+// @Tags         advertiser
+// @Accept       json
+// @Produce      json
+// @Param        input body      LoginRequest  true  "Данные для входа"
+// @Success      200   {object}  LoginResponse
+// @Failure      400   {object}  httpx.Error "Invalid identifier или password"
+// @Router       /advertiser/login [post]
 func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 	var req LoginRequest
 	if err := httpx.DecodeJSON(r, &req); err != nil {
@@ -67,13 +74,11 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userMu.RLock()
 	// Ищем пользователя по любому из признаков
-	user, exists := usersByEmail[req.Identifier]
+	user, exists := a.repo.Users.GetByEmail(req.Identifier)
 	if !exists {
-		user, exists = usersByPhone[req.Identifier]
+		user, exists = a.repo.Users.GetByPhone(req.Identifier)
 	}
-	userMu.RUnlock()
 
 	if !exists || user.Password != req.Password {
 		httpx.BadRequest(w, "invalid identifier or password")
@@ -92,6 +97,13 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summary      Выход рекламодателя
+// @Description  Завершает сессию текущего рекламодателя
+// @Tags         advertiser
+// @Produce      json
+// @Success      200   {object}  map[string]string
+// @Router       /advertiser/logout [post]
+// @Security     CookieAuth
 func (a *API) Logout(w http.ResponseWriter, r *http.Request) {
 	a.sessionManager.Destroy(w, r)
 

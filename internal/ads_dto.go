@@ -1,10 +1,10 @@
 package internal
 
 type AdResponse struct {
-	ID          int    `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Price       int    `json:"price"`
+	ID           int    `json:"id"`
+	Title        string `json:"title"`
+	TargetAction string `json:"target_action"`
+	Price        int    `json:"price"`
 }
 
 type ListAdsResponse struct {

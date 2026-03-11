@@ -14,9 +14,16 @@ func (a *API) RegisterAdsHandlers(r *mux.Router) {
 
 	adsGroup.Use(Auth(a.sessionManager))
 	adsGroup.HandleFunc("", a.ListAds).Methods(http.MethodGet)
-	// adsGroup.HandleFunc("/", a.ListAds).Methods(http.MethodGet)
 }
 
+// @Summary      Список рекламных кампаний
+// @Description  Возвращает список всех кампаний текущего рекламодателя
+// @Tags         ads
+// @Produce      json
+// @Success      200   {object}  ListAdsResponse
+// @Failure      401   {object}  httpx.Error "Unauthorized"
+// @Router       /ads [get]
+// @Security     CookieAuth
 func (a *API) ListAds(w http.ResponseWriter, r *http.Request) {
 	advertiserID, err := AdvertiserIDFromContext(r.Context())
 	if err != nil {
@@ -25,14 +32,21 @@ func (a *API) ListAds(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Достаем кампании именно для этого рекламодателя
-	ads, ok := mockAds[advertiserID]
-	if !ok {
-		ads = []AdResponse{} // отдаем пустой список, если кампаний нет
+	unparsedAds := a.repo.Ads.ListByID(advertiserID)
+
+	parsedAds := make([]AdResponse, len(unparsedAds))
+	for i, ad := range unparsedAds {
+		parsedAds[i] = AdResponse{
+			ID:           ad.ID,
+			Title:        ad.Title,
+			TargetAction: ad.TargetAction,
+			Price:        ad.Price,
+		}
 	}
 
 	resp := ListAdsResponse{
 		AdvertiserID: advertiserID,
-		Ads:          ads,
+		Ads:          parsedAds,
 	}
 
 	httpx.JSON(w, http.StatusOK, resp)

@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"database/sql"
 	"eshkere/internal/repository"
 	"eshkere/internal/session"
 	"fmt"
@@ -18,7 +17,6 @@ import (
 
 type App struct {
 	cfg            *Config
-	db             *sql.DB
 	sessionManager *session.Manager
 	// TODO: closers []io.Closer
 	// TODO: starters []StartAsService
@@ -87,10 +85,6 @@ func (a *App) shutdown(server *http.Server) error {
 
 	if err := server.Shutdown(ctx); err != nil {
 		return fmt.Errorf("shutdown server: %w", err)
-	}
-
-	if err := a.db.Close(); err != nil {
-		return fmt.Errorf("close db: %w", err)
 	}
 
 	return nil

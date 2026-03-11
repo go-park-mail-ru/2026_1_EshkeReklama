@@ -7,41 +7,25 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"eshkere/internal/repository"
 	"eshkere/internal/session"
 
 	"github.com/gorilla/mux"
 )
 
-func resetUsersForTests() {
-	userMu.Lock()
-	defer userMu.Unlock()
-
-	usersByEmail = make(map[string]*User)
-	usersByPhone = make(map[string]*User)
-	lastID = 0
-
-	// same as init()
-	lastID++
-	u := &User{
-		ID:       lastID,
-		Email:    "test@mail.com",
-		Phone:    "+79991234567",
-		Password: "123123",
-	}
-	usersByEmail[u.Email] = u
-	usersByPhone[u.Phone] = u
-}
-
-func newTestRouter(sm *session.Manager) *mux.Router {
+func newTestRouter(sm *session.Manager, repo *repository.Repository) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
-	Register(r, NewAPI(APIConfig{SessionManager: sm}))
+	Register(r, NewAPI(APIConfig{
+		SessionManager: sm,
+		Repo:           repo,
+	}))
 	return r
 }
 
 func TestRegister_SuccessAndDuplicate(t *testing.T) {
-	resetUsersForTests()
 	sm := session.NewManager()
-	r := newTestRouter(sm)
+	repo := repository.InitRepository()
+	r := newTestRouter(sm, repo)
 
 	body := `{"email":"a@a.test","phone":"+70000000000","password":"p"}`
 	req := httptest.NewRequest(http.MethodPost, AdvertiserGroupURI+RegisterURI, bytes.NewBufferString(body))
@@ -66,9 +50,9 @@ func TestRegister_SuccessAndDuplicate(t *testing.T) {
 }
 
 func TestLogin_InvalidAndSuccess(t *testing.T) {
-	resetUsersForTests()
 	sm := session.NewManager()
-	r := newTestRouter(sm)
+	repo := repository.InitRepository()
+	r := newTestRouter(sm, repo)
 
 	// invalid password
 	req := httptest.NewRequest(http.MethodPost, AdvertiserGroupURI+LoginURI, bytes.NewBufferString(`{"identifier":"test@mail.com","password":"bad"}`))
@@ -102,9 +86,9 @@ func TestLogin_InvalidAndSuccess(t *testing.T) {
 }
 
 func TestLogout_AlwaysOK(t *testing.T) {
-	resetUsersForTests()
 	sm := session.NewManager()
-	r := newTestRouter(sm)
+	repo := repository.InitRepository()
+	r := newTestRouter(sm, repo)
 
 	req := httptest.NewRequest(http.MethodPost, AdvertiserGroupURI+LogoutURI, nil)
 	rr := httptest.NewRecorder()
@@ -116,9 +100,9 @@ func TestLogout_AlwaysOK(t *testing.T) {
 }
 
 func TestListAds_UnauthorizedAndAuthorized(t *testing.T) {
-	resetUsersForTests()
 	sm := session.NewManager()
-	r := newTestRouter(sm)
+	repo := repository.InitRepository()
+	r := newTestRouter(sm, repo)
 
 	// unauthorized
 	req := httptest.NewRequest(http.MethodGet, AdsGroupURI, nil)

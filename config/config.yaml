@@ -1,0 +1,12 @@
+http_server:
+  listen: ":8000"
+  read_timeout: 15s
+  write_timeout: 15s
+
+graceful_timeout: 20s
+
+cors:
+  allowed_origins:
+    - "http://localhost:8080"
+    - "http://127.0.0.1:8080"
+    - "http://212.233.96.112:8080"

@@ -72,7 +72,7 @@ paths:
     get:
       description: Возвращает список всех кампаний текущего рекламодателя
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -83,24 +83,24 @@ paths:
           schema:
             $ref: '#/definitions/httpx.Error'
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Список рекламных кампаний
       tags:
-      - ads
+        - ads
   /advertiser/login:
     post:
       consumes:
-      - application/json
+        - application/json
       description: Аутентифицирует рекламодателя по email или телефону и паролю
       parameters:
-      - description: Данные для входа
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/internal.LoginRequest'
+        - description: Данные для входа
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: '#/definitions/internal.LoginRequest'
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -112,12 +112,12 @@ paths:
             $ref: '#/definitions/httpx.Error'
       summary: Вход рекламодателя
       tags:
-      - advertiser
+        - advertiser
   /advertiser/logout:
     post:
       description: Завершает сессию текущего рекламодателя
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -126,24 +126,24 @@ paths:
               type: string
             type: object
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Выход рекламодателя
       tags:
-      - advertiser
+        - advertiser
   /advertiser/register:
     post:
       consumes:
-      - application/json
+        - application/json
       description: Создает новый аккаунт и открывает сессию
       parameters:
-      - description: Данные для регистрации
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/internal.RegisterRequest'
+        - description: Данные для регистрации
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: '#/definitions/internal.RegisterRequest'
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -158,7 +158,7 @@ paths:
       - advertiser
 securityDefinitions:
   CookieAuth:
-    in: cookie
+    in: header
     name: session_id
     type: apiKey
 swagger: "2.0"

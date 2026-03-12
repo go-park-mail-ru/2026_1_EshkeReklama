@@ -256,7 +256,7 @@ const docTemplate = `{
         "CookieAuth": {
             "type": "apiKey",
             "name": "session_id",
-            "in": "cookie"
+            "in": "header"
         }
     }
 }`

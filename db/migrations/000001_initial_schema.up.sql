@@ -45,7 +45,7 @@ CREATE TABLE eshekere.advertiser (
 CREATE TABLE eshekere.ad_campaign (
     id              INT                         PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     advertiser_id   INT                         REFERENCES eshekere.advertiser(id) ON DELETE CASCADE,
-    status          eshekere.status_type                 NOT NULL DEFAULT 'turned_off',
+    status          eshekere.status_type        NOT NULL DEFAULT 'turned_off',
     name            TEXT                        NOT NULL,
     daily_budget    DECIMAL(15, 2)              NOT NULL DEFAULT 0,
     created_at      TIMESTAMP WITH TIME ZONE    DEFAULT NOW(),
@@ -62,7 +62,7 @@ CREATE TABLE eshekere.ad_group (
     name            TEXT                        NOT NULL,
     age_from        INT                         NOT NULL,
     age_to          INT                         NOT NULL,
-    gender          eshekere.gender_type                 NOT NULL,
+    gender          eshekere.gender_type        NOT NULL,
     created_at      TIMESTAMP WITH TIME ZONE    DEFAULT NOW(),
     updated_at      TIMESTAMP WITH TIME ZONE,
     CONSTRAINT check_ad_group_name_length CHECK (LENGTH(name) <= 255),
@@ -72,9 +72,10 @@ CREATE TABLE eshekere.ad_group (
 CREATE TABLE eshekere.ad (
     id          INT                         PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     ad_group_id INT                         REFERENCES eshekere.ad_group(id) ON DELETE CASCADE,
-    status      eshekere.status_type                 NOT NULL DEFAULT 'turned_off',
+    status      eshekere.status_type        NOT NULL DEFAULT 'turned_off',
     title       TEXT                        NOT NULL,
     short_desc  TEXT                        NOT NULL,
+    image_url   TEXT                        NOT NULL,
     target_url  TEXT                        NOT NULL,
     created_at  TIMESTAMP WITH TIME ZONE    DEFAULT NOW(),
     updated_at  TIMESTAMP WITH TIME ZONE,
@@ -104,7 +105,7 @@ CREATE TABLE eshekere.partner_site (
     region_id   INT                         DEFAULT 1 REFERENCES eshekere.region(id) ON DELETE SET DEFAULT,
     age_from    INT                         NOT NULL,
     age_to      INT                         NOT NULL,
-    gender      eshekere.gender_type                 NOT NULL DEFAULT 'any',
+    gender      eshekere.gender_type        NOT NULL DEFAULT 'any',
     url         TEXT                        NOT NULL UNIQUE,
     created_at  TIMESTAMP WITH TIME ZONE    DEFAULT NOW(),
     updated_at  TIMESTAMP WITH TIME ZONE,
@@ -116,9 +117,9 @@ CREATE TABLE eshekere.ad_action (
     ad_id           INT                         REFERENCES eshekere.ad(id) ON DELETE CASCADE,
     partner_site_id INT                         REFERENCES eshekere.partner_site(id) ON DELETE CASCADE,
     region_id       INT                         REFERENCES eshekere.region(id) ON DELETE CASCADE,
-    action          eshekere.action_type                 NOT NULL DEFAULT 'look',
+    action          eshekere.action_type        NOT NULL DEFAULT 'look',
     age             INT                         NOT NULL DEFAULT 25,
-    gender          eshekere.gender_type                 NOT NULL DEFAULT 'any',
+    gender          eshekere.gender_type        NOT NULL DEFAULT 'any',
     created_at      TIMESTAMP WITH TIME ZONE    DEFAULT NOW(),
     CONSTRAINT check_ad_action_age CHECK (age BETWEEN 0 AND 150)
 );
@@ -131,7 +132,7 @@ BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE 'plpgsql';
 
 -- Настройка триггеров обновления атрибута обновления
 CREATE TRIGGER set_updated_at_advertiser

@@ -40,34 +40,7 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userMu.Lock()
-	if _, exists := usersByEmail[req.Email]; exists {
-		userMu.Unlock()
-		httpx.BadRequest(w, "user already exists")
-		return
-	}
-
-	lastID++
-	newUser := &User{
-		ID:       lastID,
-		Email:    req.Email,
-		Phone:    req.Phone,
-		Password: req.Password,
-	}
-	usersByEmail[newUser.Email] = newUser
-	usersByPhone[newUser.Phone] = newUser
-	userMu.Unlock()
-
-	if err := a.sessionManager.Create(w, r, newUser.ID); err != nil {
-		httpx.InternalError(w)
-		return
-	}
-
-	httpx.JSON(w, http.StatusOK, dto.RegisterResponse{
-		ID:    newUser.ID,
-		Email: newUser.Email,
-		Phone: newUser.Phone,
-	})
+	httpx.NotImplemented(w, "register is not wired to storage yet")
 }
 
 // @Summary      Вход рекламодателя
@@ -86,29 +59,7 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userMu.RLock()
-	// Ищем пользователя по любому из признаков
-	user, exists := usersByEmail[req.Identifier]
-	if !exists {
-		user, exists = usersByPhone[req.Identifier]
-	}
-	userMu.RUnlock()
-
-	if !exists || user.Password != req.Password {
-		httpx.BadRequest(w, "invalid identifier or password")
-		return
-	}
-
-	if err := a.sessionManager.Create(w, r, user.ID); err != nil {
-		httpx.InternalError(w)
-		return
-	}
-
-	httpx.JSON(w, http.StatusOK, dto.LoginResponse{
-		ID:    user.ID,
-		Email: user.Email,
-		Phone: user.Phone,
-	})
+	httpx.NotImplemented(w, "login is not wired to storage yet")
 }
 
 // @Summary      Выход рекламодателя

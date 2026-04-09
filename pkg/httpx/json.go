@@ -59,3 +59,7 @@ func Unauthorized(w http.ResponseWriter, message string) {
 func InternalError(w http.ResponseWriter) {
 	ErrorJSON(w, http.StatusInternalServerError, "internal server error")
 }
+
+func NotImplemented(w http.ResponseWriter, message string) {
+	ErrorJSON(w, http.StatusNotImplemented, message)
+}

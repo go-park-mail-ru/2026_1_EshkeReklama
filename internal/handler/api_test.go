@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"sync"
 	"testing"
 
 	"eshkere/internal/handler/dto"
@@ -13,31 +12,6 @@ import (
 
 	"github.com/gorilla/mux"
 )
-
-func resetTestState() {
-	userMu = sync.RWMutex{}
-	lastID = 1
-	usersByEmail = map[string]*User{
-		"test@mail.com": {
-			ID:       1,
-			Email:    "test@mail.com",
-			Phone:    "+79991234567",
-			Password: "123123",
-		},
-	}
-	usersByPhone = map[string]*User{
-		"+79991234567": usersByEmail["test@mail.com"],
-	}
-	mockAds = map[int][]dto.AdResponse{
-		1: {
-			{ID: 1, Title: "iPhone 14", Description: "В отличном состоянии", Price: 70000},
-			{ID: 2, Title: "MacBook Air M1", Description: "Для работы", Price: 85000},
-		},
-		2: {
-			{ID: 3, Title: "PlayStation 5", Description: "Почти новая", Price: 50000},
-		},
-	}
-}
 
 func newTestRouter(sm *session.Manager) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
@@ -47,8 +21,7 @@ func newTestRouter(sm *session.Manager) *mux.Router {
 	return r
 }
 
-func TestRegister_SuccessAndDuplicate(t *testing.T) {
-	resetTestState()
+func TestRegister_NotImplemented(t *testing.T) {
 	sm := session.NewManager()
 	r := newTestRouter(sm)
 
@@ -57,58 +30,24 @@ func TestRegister_SuccessAndDuplicate(t *testing.T) {
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 
-	if rr.Code != http.StatusOK {
-		t.Fatalf("expected 200 got %d body=%s", rr.Code, rr.Body.String())
-	}
-	if len(rr.Result().Cookies()) == 0 {
-		t.Fatalf("expected session cookie to be set")
-	}
-
-	req2 := httptest.NewRequest(http.MethodPost, AdvertiserGroupURI+RegisterURI, bytes.NewBufferString(body))
-	rr2 := httptest.NewRecorder()
-	r.ServeHTTP(rr2, req2)
-
-	if rr2.Code != http.StatusBadRequest {
-		t.Fatalf("expected 400 got %d body=%s", rr2.Code, rr2.Body.String())
+	if rr.Code != http.StatusNotImplemented {
+		t.Fatalf("expected 501 got %d body=%s", rr.Code, rr.Body.String())
 	}
 }
 
-func TestLogin_InvalidAndSuccess(t *testing.T) {
-	resetTestState()
+func TestLogin_NotImplemented(t *testing.T) {
 	sm := session.NewManager()
 	r := newTestRouter(sm)
 
 	req := httptest.NewRequest(http.MethodPost, AdvertiserGroupURI+LoginURI, bytes.NewBufferString(`{"identifier":"test@mail.com","password":"bad"}`))
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
-	if rr.Code != http.StatusBadRequest {
-		t.Fatalf("expected 400 got %d body=%s", rr.Code, rr.Body.String())
-	}
-
-	req2 := httptest.NewRequest(http.MethodPost, AdvertiserGroupURI+LoginURI, bytes.NewBufferString(`{"identifier":"test@mail.com","password":"123123"}`))
-	rr2 := httptest.NewRecorder()
-	r.ServeHTTP(rr2, req2)
-	if rr2.Code != http.StatusOK {
-		t.Fatalf("expected 200 got %d body=%s", rr2.Code, rr2.Body.String())
-	}
-	if len(rr2.Result().Cookies()) == 0 {
-		t.Fatalf("expected session cookie to be set")
-	}
-
-	var envelope struct {
-		Status string            `json:"status"`
-		Data   dto.LoginResponse `json:"data"`
-	}
-	if err := json.Unmarshal(rr2.Body.Bytes(), &envelope); err != nil {
-		t.Fatalf("unmarshal: %v", err)
-	}
-	if envelope.Status != "ok" || envelope.Data.Email != "test@mail.com" || envelope.Data.ID == 0 {
-		t.Fatalf("unexpected response: %#v", envelope)
+	if rr.Code != http.StatusNotImplemented {
+		t.Fatalf("expected 501 got %d body=%s", rr.Code, rr.Body.String())
 	}
 }
 
 func TestLogout_AlwaysOK(t *testing.T) {
-	resetTestState()
 	sm := session.NewManager()
 	r := newTestRouter(sm)
 
@@ -121,8 +60,7 @@ func TestLogout_AlwaysOK(t *testing.T) {
 	}
 }
 
-func TestListAds_UnauthorizedAndAuthorized(t *testing.T) {
-	resetTestState()
+func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
 	sm := session.NewManager()
 	r := newTestRouter(sm)
 
@@ -166,7 +104,7 @@ func TestListAds_UnauthorizedAndAuthorized(t *testing.T) {
 	if envelope.Data.AdvertiserID != 1 {
 		t.Fatalf("expected advertiser_id 1 got %d", envelope.Data.AdvertiserID)
 	}
-	if len(envelope.Data.Ads) != 2 {
-		t.Fatalf("expected 2 ads for advertiser 1 got %d", len(envelope.Data.Ads))
+	if len(envelope.Data.Ads) != 0 {
+		t.Fatalf("expected empty ads list, got %d", len(envelope.Data.Ads))
 	}
 }

@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 	"eshkere/internal/config"
-	"eshkere/internal/handler"
+	handlers "eshkere/internal/handler"
 	"eshkere/internal/middleware"
 	"eshkere/internal/session"
 	"fmt"
@@ -19,10 +19,8 @@ import (
 )
 
 type App struct {
-	cfg            *config.Config
-	sessionManager *session.Manager
-	closers        []io.Closer
-	// TODO: closers []io.Closer
+	cfg     *config.Config
+	closers []io.Closer
 }
 
 func New(configPath string) *App {
@@ -40,22 +38,19 @@ func New(configPath string) *App {
 
 	closers = append([]io.Closer{db}, closers...)
 
-	sessionManager := session.NewManager()
-	sessionManager.StartCleanup(5 * time.Minute)
-
 	return &App{
-		cfg:            cfg,
-		closers:        closers,
-		sessionManager: sessionManager,
+		cfg:     cfg,
+		closers: closers,
 	}
 }
 
 func (a *App) Run() error {
-	router := mux.NewRouter().StrictSlash(true)
+	sessionManager := session.NewManager()
+	sessionManager.StartCleanup(5 * time.Minute)
 
+	router := mux.NewRouter().StrictSlash(true)
 	handlers.Register(router, handlers.NewAPI(handlers.APIConfig{
-		// Service: svc,
-		SessionManager: a.sessionManager,
+		SessionManager: sessionManager,
 	}))
 
 	server := &http.Server{

@@ -7,6 +7,7 @@ import (
 	"eshkere/internal/middleware"
 	"eshkere/internal/session"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -20,26 +21,31 @@ import (
 type App struct {
 	cfg            *config.Config
 	sessionManager *session.Manager
+	closers        []io.Closer
 	// TODO: closers []io.Closer
-	// TODO: starters []StartAsService
 }
 
 func New(configPath string) *App {
+	var closers []io.Closer
+
 	cfg, err := config.ReadConfig(configPath)
 	if err != nil {
 		log.Fatalf("Failed to read config: %v", err)
 	}
 
-	//db, err := initDB(cfg.Postgres)
-	//if err != nil {
-	//	log.Fatalf("Failed to init DB: %v", err)
-	//}
+	db, err := initDB(cfg.Postgres)
+	if err != nil {
+		log.Fatalf("Failed to init DB: %v", err)
+	}
+
+	closers = append([]io.Closer{db}, closers...)
 
 	sessionManager := session.NewManager()
 	sessionManager.StartCleanup(5 * time.Minute)
 
 	return &App{
 		cfg:            cfg,
+		closers:        closers,
 		sessionManager: sessionManager,
 	}
 }
@@ -94,7 +100,11 @@ func (a *App) shutdown(server *http.Server) error {
 		return fmt.Errorf("shutdown server: %w", err)
 	}
 
-	// TODO: shutdown db (closers)
+	for _, c := range a.closers {
+		if err := c.Close(); err != nil {
+			fmt.Println("failed to close:", c)
+		}
+	}
 
 	return nil
 }

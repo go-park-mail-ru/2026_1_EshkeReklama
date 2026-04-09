@@ -1,2 +1,5 @@
-migrations-create-example:
-	migrate create -digits 6 -ext sql -dir db/migrations -seq add_new_typeы # ваше название
+coverage:
+	go test ./... -coverpkg=./... -coverprofile=coverage.out && go tool cover -func=coverage.out | tail -n 1
+
+swagger:
+	swag init -d ./cmd/eshkere,./internal,./pkg

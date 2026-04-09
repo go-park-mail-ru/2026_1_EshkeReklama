@@ -24,6 +24,15 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 	advertiserGroup.HandleFunc(LogoutURI, a.Logout).Methods(http.MethodPost)
 }
 
+// @Summary      Регистрация рекламодателя
+// @Description  Создает новый аккаунт и открывает сессию
+// @Tags         advertiser
+// @Accept       json
+// @Produce      json
+// @Param        input body      dto.RegisterRequest  true  "Данные для регистрации"
+// @Success      200   {object}  dto.RegisterResponse
+// @Failure      400   {object}  httpx.Error "Invalid request или User already exists"
+// @Router       /advertiser/register [post]
 func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 	var req dto.RegisterRequest
 	if err := httpx.DecodeJSON(r, &req); err != nil {
@@ -61,6 +70,15 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summary      Вход рекламодателя
+// @Description  Аутентифицирует рекламодателя по email или телефону и паролю
+// @Tags         advertiser
+// @Accept       json
+// @Produce      json
+// @Param        input body      dto.LoginRequest  true  "Данные для входа"
+// @Success      200   {object}  dto.LoginResponse
+// @Failure      400   {object}  httpx.Error "Invalid identifier или password"
+// @Router       /advertiser/login [post]
 func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 	var req dto.LoginRequest
 	if err := httpx.DecodeJSON(r, &req); err != nil {
@@ -93,6 +111,13 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summary      Выход рекламодателя
+// @Description  Завершает сессию текущего рекламодателя
+// @Tags         advertiser
+// @Produce      json
+// @Success      200   {object}  map[string]string
+// @Router       /advertiser/logout [post]
+// @Security     CookieAuth
 func (a *API) Logout(w http.ResponseWriter, r *http.Request) {
 	a.sessionManager.Destroy(w, r)
 

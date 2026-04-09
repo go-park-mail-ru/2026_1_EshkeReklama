@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"database/sql"
 	"eshkere/internal/config"
 	"eshkere/internal/handler"
 	"eshkere/internal/middleware"
@@ -20,7 +19,6 @@ import (
 
 type App struct {
 	cfg            *config.Config
-	db             *sql.DB
 	sessionManager *session.Manager
 	// TODO: closers []io.Closer
 	// TODO: starters []StartAsService
@@ -41,8 +39,7 @@ func New(configPath string) *App {
 	sessionManager.StartCleanup(5 * time.Minute)
 
 	return &App{
-		cfg: cfg,
-		//db:             db,
+		cfg:            cfg,
 		sessionManager: sessionManager,
 	}
 }
@@ -97,9 +94,7 @@ func (a *App) shutdown(server *http.Server) error {
 		return fmt.Errorf("shutdown server: %w", err)
 	}
 
-	if err := a.db.Close(); err != nil {
-		return fmt.Errorf("close db: %w", err)
-	}
+	// TODO: shutdown db (closers)
 
 	return nil
 }

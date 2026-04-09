@@ -1,9 +1,11 @@
 package main
 
 import (
-	"eshkere/internal"
+	"eshkere/internal/app"
 	"flag"
 	"log"
+
+	"github.com/joho/godotenv"
 )
 
 var configPath = flag.String("config", "./config/config.yaml", "path to config file")
@@ -19,7 +21,12 @@ var configPath = flag.String("config", "./config/config.yaml", "path to config f
 func main() {
 	flag.Parse()
 
-	application := internal.New(*configPath)
+	err := godotenv.Load()
+	if err != nil {
+		log.Println(".env file not found")
+	}
+
+	application := app.New(*configPath)
 	if err := application.Run(); err != nil {
 		log.Fatal(err)
 	}

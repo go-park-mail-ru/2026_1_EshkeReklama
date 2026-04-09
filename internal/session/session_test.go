@@ -10,7 +10,6 @@ import (
 func TestManager_CreateGetDestroy(t *testing.T) {
 	m := NewManager()
 
-	// Create
 	createReq := httptest.NewRequest(http.MethodPost, "/", nil)
 	createRR := httptest.NewRecorder()
 	if err := m.Create(createRR, createReq, 7); err != nil {
@@ -27,7 +26,6 @@ func TestManager_CreateGetDestroy(t *testing.T) {
 		t.Fatalf("unexpected cookie: %#v", cookies[0])
 	}
 
-	// Get
 	getReq := httptest.NewRequest(http.MethodGet, "/", nil)
 	getReq.AddCookie(cookies[0])
 	getRR := httptest.NewRecorder()
@@ -45,13 +43,13 @@ func TestManager_CreateGetDestroy(t *testing.T) {
 		t.Fatalf("expected refreshed cookie to be set")
 	}
 
-	// Destroy
 	destroyReq := httptest.NewRequest(http.MethodPost, "/", nil)
 	destroyReq.AddCookie(cookies[0])
 	destroyRR := httptest.NewRecorder()
 	m.Destroy(destroyRR, destroyReq)
 	destroyResp := destroyRR.Result()
 	defer destroyResp.Body.Close()
+
 	dCookies := destroyResp.Cookies()
 	if len(dCookies) != 1 || dCookies[0].MaxAge != -1 {
 		t.Fatalf("expected cookie deletion, got %#v", dCookies)

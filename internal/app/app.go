@@ -5,6 +5,8 @@ import (
 	"eshkere/internal/config"
 	handlers "eshkere/internal/handler"
 	"eshkere/internal/middleware"
+	"eshkere/internal/repository/postgres"
+	"eshkere/internal/service"
 	"eshkere/internal/session"
 	"fmt"
 	"io"
@@ -21,6 +23,7 @@ import (
 type App struct {
 	cfg     *config.Config
 	closers []io.Closer
+	service *service.Service
 }
 
 func New(configPath string) *App {
@@ -38,9 +41,29 @@ func New(configPath string) *App {
 
 	closers = append([]io.Closer{db}, closers...)
 
+	advertiserRepo := postgres.NewAdvertiserRepository(db)
+	addGroupRepo := postgres.NewAdGroupRepository(db)
+	addRepo := postgres.NewAdRepository(db)
+
+	svc, err := service.NewService(&service.Config{
+		AdvertiserRepo:  advertiserRepo,
+		PartnerRepo:     nil,
+		PartnerSiteRepo: nil,
+		AdCampaignRepo:  nil,
+		AdGroupRepo:     addGroupRepo,
+		AdRepo:          addRepo,
+		AdActionRepo:    nil,
+		TopicRepo:       nil,
+		RegionRepo:      nil,
+	})
+	if err != nil {
+		log.Fatalf("Failed to init service: %v", err)
+	}
+
 	return &App{
 		cfg:     cfg,
 		closers: closers,
+		service: svc,
 	}
 }
 
@@ -50,6 +73,7 @@ func (a *App) Run() error {
 
 	router := mux.NewRouter().StrictSlash(true)
 	handlers.Register(router, handlers.NewAPI(handlers.APIConfig{
+		Service:        a.service,
 		SessionManager: sessionManager,
 	}))
 

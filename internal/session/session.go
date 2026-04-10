@@ -5,39 +5,45 @@ import (
 	"encoding/hex"
 	"errors"
 	"net/http"
-	"sync"
 	"time"
-)
-
-const (
-	CookieName = "session_id"
-	SessionTTL = 24 * time.Hour
 )
 
 var ErrSessionNotFound = errors.New("session not found")
 
 type Session struct {
-	AdvertiserID int
-	ExpiresAt    time.Time
+	AdvertiserID int       `json:"advertiser_id"`
+	ExpiresAt    time.Time `json:"expires_at"`
 }
 
-// пока бд нет в мапке храним
+type CookieConfig struct {
+	Name     string
+	Path     string
+	HTTPOnly bool
+	Secure   bool
+	SameSite http.SameSite
+}
+
 type Manager struct {
-	mu       sync.RWMutex
-	sessions map[string]Session
+	store  Store
+	ttl    time.Duration
+	now    func() time.Time
+	cookie CookieConfig
 }
 
-func NewManager() *Manager {
+func NewManager(store Store, ttl time.Duration, cookie CookieConfig) *Manager {
 	return &Manager{
-		sessions: make(map[string]Session),
+		store:  store,
+		ttl:    ttl,
+		now:    time.Now,
+		cookie: cookie,
 	}
 }
 
 func (m *Manager) Create(w http.ResponseWriter, r *http.Request, advertiserID int) error {
-	if cookie, err := r.Cookie(CookieName); err == nil {
-		m.mu.Lock()
-		delete(m.sessions, cookie.Value)
-		m.mu.Unlock()
+	if cookie, err := r.Cookie(m.cookie.Name); err == nil {
+		if err := m.store.Delete(r.Context(), cookie.Value); err != nil {
+			return err
+		}
 	}
 
 	sessionID, err := generateSessionID()
@@ -45,87 +51,85 @@ func (m *Manager) Create(w http.ResponseWriter, r *http.Request, advertiserID in
 		return err
 	}
 
-	expiresAt := time.Now().Add(SessionTTL)
-
-	m.mu.Lock()
-	m.sessions[sessionID] = Session{
+	expiresAt := m.now().Add(m.ttl)
+	sess := Session{
 		AdvertiserID: advertiserID,
 		ExpiresAt:    expiresAt,
 	}
-	m.mu.Unlock()
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     CookieName,
-		Value:    sessionID,
-		Expires:  expiresAt,
-		MaxAge:   int(SessionTTL.Seconds()),
-		HttpOnly: true,
-		Path:     "/",
-		SameSite: http.SameSiteLaxMode,
-		// Secure:   true,
-	})
+	if err := m.store.Save(r.Context(), sessionID, sess, m.ttl); err != nil {
+		return err
+	}
+
+	m.setCookie(w, sessionID, expiresAt)
 
 	return nil
 }
 
 func (m *Manager) Get(w http.ResponseWriter, r *http.Request) (Session, error) {
-	cookie, err := r.Cookie(CookieName)
+	cookie, err := r.Cookie(m.cookie.Name)
 	if err != nil {
 		return Session{}, ErrSessionNotFound
 	}
 
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	session, ok := m.sessions[cookie.Value]
-	if !ok {
-		return Session{}, ErrSessionNotFound
+	sess, err := m.store.Get(r.Context(), cookie.Value)
+	if err != nil {
+		if errors.Is(err, ErrStoreSessionNotFound) {
+			return Session{}, ErrSessionNotFound
+		}
+		return Session{}, err
 	}
 
-	if time.Now().After(session.ExpiresAt) {
-		delete(m.sessions, cookie.Value)
-		return Session{}, ErrSessionNotFound
+	expiresAt := m.now().Add(m.ttl)
+	sess.ExpiresAt = expiresAt
+
+	if err := m.store.Save(r.Context(), cookie.Value, sess, m.ttl); err != nil {
+		return Session{}, err
 	}
 
-	//продлеваем, если пользак ватафа_к активен
-	newExpiresAt := time.Now().Add(SessionTTL)
-	session.ExpiresAt = newExpiresAt
-	m.sessions[cookie.Value] = session
+	m.setCookie(w, cookie.Value, expiresAt)
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     CookieName,
-		Value:    cookie.Value,
-		Path:     "/",
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-		Expires:  newExpiresAt,
-		MaxAge:   int(SessionTTL.Seconds()),
-	})
-
-	return session, nil
+	return sess, nil
 }
 
-func (m *Manager) Destroy(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie(CookieName)
-	if err == nil {
-		m.mu.Lock()
-		delete(m.sessions, cookie.Value)
-		m.mu.Unlock()
+func (m *Manager) Destroy(w http.ResponseWriter, r *http.Request) error {
+	if cookie, err := r.Cookie(m.cookie.Name); err == nil {
+		if err := m.store.Delete(r.Context(), cookie.Value); err != nil {
+			return err
+		}
 	}
 
+	m.expireCookie(w)
+
+	return nil
+}
+
+func (m *Manager) setCookie(w http.ResponseWriter, sessionID string, expiresAt time.Time) {
 	http.SetCookie(w, &http.Cookie{
-		Name:     CookieName,
+		Name:     m.cookie.Name,
+		Value:    sessionID,
+		Path:     m.cookie.Path,
+		Expires:  expiresAt,
+		MaxAge:   int(m.ttl.Seconds()),
+		HttpOnly: m.cookie.HTTPOnly,
+		Secure:   m.cookie.Secure,
+		SameSite: m.cookie.SameSite,
+	})
+}
+
+func (m *Manager) expireCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     m.cookie.Name,
 		Value:    "",
-		Path:     "/",
-		HttpOnly: true,
-		MaxAge:   -1,
+		Path:     m.cookie.Path,
 		Expires:  time.Unix(0, 0),
-		SameSite: http.SameSiteLaxMode,
-		// Secure:   true,
+		MaxAge:   -1,
+		HttpOnly: m.cookie.HTTPOnly,
+		Secure:   m.cookie.Secure,
+		SameSite: m.cookie.SameSite,
 	})
 }
 
-// пока что просто рандомим)
 func generateSessionID() (string, error) {
 	buf := make([]byte, 32)
 	if _, err := rand.Read(buf); err != nil {

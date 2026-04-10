@@ -15,15 +15,15 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/gorilla/mux"
 )
 
 type App struct {
-	cfg     *config.Config
-	closers []io.Closer
-	service *service.Service
+	cfg            *config.Config
+	closers        []io.Closer
+	service        *service.Service
+	sessionManager *session.Manager
 }
 
 func New(configPath string) *App {
@@ -61,21 +61,39 @@ func New(configPath string) *App {
 		log.Fatalf("Failed to init service: %v", err)
 	}
 
+	redisPool, err := initRedis(cfg.Redis)
+	if err != nil {
+		log.Fatalf("Failed to init redis: %v", err)
+	}
+
+	closers = append(closers, redisPool)
+
+	sessionStore := session.NewRedisStore(redisPool)
+	sessionManager := session.NewManager(
+		sessionStore,
+		cfg.Session.TTL,
+		session.CookieConfig{
+			Name:     cfg.Session.CookieName,
+			Path:     cfg.Session.CookiePath,
+			HTTPOnly: true,
+			Secure:   cfg.Session.CookieSecure,
+			SameSite: http.SameSiteLaxMode,
+		},
+	)
+
 	return &App{
-		cfg:     cfg,
-		closers: closers,
-		service: svc,
+		cfg:            cfg,
+		closers:        closers,
+		service:        svc,
+		sessionManager: sessionManager,
 	}
 }
 
 func (a *App) Run() error {
-	sessionManager := session.NewManager()
-	sessionManager.StartCleanup(5 * time.Minute)
-
 	router := mux.NewRouter().StrictSlash(true)
 	handlers.Register(router, handlers.NewAPI(handlers.APIConfig{
 		Service:        a.service,
-		SessionManager: sessionManager,
+		SessionManager: a.sessionManager,
 	}))
 
 	server := &http.Server{

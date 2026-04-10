@@ -44,12 +44,13 @@ func New(configPath string) *App {
 	advertiserRepo := postgres.NewAdvertiserRepository(db)
 	addGroupRepo := postgres.NewAdGroupRepository(db)
 	addRepo := postgres.NewAdRepository(db)
+	adCampaignRepo := postgres.NewAdCampaignRepository(db)
 
 	svc, err := service.NewService(&service.Config{
 		AdvertiserRepo:  advertiserRepo,
 		PartnerRepo:     nil,
 		PartnerSiteRepo: nil,
-		AdCampaignRepo:  nil,
+		AdCampaignRepo:  adCampaignRepo,
 		AdGroupRepo:     addGroupRepo,
 		AdRepo:          addRepo,
 		AdActionRepo:    nil,

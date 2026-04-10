@@ -6,12 +6,17 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type Service interface {
+}
+
 type APIConfig struct {
 	SessionManager *session.Manager
+	Service        Service
 }
 
 type API struct {
 	sessionManager *session.Manager
+	service        Service
 }
 
 func NewAPI(config APIConfig) *API {

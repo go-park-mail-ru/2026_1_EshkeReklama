@@ -12,6 +12,18 @@ postgres:
 
 graceful_timeout: 20s
 
+redis:
+  host: ${REDIS_HOST}
+  port: 6379
+  password: ${REDIS_PASSWORD}
+  db: 0
+
+session:
+  ttl: 24h
+  cookie_name: "session_id"
+  cookie_path: "/"
+  cookie_secure: false
+
 cors:
   allowed_origins:
     - "http://localhost:8080"

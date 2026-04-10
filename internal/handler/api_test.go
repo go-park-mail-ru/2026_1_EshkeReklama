@@ -2,16 +2,62 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"eshkere/internal/handler/dto"
 	"eshkere/internal/session"
 
 	"github.com/gorilla/mux"
 )
+
+const testCookieName = "session_id"
+
+type memoryStore struct {
+	sessions map[string]session.Session
+}
+
+func newMemoryStore() *memoryStore {
+	return &memoryStore{
+		sessions: make(map[string]session.Session),
+	}
+}
+
+func (s *memoryStore) Save(_ context.Context, sessionID string, sess session.Session, _ time.Duration) error {
+	s.sessions[sessionID] = sess
+	return nil
+}
+
+func (s *memoryStore) Get(_ context.Context, sessionID string) (session.Session, error) {
+	sess, ok := s.sessions[sessionID]
+	if !ok {
+		return session.Session{}, session.ErrStoreSessionNotFound
+	}
+
+	return sess, nil
+}
+
+func (s *memoryStore) Delete(_ context.Context, sessionID string) error {
+	delete(s.sessions, sessionID)
+	return nil
+}
+
+func newTestSessionManager() *session.Manager {
+	return session.NewManager(
+		newMemoryStore(),
+		24*time.Hour,
+		session.CookieConfig{
+			Name:     testCookieName,
+			Path:     "/",
+			HTTPOnly: true,
+			SameSite: http.SameSiteLaxMode,
+		},
+	)
+}
 
 func newTestRouter(sm *session.Manager) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
@@ -22,7 +68,7 @@ func newTestRouter(sm *session.Manager) *mux.Router {
 }
 
 func TestRegister_NotImplemented(t *testing.T) {
-	sm := session.NewManager()
+	sm := newTestSessionManager()
 	r := newTestRouter(sm)
 
 	body := `{"email":"a@a.test","phone":"+70000000000","password":"p"}`
@@ -36,7 +82,7 @@ func TestRegister_NotImplemented(t *testing.T) {
 }
 
 func TestLogin_NotImplemented(t *testing.T) {
-	sm := session.NewManager()
+	sm := newTestSessionManager()
 	r := newTestRouter(sm)
 
 	req := httptest.NewRequest(http.MethodPost, AdvertiserGroupURI+LoginURI, bytes.NewBufferString(`{"identifier":"test@mail.com","password":"bad"}`))
@@ -48,7 +94,7 @@ func TestLogin_NotImplemented(t *testing.T) {
 }
 
 func TestLogout_AlwaysOK(t *testing.T) {
-	sm := session.NewManager()
+	sm := newTestSessionManager()
 	r := newTestRouter(sm)
 
 	req := httptest.NewRequest(http.MethodPost, AdvertiserGroupURI+LogoutURI, nil)
@@ -61,7 +107,7 @@ func TestLogout_AlwaysOK(t *testing.T) {
 }
 
 func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
-	sm := session.NewManager()
+	sm := newTestSessionManager()
 	r := newTestRouter(sm)
 
 	req := httptest.NewRequest(http.MethodGet, AdsGroupURI, nil)

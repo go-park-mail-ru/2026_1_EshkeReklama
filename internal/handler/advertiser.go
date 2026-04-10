@@ -70,7 +70,10 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 // @Router       /advertiser/logout [post]
 // @Security     CookieAuth
 func (a *API) Logout(w http.ResponseWriter, r *http.Request) {
-	a.sessionManager.Destroy(w, r)
+	if err := a.sessionManager.Destroy(w, r); err != nil {
+		httpx.InternalError(w)
+		return
+	}
 
 	httpx.JSON(w, http.StatusOK, map[string]string{
 		"message": "logout ok",

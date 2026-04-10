@@ -25,9 +25,25 @@ type CORSConfig struct {
 	AllowedOrigins []string `yaml:"allowed_origins"`
 }
 
+type RedisConfig struct {
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	Password string `yaml:"password"`
+	DB       int    `yaml:"db"`
+}
+
+type SessionConfig struct {
+	TTL          time.Duration `yaml:"ttl"`
+	CookieName   string        `yaml:"cookie_name"`
+	CookiePath   string        `yaml:"cookie_path"`
+	CookieSecure bool          `yaml:"cookie_secure"`
+}
+
 type Config struct {
 	HTTPServer      HTTPServerConfig `yaml:"http_server"`
 	Postgres        PostgresConfig   `yaml:"postgres"`
+	Redis           RedisConfig      `yaml:"redis"`
+	Session         SessionConfig    `yaml:"session"`
 	CORS            CORSConfig       `yaml:"cors"`
 	GracefulTimeout time.Duration    `yaml:"graceful_timeout"`
 }

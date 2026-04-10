@@ -20,13 +20,13 @@
 {phone_number} -> id, name, email, password_hash, password_salt, balance, created_at, updated_at
 
 ### `ad_campaign`:
-{id} -> advertiser_id, status_id, name, daily_budget, created_at, updated_at
+{id} -> advertiser_id, status, name, daily_budget, created_at, updated_at
 
 ### `ad_group`:
-{id} -> campaign_id, topic_id, region_id, name, age_from, age_to, gender, created_at, updated_at
+{id} -> ad_campaign_id, topic_id, region_id, name, age_from, age_to, gender, created_at, updated_at
 
 ### `ad`:
-{id} -> group_id, status_id, title, short_desc, target_url, created_at, updated_at
+{id} -> ad_group_id, status, title, short_desc, image_url, target_url, created_at, updated_at
 
 ### `partner`:
 {id} -> name, email, phone_number, password_hash, password_salt, balance, created_at, updated_at
@@ -41,7 +41,7 @@
 {url} -> id, partner_id, topic_id, region_id, age_from, age_to, gender, created_at, updated_at
 
 ### `ad_action`:
-{id} -> ad_id, partner_site_id, action, age, region, gender, created_at
+{id} -> ad_id, partner_site_id, region_id, action, age, gender, created_at
 
 ### `daily_stat`:
 {ad_id, partner_site_id, stat_date} -> displays_count, clicks_count, target_actions_count, advertiser_spend, partner_reward

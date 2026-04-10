@@ -10,7 +10,7 @@ type AdCampaign struct {
 	AdvertiserID int          `db:"advertiser_id"`
 	Status       AdStatus     `db:"status"`
 	Name         string       `db:"name"`
-	DailyBudget  float64      `db:"daily_budget"`
+	DailyBudget  int64        `db:"daily_budget"`
 	CreatedAt    time.Time    `db:"created_at"`
 	UpdatedAt    sql.NullTime `db:"updated_at"`
 }

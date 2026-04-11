@@ -33,25 +33,25 @@ const (
 	ORDER BY created_at DESC, id DESC`
 
 	updateAdGroup = `UPDATE eshkere.ad_group SET
-		ad_campaign_id = $1, topic_id = $2, region_id = $3, name = $4, age_from = $5, age_to = $6, gender = $7
-	WHERE id = $8`
+		ad_campaign_id = $1, topic_id = $2, region_id = $3, name = $4, age_from = $5, age_to = $6, gender = $7, updated_at = $8
+	WHERE id = $9`
 
 	deleteAdGroup = `DELETE FROM eshkere.ad_group WHERE id = $1`
 )
 
-func (r *AdGroupRepository) Create(ctx context.Context, g *models.AdGroup) (int, error) {
+func (r *AdGroupRepository) Create(ctx context.Context, g *models.AdGroup) error {
 	if g == nil {
-		return 0, fmt.Errorf("ad group cannot be nil")
+		return fmt.Errorf("ad group cannot be nil")
 	}
 
 	err := r.db.QueryRowContext(ctx, insertAdGroup,
 		g.AdCampaignID, g.TopicID, g.RegionID, g.Name, g.AgeFrom, g.AgeTo, g.Gender,
 	).Scan(&g.ID)
 	if err != nil {
-		return 0, fmt.Errorf("insert ad group: %w", err)
+		return fmt.Errorf("insert ad group: %w", err)
 	}
 
-	return g.ID, nil
+	return nil
 }
 
 func (r *AdGroupRepository) GetByID(ctx context.Context, id int) (*models.AdGroup, error) {
@@ -119,7 +119,7 @@ func (r *AdGroupRepository) Update(ctx context.Context, g *models.AdGroup) error
 	}
 
 	_, err := r.db.ExecContext(ctx, updateAdGroup,
-		g.AdCampaignID, g.TopicID, g.RegionID, g.Name, g.AgeFrom, g.AgeTo, g.Gender, g.ID,
+		g.AdCampaignID, g.TopicID, g.RegionID, g.Name, g.AgeFrom, g.AgeTo, g.Gender, g.UpdatedAt, g.ID,
 	)
 	if err != nil {
 		return fmt.Errorf("update ad group: %w", err)

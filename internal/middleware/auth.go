@@ -18,7 +18,7 @@ func Auth(sm *session.Manager) func(http.Handler) http.Handler {
 					return
 				}
 
-				httpx.InternalError(w)
+				httpx.InternalError(w, "internal error")
 				return
 			}
 

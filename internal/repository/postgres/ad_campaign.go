@@ -33,25 +33,25 @@ const (
 	ORDER BY created_at DESC, id DESC`
 
 	updateAdCampaign = `UPDATE eshkere.ad_campaign SET
-		advertiser_id = $1, status = $2, name = $3, daily_budget = $4
-	WHERE id = $5`
+		advertiser_id = $1, status = $2, name = $3, daily_budget = $4, updated_at = $5
+	WHERE id = $6`
 
 	deleteAdCampaign = `DELETE FROM eshkere.ad_campaign WHERE id = $1`
 )
 
-func (r *AdCampaignRepository) Create(ctx context.Context, c *models.AdCampaign) (int, error) {
+func (r *AdCampaignRepository) Create(ctx context.Context, c *models.AdCampaign) error {
 	if c == nil {
-		return 0, fmt.Errorf("ad campaign cannot be nil")
+		return fmt.Errorf("ad campaign cannot be nil")
 	}
 
 	err := r.db.QueryRowContext(ctx, insertAdCampaign,
 		c.AdvertiserID, c.Status, c.Name, c.DailyBudget,
 	).Scan(&c.ID)
 	if err != nil {
-		return 0, fmt.Errorf("insert ad campaign: %w", err)
+		return fmt.Errorf("insert ad campaign: %w", err)
 	}
 
-	return c.ID, nil
+	return nil
 }
 
 func (r *AdCampaignRepository) GetByID(ctx context.Context, id int) (*models.AdCampaign, error) {
@@ -113,7 +113,7 @@ func (r *AdCampaignRepository) Update(ctx context.Context, c *models.AdCampaign)
 	}
 
 	_, err := r.db.ExecContext(ctx, updateAdCampaign,
-		c.AdvertiserID, c.Status, c.Name, c.DailyBudget, c.ID,
+		c.AdvertiserID, c.Status, c.Name, c.DailyBudget, c.UpdatedAt, c.ID,
 	)
 	if err != nil {
 		return fmt.Errorf("update ad campaign: %w", err)

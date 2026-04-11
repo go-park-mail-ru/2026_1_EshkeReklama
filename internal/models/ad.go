@@ -8,10 +8,10 @@ import (
 type AdStatus string
 
 const (
-	AdStatusTurnedOff     AdStatus = "turned_off"
-	AdStatusModeration    AdStatus = "moderation"
-	AdStatusWorking       AdStatus = "working"
-	AdStatusRejected      AdStatus = "rejected"
+	AdStatusTurnedOff      AdStatus = "turned_off"
+	AdStatusModeration     AdStatus = "moderation"
+	AdStatusWorking        AdStatus = "working"
+	AdStatusRejected       AdStatus = "rejected"
 	AdStatusNotEnoughMoney AdStatus = "not_enough_money"
 )
 

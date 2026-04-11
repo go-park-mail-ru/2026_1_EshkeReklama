@@ -10,10 +10,47 @@ import (
 	"time"
 
 	"eshkere/internal/handler/dto"
+	"eshkere/internal/models"
 	"eshkere/internal/session"
 
 	"github.com/gorilla/mux"
 )
+
+type stubService struct{}
+
+func (stubService) CreateAd(context.Context, *models.Ad) (*models.Ad, error) {
+	return &models.Ad{}, nil
+}
+
+func (stubService) UpdateAd(context.Context, int, dto.UpdateAdRequest) error { return nil }
+
+func (stubService) ListAds(context.Context, int) ([]*models.Ad, error) { return nil, nil }
+
+func (stubService) DeleteAd(context.Context, int) error { return nil }
+
+func (stubService) CreateAdCampaign(context.Context, *models.AdCampaign) (*models.AdCampaign, error) {
+	return &models.AdCampaign{}, nil
+}
+
+func (stubService) UpdateAdCampaign(context.Context, int, dto.UpdateAdCampaignRequest) error {
+	return nil
+}
+
+func (stubService) ListAdCampaigns(context.Context, int) ([]*models.AdCampaign, error) {
+	return nil, nil
+}
+
+func (stubService) DeleteAdCampaign(context.Context, int) error { return nil }
+
+func (stubService) CreateAdGroup(context.Context, *models.AdGroup) (*models.AdGroup, error) {
+	return &models.AdGroup{}, nil
+}
+
+func (stubService) UpdateAdGroup(context.Context, int, dto.UpdateAdGroupRequest) error { return nil }
+
+func (stubService) ListAdGroups(context.Context, int) ([]*models.AdGroup, error) { return nil, nil }
+
+func (stubService) DeleteAdGroup(context.Context, int) error { return nil }
 
 const testCookieName = "session_id"
 
@@ -63,6 +100,7 @@ func newTestRouter(sm *session.Manager) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 	Register(r, NewAPI(APIConfig{
 		SessionManager: sm,
+		Service:        stubService{},
 	}))
 	return r
 }
@@ -72,7 +110,7 @@ func TestRegister_NotImplemented(t *testing.T) {
 	r := newTestRouter(sm)
 
 	body := `{"email":"a@a.test","phone":"+70000000000","password":"p"}`
-	req := httptest.NewRequest(http.MethodPost, AdvertiserGroupURI+RegisterURI, bytes.NewBufferString(body))
+	req := httptest.NewRequest(http.MethodPost, "/advertiser/register", bytes.NewBufferString(body))
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 
@@ -85,7 +123,7 @@ func TestLogin_NotImplemented(t *testing.T) {
 	sm := newTestSessionManager()
 	r := newTestRouter(sm)
 
-	req := httptest.NewRequest(http.MethodPost, AdvertiserGroupURI+LoginURI, bytes.NewBufferString(`{"identifier":"test@mail.com","password":"bad"}`))
+	req := httptest.NewRequest(http.MethodPost, "/advertiser/login", bytes.NewBufferString(`{"identifier":"test@mail.com","password":"bad"}`))
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 	if rr.Code != http.StatusNotImplemented {
@@ -97,7 +135,7 @@ func TestLogout_AlwaysOK(t *testing.T) {
 	sm := newTestSessionManager()
 	r := newTestRouter(sm)
 
-	req := httptest.NewRequest(http.MethodPost, AdvertiserGroupURI+LogoutURI, nil)
+	req := httptest.NewRequest(http.MethodPost, "/advertiser/logout", nil)
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 
@@ -110,7 +148,7 @@ func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
 	sm := newTestSessionManager()
 	r := newTestRouter(sm)
 
-	req := httptest.NewRequest(http.MethodGet, AdsGroupURI, nil)
+	req := httptest.NewRequest(http.MethodGet, "/ad_campaigns/1/ad_groups/2/ads", nil)
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 	if rr.Code != http.StatusUnauthorized {
@@ -128,7 +166,7 @@ func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
 		t.Fatalf("expected cookie")
 	}
 
-	req2 := httptest.NewRequest(http.MethodGet, AdsGroupURI, nil)
+	req2 := httptest.NewRequest(http.MethodGet, "/ad_campaigns/1/ad_groups/2/ads", nil)
 	req2.AddCookie(cookies[0])
 	rr2 := httptest.NewRecorder()
 	r.ServeHTTP(rr2, req2)
@@ -138,17 +176,13 @@ func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
 	}
 
 	var envelope struct {
-		Status string              `json:"status"`
-		Data   dto.ListAdsResponse `json:"data"`
+		Data dto.ListAdsResponse `json:"data"`
 	}
 	if err := json.Unmarshal(rr2.Body.Bytes(), &envelope); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
-	if envelope.Status != "ok" {
-		t.Fatalf("expected ok status, got %q", envelope.Status)
-	}
-	if envelope.Data.AdvertiserID != 1 {
-		t.Fatalf("expected advertiser_id 1 got %d", envelope.Data.AdvertiserID)
+	if envelope.Data.GroupID != 2 {
+		t.Fatalf("expected group_id 2 got %d", envelope.Data.GroupID)
 	}
 	if len(envelope.Data.Ads) != 0 {
 		t.Fatalf("expected empty ads list, got %d", len(envelope.Data.Ads))

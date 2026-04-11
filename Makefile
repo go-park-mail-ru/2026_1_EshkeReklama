@@ -8,7 +8,7 @@ coverage:
 	go test ./... -coverpkg=./... -coverprofile=coverage.out && go tool cover -func=coverage.out | tail -n 1
 
 swagger:
-	swag init -d ./cmd/eshkere,./internal/app,./internal/handler,./internal/middleware,./pkg
+	swag init -g main.go -d ./cmd/eshkere,./internal/app,./internal/handler,./internal/handler/dto,./internal/models,./internal/middleware,./pkg/httpx
 
 MIGRATE_IMAGE ?= migrate/migrate:v4.18.1
 

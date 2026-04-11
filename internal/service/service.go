@@ -1,7 +1,9 @@
 package service
 
 import (
+	"context"
 	"errors"
+	"eshkere/internal/models"
 )
 
 type AdvertiserRepository interface{}
@@ -10,11 +12,29 @@ type PartnerRepository interface{}
 
 type PartnerSiteRepository interface{}
 
-type AdCampaignRepository interface{}
+type AdCampaignRepository interface {
+	Create(ctx context.Context, c *models.AdCampaign) error
+	GetByID(ctx context.Context, id int) (*models.AdCampaign, error)
+	ListByAdvertiserID(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
+	Update(ctx context.Context, c *models.AdCampaign) error
+	Delete(ctx context.Context, id int) error
+}
 
-type AdGroupRepository interface{}
+type AdGroupRepository interface {
+	Create(ctx context.Context, g *models.AdGroup) error
+	GetByID(ctx context.Context, id int) (*models.AdGroup, error)
+	ListByCampaignID(ctx context.Context, campaignID int) ([]*models.AdGroup, error)
+	Update(ctx context.Context, g *models.AdGroup) error
+	Delete(ctx context.Context, id int) error
+}
 
-type AdRepository interface{}
+type AdRepository interface {
+	Create(ctx context.Context, ad *models.Ad) error
+	GetByID(ctx context.Context, adID int) (*models.Ad, error)
+	ListByAdGroupID(ctx context.Context, adGroupID int) ([]*models.Ad, error)
+	Update(ctx context.Context, ad *models.Ad) error
+	Delete(ctx context.Context, id int) error
+}
 
 type AdActionRepository interface{}
 

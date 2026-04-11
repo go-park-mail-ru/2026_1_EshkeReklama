@@ -33,31 +33,31 @@ const (
 	ORDER BY created_at DESC, id DESC`
 
 	updateAd = `UPDATE eshkere.ad SET
-		ad_group_id = $1, status = $2, title = $3, short_desc = $4, image_url = $5, target_url = $6
-	WHERE id = $7`
+		ad_group_id = $1, status = $2, title = $3, short_desc = $4, image_url = $5, target_url = $6, updated_at = $7
+	WHERE id = $8`
 
 	deleteAd = `DELETE FROM eshkere.ad WHERE id = $1`
 )
 
-func (r *AdRepository) Create(ctx context.Context, ad *models.Ad) (int, error) {
+func (r *AdRepository) Create(ctx context.Context, ad *models.Ad) error {
 	if ad == nil {
-		return 0, fmt.Errorf("ad cannot be nil")
+		return fmt.Errorf("ad cannot be nil")
 	}
 
 	err := r.db.QueryRowContext(ctx, insertAd,
 		ad.AdGroupID, ad.Status, ad.Title, ad.ShortDesc, ad.ImageURL, ad.TargetURL,
 	).Scan(&ad.ID)
 	if err != nil {
-		return 0, fmt.Errorf("insert ad: %w", err)
+		return fmt.Errorf("insert ad: %w", err)
 	}
 
-	return ad.ID, nil
+	return nil
 }
 
-func (r *AdRepository) GetByID(ctx context.Context, id int) (*models.Ad, error) {
+func (r *AdRepository) GetByID(ctx context.Context, adID int) (*models.Ad, error) {
 	var ad models.Ad
 
-	err := r.db.QueryRowContext(ctx, selectAdByID, id).Scan(
+	err := r.db.QueryRowContext(ctx, selectAdByID, adID).Scan(
 		&ad.ID,
 		&ad.AdGroupID,
 		&ad.Status,
@@ -117,7 +117,7 @@ func (r *AdRepository) Update(ctx context.Context, ad *models.Ad) error {
 	}
 
 	_, err := r.db.ExecContext(ctx, updateAd,
-		ad.AdGroupID, ad.Status, ad.Title, ad.ShortDesc, ad.ImageURL, ad.TargetURL, ad.ID,
+		ad.AdGroupID, ad.Status, ad.Title, ad.ShortDesc, ad.ImageURL, ad.TargetURL, ad.UpdatedAt, ad.ID,
 	)
 	if err != nil {
 		return fmt.Errorf("update ad: %w", err)
@@ -126,8 +126,8 @@ func (r *AdRepository) Update(ctx context.Context, ad *models.Ad) error {
 	return nil
 }
 
-func (r *AdRepository) Delete(ctx context.Context, id int) error {
-	result, err := r.db.ExecContext(ctx, deleteAd, id)
+func (r *AdRepository) Delete(ctx context.Context, adID int) error {
+	result, err := r.db.ExecContext(ctx, deleteAd, adID)
 	if err != nil {
 		return fmt.Errorf("delete ad: %w", err)
 	}

@@ -8,20 +8,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const AdvertiserGroupURI = "/advertiser"
-
-const (
-	RegisterURI = "/register"
-	LoginURI    = "/login"
-	LogoutURI   = "/logout"
-)
-
 func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
-	advertiserGroup := r.PathPrefix(AdvertiserGroupURI).Subrouter()
+	advertiserGroup := r.PathPrefix("/advertiser").Subrouter()
 
-	advertiserGroup.HandleFunc(RegisterURI, a.Register).Methods(http.MethodPost)
-	advertiserGroup.HandleFunc(LoginURI, a.Login).Methods(http.MethodPost)
-	advertiserGroup.HandleFunc(LogoutURI, a.Logout).Methods(http.MethodPost)
+	advertiserGroup.HandleFunc("/register", a.Register).Methods(http.MethodPost)
+	advertiserGroup.HandleFunc("/login", a.Login).Methods(http.MethodPost)
+	advertiserGroup.HandleFunc("/logout", a.Logout).Methods(http.MethodPost)
 }
 
 // @Summary      Регистрация рекламодателя
@@ -32,6 +24,7 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 // @Param        input body      dto.RegisterRequest  true  "Данные для регистрации"
 // @Success      200   {object}  dto.RegisterResponse
 // @Failure      400   {object}  httpx.Error "Invalid request или User already exists"
+// @Failure      501   {object}  httpx.Error "Пока не реализовано"
 // @Router       /advertiser/register [post]
 func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 	var req dto.RegisterRequest
@@ -51,6 +44,7 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 // @Param        input body      dto.LoginRequest  true  "Данные для входа"
 // @Success      200   {object}  dto.LoginResponse
 // @Failure      400   {object}  httpx.Error "Invalid identifier или password"
+// @Failure      501   {object}  httpx.Error "Пока не реализовано"
 // @Router       /advertiser/login [post]
 func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 	var req dto.LoginRequest
@@ -67,11 +61,13 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 // @Tags         advertiser
 // @Produce      json
 // @Success      200   {object}  map[string]string
+// @Failure      401   {object}  httpx.Error
+// @Failure      500   {object}  httpx.Error
 // @Router       /advertiser/logout [post]
 // @Security     CookieAuth
 func (a *API) Logout(w http.ResponseWriter, r *http.Request) {
 	if err := a.sessionManager.Destroy(w, r); err != nil {
-		httpx.InternalError(w)
+		httpx.InternalError(w, "internal error")
 		return
 	}
 

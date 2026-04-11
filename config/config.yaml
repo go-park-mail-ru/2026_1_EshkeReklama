@@ -3,6 +3,13 @@ http_server:
   read_timeout: 15s
   write_timeout: 15s
 
+postgres:
+  host: ${POSTGRES_HOST}
+  port: 5432
+  database: ${POSTGRES_DB}
+  username: ${POSTGRES_USER}
+  password: ${POSTGRES_PASSWORD}
+
 graceful_timeout: 20s
 
 cors:

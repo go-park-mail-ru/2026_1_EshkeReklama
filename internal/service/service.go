@@ -6,7 +6,12 @@ import (
 	"eshkere/internal/models"
 )
 
-type AdvertiserRepository interface{}
+type AdvertiserRepository interface {
+	Create(ctx context.Context, a *models.Advertiser) (int, error)
+	GetByID(ctx context.Context, id int) (*models.Advertiser, error)
+	GetByEmail(ctx context.Context, email string) (*models.Advertiser, error)
+	GetByPhone(ctx context.Context, phone string) (*models.Advertiser, error)
+}
 
 type PartnerRepository interface{}
 

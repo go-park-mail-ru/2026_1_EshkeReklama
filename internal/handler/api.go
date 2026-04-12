@@ -10,6 +10,10 @@ import (
 )
 
 type Service interface {
+	RegisterAdvertiser(ctx context.Context, name, email, phone, password string) (*models.Advertiser, error)
+	AuthenticateAdvertiser(ctx context.Context, identifier, password string) (*models.Advertiser, error)
+	GetAdvertiserByID(ctx context.Context, id int) (*models.Advertiser, error)
+
 	CreateAd(ctx context.Context, ad *models.Ad) (*models.Ad, error)
 	UpdateAd(ctx context.Context, adID int, req dto.UpdateAdRequest) error
 	ListAds(ctx context.Context, groupID int) ([]*models.Ad, error)

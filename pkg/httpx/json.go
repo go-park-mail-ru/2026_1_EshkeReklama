@@ -52,6 +52,10 @@ func Unauthorized(w http.ResponseWriter, message string) {
 	ErrorJSON(w, http.StatusUnauthorized, message)
 }
 
+func NotFound(w http.ResponseWriter, message string) {
+	ErrorJSON(w, http.StatusNotFound, message)
+}
+
 func InternalError(w http.ResponseWriter, message string) {
 	ErrorJSON(w, http.StatusInternalServerError, message)
 }

@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -11,12 +12,40 @@ import (
 
 	"eshkere/internal/handler/dto"
 	"eshkere/internal/models"
+	"eshkere/internal/service"
 	"eshkere/internal/session"
 
 	"github.com/gorilla/mux"
 )
 
 type stubService struct{}
+
+func (stubService) RegisterAdvertiser(_ context.Context, _, email, phone, password string) (*models.Advertiser, error) {
+	if email == "" || password == "" {
+		return nil, service.ErrInvalidAdvertiserArg
+	}
+	return &models.Advertiser{ID: 99, Name: "u", Email: email, Phone: phone}, nil
+}
+
+func (stubService) AuthenticateAdvertiser(_ context.Context, _, password string) (*models.Advertiser, error) {
+	if password == "bad" {
+		return nil, service.ErrInvalidCredentials
+	}
+	return &models.Advertiser{ID: 1, Email: "test@mail.com", Phone: "9000000000"}, nil
+}
+
+func (stubService) GetAdvertiserByID(_ context.Context, id int) (*models.Advertiser, error) {
+	if id != 1 {
+		return nil, sql.ErrNoRows
+	}
+	return &models.Advertiser{
+		ID:      1,
+		Name:    "Test",
+		Email:   "test@mail.com",
+		Phone:   "9000000000",
+		Balance: 100,
+	}, nil
+}
 
 func (stubService) CreateAd(context.Context, *models.Ad) (*models.Ad, error) {
 	return &models.Ad{}, nil
@@ -105,29 +134,69 @@ func newTestRouter(sm *session.Manager) *mux.Router {
 	return r
 }
 
-func TestRegister_NotImplemented(t *testing.T) {
+func TestRegister_OK(t *testing.T) {
 	sm := newTestSessionManager()
 	r := newTestRouter(sm)
 
-	body := `{"email":"a@a.test","phone":"+70000000000","password":"p"}`
+	body := `{"email":"a@a.test","phone":"+70000000000","password":"secret"}`
 	req := httptest.NewRequest(http.MethodPost, "/advertiser/register", bytes.NewBufferString(body))
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 
-	if rr.Code != http.StatusNotImplemented {
-		t.Fatalf("expected 501 got %d body=%s", rr.Code, rr.Body.String())
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected 200 got %d body=%s", rr.Code, rr.Body.String())
+	}
+	if rr.Result().Header.Get("Set-Cookie") == "" {
+		t.Fatalf("expected session cookie")
 	}
 }
 
-func TestLogin_NotImplemented(t *testing.T) {
+func TestLogin_UnauthorizedAndOK(t *testing.T) {
 	sm := newTestSessionManager()
 	r := newTestRouter(sm)
 
 	req := httptest.NewRequest(http.MethodPost, "/advertiser/login", bytes.NewBufferString(`{"identifier":"test@mail.com","password":"bad"}`))
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
-	if rr.Code != http.StatusNotImplemented {
-		t.Fatalf("expected 501 got %d body=%s", rr.Code, rr.Body.String())
+	if rr.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 got %d body=%s", rr.Code, rr.Body.String())
+	}
+
+	req2 := httptest.NewRequest(http.MethodPost, "/advertiser/login", bytes.NewBufferString(`{"identifier":"test@mail.com","password":"ok"}`))
+	rr2 := httptest.NewRecorder()
+	r.ServeHTTP(rr2, req2)
+	if rr2.Code != http.StatusOK {
+		t.Fatalf("expected 200 got %d body=%s", rr2.Code, rr2.Body.String())
+	}
+}
+
+func TestMe_UnauthorizedAndOK(t *testing.T) {
+	sm := newTestSessionManager()
+	r := newTestRouter(sm)
+
+	req := httptest.NewRequest(http.MethodGet, "/advertiser/me", nil)
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+	if rr.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 got %d body=%s", rr.Code, rr.Body.String())
+	}
+
+	createReq := httptest.NewRequest(http.MethodPost, "/", nil)
+	createRR := httptest.NewRecorder()
+	if err := sm.Create(createRR, createReq, 1); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	cookies := createRR.Result().Cookies()
+	if len(cookies) == 0 {
+		t.Fatalf("expected cookie")
+	}
+
+	req2 := httptest.NewRequest(http.MethodGet, "/advertiser/me", nil)
+	req2.AddCookie(cookies[0])
+	rr2 := httptest.NewRecorder()
+	r.ServeHTTP(rr2, req2)
+	if rr2.Code != http.StatusOK {
+		t.Fatalf("expected 200 got %d body=%s", rr2.Code, rr2.Body.String())
 	}
 }
 

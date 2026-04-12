@@ -31,6 +31,11 @@ const (
 	FROM eshkere.advertiser
 	WHERE email = $1`
 
+	selectAdvertiserByPhone = `SELECT
+	id, name, email, phone_number, password_hash, password_salt, balance, created_at, updated_at
+	FROM eshkere.advertiser
+	WHERE phone_number = $1`
+
 	updateAdvertiser = `UPDATE eshkere.advertiser SET 
     name = $1, email = $2, phone_number = $3, password_hash = $4, password_salt = $5, balance = $6
     WHERE id = $7`
@@ -99,6 +104,33 @@ func (r *AdvertiserRepository) GetByEmail(ctx context.Context, email string) (*m
 			return nil, fmt.Errorf("advertiser not found: %w", err)
 		}
 		return nil, fmt.Errorf("get advertiser by email: %w", err)
+	}
+
+	return &a, nil
+}
+
+func (r *AdvertiserRepository) GetByPhone(ctx context.Context, phone string) (*models.Advertiser, error) {
+	if phone == "" {
+		return nil, fmt.Errorf("phone cannot be empty")
+	}
+
+	var a models.Advertiser
+	err := r.db.QueryRowContext(ctx, selectAdvertiserByPhone, phone).Scan(
+		&a.ID,
+		&a.Name,
+		&a.Email,
+		&a.Phone,
+		&a.PasswordHash,
+		&a.PasswordSalt,
+		&a.Balance,
+		&a.CreatedAt,
+		&a.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("advertiser not found: %w", err)
+		}
+		return nil, fmt.Errorf("get advertiser by phone: %w", err)
 	}
 
 	return &a, nil

@@ -1,77 +1,55 @@
 package handlers
 
 import (
+	"context"
 	"eshkere/internal/handler/dto"
+	"eshkere/internal/models"
 	"eshkere/internal/session"
-	"sync"
 
 	"github.com/gorilla/mux"
 )
 
 type Service interface {
-	SaveLoginData()
-	// методы из сервисного слоя
+	RegisterAdvertiser(ctx context.Context, name, email, phone, password string) (*models.Advertiser, error)
+	AuthenticateAdvertiser(ctx context.Context, identifier, password string) (*models.Advertiser, error)
+	GetAdvertiserByID(ctx context.Context, id int) (*models.Advertiser, error)
+
+	CreateAd(ctx context.Context, ad *models.Ad) (*models.Ad, error)
+	UpdateAd(ctx context.Context, adID int, req dto.UpdateAdRequest) error
+	ListAds(ctx context.Context, groupID int) ([]*models.Ad, error)
+	DeleteAd(ctx context.Context, adID int) error
+
+	CreateAdCampaign(ctx context.Context, c *models.AdCampaign) (*models.AdCampaign, error)
+	UpdateAdCampaign(ctx context.Context, campaignID int, req dto.UpdateAdCampaignRequest) error
+	ListAdCampaigns(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
+	DeleteAdCampaign(ctx context.Context, campaignID int) error
+
+	CreateAdGroup(ctx context.Context, g *models.AdGroup) (*models.AdGroup, error)
+	UpdateAdGroup(ctx context.Context, groupID int, req dto.UpdateAdGroupRequest) error
+	ListAdGroups(ctx context.Context, campaignID int) ([]*models.AdGroup, error)
+	DeleteAdGroup(ctx context.Context, groupID int) error
 }
 
 type APIConfig struct {
-	Service        Service
 	SessionManager *session.Manager
+	Service        Service
 }
 
 type API struct {
-	service        Service
 	sessionManager *session.Manager
+	service        Service
 }
 
 func NewAPI(config APIConfig) *API {
 	return &API{
-		service:        config.Service,
 		sessionManager: config.SessionManager,
+		service:        config.Service,
 	}
 }
 
 func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterAdvertiserHandlers(r)
+	a.RegisterAdCampaignHandlers(r)
+	a.RegisterAdGroupHandlers(r)
 	a.RegisterAdsHandlers(r)
-	// другие хендлеры
 }
-
-type User struct {
-	ID       int
-	Email    string
-	Phone    string
-	Password string
-}
-
-var (
-	usersByEmail = make(map[string]*User)
-	usersByPhone = make(map[string]*User)
-	userMu       sync.RWMutex
-	lastID       = 0
-)
-
-func init() {
-	// Твой захардкоженный аккаунт
-	lastID++
-	u := &User{
-		ID:       lastID,
-		Email:    "test@mail.com",
-		Phone:    "+79991234567",
-		Password: "123123",
-	}
-	usersByEmail[u.Email] = u
-	usersByPhone[u.Phone] = u
-}
-
-var (
-	// Мапа: AdvertiserID -> Список его кампаний
-	mockAds = map[int][]dto.AdResponse{
-		1: {
-			{ID: 1, Title: "iPhone 14", Description: "В отличном состоянии", Price: 70000},
-			{ID: 2, Title: "MacBook Air M1", Description: "Для работы", Price: 85000},
-		},
-		2: {
-			{ID: 3, Title: "PlayStation 5", Description: "Почти новая", Price: 50000},
-		},
-	}
-)

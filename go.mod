@@ -3,10 +3,12 @@ module eshkere
 go 1.25.4
 
 require (
+	github.com/gomodule/redigo v1.9.3
 	github.com/gorilla/mux v1.8.1
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/joho/godotenv v1.5.1
 	github.com/swaggo/swag v1.16.6
+	golang.org/x/crypto v0.41.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

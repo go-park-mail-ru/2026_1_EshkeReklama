@@ -7,13 +7,11 @@ import (
 )
 
 type Success struct {
-	Status string      `json:"status"`
-	Data   interface{} `json:"data,omitempty"`
+	Data interface{} `json:"data,omitempty"`
 }
 
 type Error struct {
-	Status string `json:"status"`
-	Error  string `json:"error"`
+	Error string `json:"error"`
 }
 
 func DecodeJSON(r *http.Request, v interface{}) error {
@@ -33,8 +31,7 @@ func JSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.WriteHeader(statusCode)
 
 	_ = json.NewEncoder(w).Encode(Success{
-		Status: "ok",
-		Data:   data,
+		Data: data,
 	})
 }
 
@@ -43,8 +40,7 @@ func ErrorJSON(w http.ResponseWriter, statusCode int, message string) {
 	w.WriteHeader(statusCode)
 
 	_ = json.NewEncoder(w).Encode(Error{
-		Status: "error",
-		Error:  message,
+		Error: message,
 	})
 }
 
@@ -56,6 +52,14 @@ func Unauthorized(w http.ResponseWriter, message string) {
 	ErrorJSON(w, http.StatusUnauthorized, message)
 }
 
-func InternalError(w http.ResponseWriter) {
-	ErrorJSON(w, http.StatusInternalServerError, "internal server error")
+func NotFound(w http.ResponseWriter, message string) {
+	ErrorJSON(w, http.StatusNotFound, message)
+}
+
+func InternalError(w http.ResponseWriter, message string) {
+	ErrorJSON(w, http.StatusInternalServerError, message)
+}
+
+func NotImplemented(w http.ResponseWriter, message string) {
+	ErrorJSON(w, http.StatusNotImplemented, message)
 }

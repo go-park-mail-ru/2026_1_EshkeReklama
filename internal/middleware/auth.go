@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"eshkere/internal/session"
 	"eshkere/pkg/httpx"
 	"net/http"
@@ -12,7 +13,12 @@ func Auth(sm *session.Manager) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			sess, err := sm.Get(w, r)
 			if err != nil {
-				httpx.Unauthorized(w, "unauthorized")
+				if errors.Is(err, session.ErrSessionNotFound) {
+					httpx.Unauthorized(w, "unauthorized")
+					return
+				}
+
+				httpx.InternalError(w, "internal error")
 				return
 			}
 

@@ -3,8 +3,10 @@ package app
 import (
 	"context"
 	"eshkere/internal/config"
-	"eshkere/internal/handler"
+	handlers "eshkere/internal/handler"
 	"eshkere/internal/middleware"
+	"eshkere/internal/repository/postgres"
+	"eshkere/internal/service"
 	"eshkere/internal/session"
 	"fmt"
 	"io"
@@ -13,16 +15,15 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/gorilla/mux"
 )
 
 type App struct {
 	cfg            *config.Config
-	sessionManager *session.Manager
 	closers        []io.Closer
-	// TODO: closers []io.Closer
+	service        *service.Service
+	sessionManager *session.Manager
 }
 
 func New(configPath string) *App {
@@ -40,21 +41,58 @@ func New(configPath string) *App {
 
 	closers = append([]io.Closer{db}, closers...)
 
-	sessionManager := session.NewManager()
-	sessionManager.StartCleanup(5 * time.Minute)
+	advertiserRepo := postgres.NewAdvertiserRepository(db)
+	addGroupRepo := postgres.NewAdGroupRepository(db)
+	addRepo := postgres.NewAdRepository(db)
+	adCampaignRepo := postgres.NewAdCampaignRepository(db)
+
+	svc, err := service.NewService(&service.Config{
+		AdvertiserRepo:  advertiserRepo,
+		PartnerRepo:     nil,
+		PartnerSiteRepo: nil,
+		AdCampaignRepo:  adCampaignRepo,
+		AdGroupRepo:     addGroupRepo,
+		AdRepo:          addRepo,
+		AdActionRepo:    nil,
+		TopicRepo:       nil,
+		RegionRepo:      nil,
+	})
+	if err != nil {
+		log.Fatalf("Failed to init service: %v", err)
+	}
+
+	redisPool, err := initRedis(cfg.Redis)
+	if err != nil {
+		log.Fatalf("Failed to init redis: %v", err)
+	}
+
+	closers = append(closers, redisPool)
+
+	sessionStore := session.NewRedisStore(redisPool)
+	sessionManager := session.NewManager(
+		sessionStore,
+		cfg.Session.TTL,
+		session.CookieConfig{
+			Name:     cfg.Session.CookieName,
+			Path:     cfg.Session.CookiePath,
+			HTTPOnly: true,
+			Secure:   cfg.Session.CookieSecure,
+			SameSite: http.SameSiteLaxMode,
+		},
+	)
 
 	return &App{
 		cfg:            cfg,
 		closers:        closers,
+		service:        svc,
 		sessionManager: sessionManager,
 	}
 }
 
 func (a *App) Run() error {
 	router := mux.NewRouter().StrictSlash(true)
-
 	handlers.Register(router, handlers.NewAPI(handlers.APIConfig{
-		// Service: svc,
+		Service:        a.service,
 		SessionManager: a.sessionManager,
 	}))
 

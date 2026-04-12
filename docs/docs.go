@@ -15,30 +15,708 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/ads": {
+        "/ad_campaigns": {
             "get": {
                 "security": [
                     {
                         "CookieAuth": []
                     }
                 ],
-                "description": "Возвращает список всех кампаний текущего рекламодателя",
+                "description": "Кампании рекламодателя из сессии",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "ads"
+                    "ad_campaigns"
                 ],
                 "summary": "Список рекламных кампаний",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal.ListAdsResponse"
+                            "$ref": "#/definitions/dto.ListAdCampaignsResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Создаёт кампанию; рекламодатель определяется по сессии",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ad_campaigns"
+                ],
+                "summary": "Создание рекламной кампании",
+                "parameters": [
+                    {
+                        "description": "Параметры кампании",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateAdCampaignRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateAdCampaignResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/ad_campaigns/{ad_campaign_id}": {
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Частичное обновление полей кампании",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ad_campaigns"
+                ],
+                "summary": "Обновление рекламной кампании",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID кампании",
+                        "name": "ad_campaign_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Поля для обновления",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateAdCampaignRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ad_campaigns"
+                ],
+                "summary": "Удаление рекламной кампании",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID кампании",
+                        "name": "ad_campaign_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/ad_campaigns/{ad_campaign_id}/ad_groups": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ad_groups"
+                ],
+                "summary": "Список групп объявлений",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID рекламной кампании",
+                        "name": "ad_campaign_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ListAdGroupsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ad_groups"
+                ],
+                "summary": "Создание группы объявлений",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID рекламной кампании",
+                        "name": "ad_campaign_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Параметры группы",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateAdGroupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateAdGroupResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}": {
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ad_groups"
+                ],
+                "summary": "Обновление группы объявлений",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID рекламной кампании",
+                        "name": "ad_campaign_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID группы",
+                        "name": "ad_group_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Поля для обновления",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateAdGroupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ad_groups"
+                ],
+                "summary": "Удаление группы объявлений",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID рекламной кампании",
+                        "name": "ad_campaign_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID группы",
+                        "name": "ad_group_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ads"
+                ],
+                "summary": "Список объявлений группы",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID рекламной кампании",
+                        "name": "ad_campaign_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID группы объявлений",
+                        "name": "ad_group_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ListAdsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ads"
+                ],
+                "summary": "Создание объявления",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID рекламной кампании",
+                        "name": "ad_campaign_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID группы объявлений",
+                        "name": "ad_group_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Параметры объявления",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateAdRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateAdResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}": {
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ads"
+                ],
+                "summary": "Обновление объявления",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID рекламной кампании",
+                        "name": "ad_campaign_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID группы объявлений",
+                        "name": "ad_group_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID объявления",
+                        "name": "ad_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Поля для обновления",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateAdRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ads"
+                ],
+                "summary": "Удаление объявления",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID рекламной кампании",
+                        "name": "ad_campaign_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID группы объявлений",
+                        "name": "ad_group_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID объявления",
+                        "name": "ad_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/httpx.Error"
                         }
@@ -66,7 +744,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal.LoginRequest"
+                            "$ref": "#/definitions/dto.LoginRequest"
                         }
                     }
                 ],
@@ -74,11 +752,23 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal.LoginResponse"
+                            "$ref": "#/definitions/dto.LoginResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid identifier или password",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Неверные учётные данные",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/httpx.Error"
                         }
@@ -88,11 +778,6 @@ const docTemplate = `{
         },
         "/advertiser/logout": {
             "post": {
-                "security": [
-                    {
-                        "CookieAuth": []
-                    }
-                ],
                 "description": "Завершает сессию текущего рекламодателя",
                 "produces": [
                     "application/json"
@@ -109,6 +794,55 @@ const docTemplate = `{
                             "additionalProperties": {
                                 "type": "string"
                             }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/advertiser/me": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Возвращает данные текущего пользователя по сессии",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "advertiser"
+                ],
+                "summary": "Профиль рекламодателя",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AdvertiserProfileResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
                         }
                     }
                 }
@@ -134,7 +868,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal.RegisterRequest"
+                            "$ref": "#/definitions/dto.RegisterRequest"
                         }
                     }
                 ],
@@ -142,11 +876,17 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal.RegisterResponse"
+                            "$ref": "#/definitions/dto.RegisterResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid request или User already exists",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/httpx.Error"
                         }
@@ -156,27 +896,65 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "httpx.Error": {
+        "dto.AdCampaignResponse": {
             "type": "object",
             "properties": {
-                "error": {
+                "daily_budget": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
                     "type": "string"
                 },
                 "status": {
-                    "type": "string"
+                    "$ref": "#/definitions/models.AdStatus"
                 }
             }
         },
-        "internal.AdResponse": {
+        "dto.AdGroupResponse": {
+            "type": "object",
+            "properties": {
+                "age_from": {
+                    "type": "integer"
+                },
+                "age_to": {
+                    "type": "integer"
+                },
+                "gender": {
+                    "$ref": "#/definitions/models.GenderType"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "region_id": {
+                    "type": "integer"
+                },
+                "topic_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.AdResponse": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "integer"
                 },
-                "price": {
-                    "type": "integer"
+                "image_url": {
+                    "type": "string"
                 },
-                "target_action": {
+                "short_desc": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.AdStatus"
+                },
+                "target_url": {
                     "type": "string"
                 },
                 "title": {
@@ -184,21 +962,165 @@ const docTemplate = `{
                 }
             }
         },
-        "internal.ListAdsResponse": {
+        "dto.AdvertiserProfileResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateAdCampaignRequest": {
+            "type": "object",
+            "required": [
+                "daily_budget",
+                "name"
+            ],
+            "properties": {
+                "daily_budget": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateAdCampaignResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.CreateAdGroupRequest": {
+            "type": "object",
+            "required": [
+                "age_from",
+                "age_to",
+                "gender",
+                "name",
+                "region_id",
+                "topic_id"
+            ],
+            "properties": {
+                "age_from": {
+                    "type": "integer"
+                },
+                "age_to": {
+                    "type": "integer"
+                },
+                "gender": {
+                    "$ref": "#/definitions/models.GenderType"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "region_id": {
+                    "type": "integer"
+                },
+                "topic_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.CreateAdGroupResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.CreateAdRequest": {
+            "type": "object",
+            "required": [
+                "image_url",
+                "short_desc",
+                "target_url",
+                "title"
+            ],
+            "properties": {
+                "image_url": {
+                    "type": "string"
+                },
+                "short_desc": {
+                    "type": "string"
+                },
+                "target_url": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateAdResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.ListAdCampaignsResponse": {
+            "type": "object",
+            "properties": {
+                "advertiser_id": {
+                    "type": "integer"
+                },
+                "campaigns": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.AdCampaignResponse"
+                    }
+                }
+            }
+        },
+        "dto.ListAdGroupsResponse": {
+            "type": "object",
+            "properties": {
+                "ad_campaign_id": {
+                    "type": "integer"
+                },
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.AdGroupResponse"
+                    }
+                }
+            }
+        },
+        "dto.ListAdsResponse": {
             "type": "object",
             "properties": {
                 "ads": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/internal.AdResponse"
+                        "$ref": "#/definitions/dto.AdResponse"
                     }
                 },
-                "advertiser_id": {
+                "group_id": {
                     "type": "integer"
                 }
             }
         },
-        "internal.LoginRequest": {
+        "dto.LoginRequest": {
             "type": "object",
             "properties": {
                 "identifier": {
@@ -209,7 +1131,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal.LoginResponse": {
+        "dto.LoginResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -223,10 +1145,13 @@ const docTemplate = `{
                 }
             }
         },
-        "internal.RegisterRequest": {
+        "dto.RegisterRequest": {
             "type": "object",
             "properties": {
                 "email": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "password": {
@@ -237,7 +1162,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal.RegisterResponse": {
+        "dto.RegisterResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -250,13 +1175,117 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "dto.UpdateAdCampaignRequest": {
+            "type": "object",
+            "properties": {
+                "daily_budget": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.AdStatus"
+                }
+            }
+        },
+        "dto.UpdateAdGroupRequest": {
+            "type": "object",
+            "properties": {
+                "age_from": {
+                    "type": "integer"
+                },
+                "age_to": {
+                    "type": "integer"
+                },
+                "gender": {
+                    "$ref": "#/definitions/models.GenderType"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "region_id": {
+                    "type": "integer"
+                },
+                "topic_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.UpdateAdRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "short_desc": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.AdStatus"
+                },
+                "target_url": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "httpx.Error": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "httpx.Success": {
+            "type": "object",
+            "properties": {
+                "data": {}
+            }
+        },
+        "models.AdStatus": {
+            "type": "string",
+            "enum": [
+                "turned_off",
+                "moderation",
+                "working",
+                "rejected",
+                "not_enough_money"
+            ],
+            "x-enum-varnames": [
+                "AdStatusTurnedOff",
+                "AdStatusModeration",
+                "AdStatusWorking",
+                "AdStatusRejected",
+                "AdStatusNotEnoughMoney"
+            ]
+        },
+        "models.GenderType": {
+            "type": "string",
+            "enum": [
+                "man",
+                "woman",
+                "any"
+            ],
+            "x-enum-varnames": [
+                "GenderMan",
+                "GenderWoman",
+                "GenderAny"
+            ]
         }
     },
     "securityDefinitions": {
         "CookieAuth": {
             "type": "apiKey",
             "name": "session_id",
-            "in": "header"
+            "in": "cookie"
         }
     }
 }`

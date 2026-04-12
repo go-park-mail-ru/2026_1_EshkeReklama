@@ -12,7 +12,7 @@ erDiagram
 		string phone_number  ""
 		string password_hash  ""
 		string password_salt  ""
-		float balance  ""
+		bigint balance  ""
 		date created_at  ""
 		date updated_at  ""
 	}
@@ -20,9 +20,9 @@ erDiagram
 	ad_campaign {
 		int id PK ""
 		int advertiser_id FK ""
-		int status_id FK ""
+		string status  ""
 		string name  ""
-		float daily_budget  ""
+		bigint daily_budget  ""
 		date created_at  ""
 		date updated_at  ""
 	}
@@ -43,9 +43,10 @@ erDiagram
 	ad {
 		int id PK ""
 		int ad_group_id FK ""
-		int status_id FK ""
+		string status  ""
 		string title  ""
 		string short_desc  ""
+		string image_url  ""
 		string target_url  ""
 		date created_at  ""
 		date updated_at  ""
@@ -69,7 +70,7 @@ erDiagram
 		string phone_number  ""
 		string password_hash  ""
 		string password_salt  ""
-		float balance  ""
+		bigint balance  ""
 		date created_at  ""
 		date updated_at  ""
 	}

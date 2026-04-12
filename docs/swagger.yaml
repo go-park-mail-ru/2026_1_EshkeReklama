@@ -1,40 +1,161 @@
 basePath: /
 definitions:
-  httpx.Error:
+  dto.AdCampaignResponse:
     properties:
-      error:
+      daily_budget:
+        type: integer
+      id:
+        type: integer
+      name:
         type: string
       status:
-        type: string
+        $ref: '#/definitions/models.AdStatus'
     type: object
-  internal.AdResponse:
+  dto.AdGroupResponse:
+    properties:
+      age_from:
+        type: integer
+      age_to:
+        type: integer
+      gender:
+        $ref: '#/definitions/models.GenderType'
+      id:
+        type: integer
+      name:
+        type: string
+      region_id:
+        type: integer
+      topic_id:
+        type: integer
+    type: object
+  dto.AdResponse:
     properties:
       id:
         type: integer
-      price:
-        type: integer
-      target_action:
+      image_url:
+        type: string
+      short_desc:
+        type: string
+      status:
+        $ref: '#/definitions/models.AdStatus'
+      target_url:
         type: string
       title:
         type: string
     type: object
-  internal.ListAdsResponse:
+  dto.AdvertiserProfileResponse:
+    properties:
+      balance:
+        type: integer
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      phone:
+        type: string
+    type: object
+  dto.CreateAdCampaignRequest:
+    properties:
+      daily_budget:
+        type: integer
+      name:
+        type: string
+    required:
+    - daily_budget
+    - name
+    type: object
+  dto.CreateAdCampaignResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.CreateAdGroupRequest:
+    properties:
+      age_from:
+        type: integer
+      age_to:
+        type: integer
+      gender:
+        $ref: '#/definitions/models.GenderType'
+      name:
+        type: string
+      region_id:
+        type: integer
+      topic_id:
+        type: integer
+    required:
+    - age_from
+    - age_to
+    - gender
+    - name
+    - region_id
+    - topic_id
+    type: object
+  dto.CreateAdGroupResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.CreateAdRequest:
+    properties:
+      image_url:
+        type: string
+      short_desc:
+        type: string
+      target_url:
+        type: string
+      title:
+        type: string
+    required:
+    - image_url
+    - short_desc
+    - target_url
+    - title
+    type: object
+  dto.CreateAdResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.ListAdCampaignsResponse:
+    properties:
+      advertiser_id:
+        type: integer
+      campaigns:
+        items:
+          $ref: '#/definitions/dto.AdCampaignResponse'
+        type: array
+    type: object
+  dto.ListAdGroupsResponse:
+    properties:
+      ad_campaign_id:
+        type: integer
+      groups:
+        items:
+          $ref: '#/definitions/dto.AdGroupResponse'
+        type: array
+    type: object
+  dto.ListAdsResponse:
     properties:
       ads:
         items:
-          $ref: '#/definitions/internal.AdResponse'
+          $ref: '#/definitions/dto.AdResponse'
         type: array
-      advertiser_id:
+      group_id:
         type: integer
     type: object
-  internal.LoginRequest:
+  dto.LoginRequest:
     properties:
       identifier:
         type: string
       password:
         type: string
     type: object
-  internal.LoginResponse:
+  dto.LoginResponse:
     properties:
       email:
         type: string
@@ -43,16 +164,18 @@ definitions:
       phone:
         type: string
     type: object
-  internal.RegisterRequest:
+  dto.RegisterRequest:
     properties:
       email:
+        type: string
+      name:
         type: string
       password:
         type: string
       phone:
         type: string
     type: object
-  internal.RegisterResponse:
+  dto.RegisterResponse:
     properties:
       email:
         type: string
@@ -61,6 +184,78 @@ definitions:
       phone:
         type: string
     type: object
+  dto.UpdateAdCampaignRequest:
+    properties:
+      daily_budget:
+        type: integer
+      name:
+        type: string
+      status:
+        $ref: '#/definitions/models.AdStatus'
+    type: object
+  dto.UpdateAdGroupRequest:
+    properties:
+      age_from:
+        type: integer
+      age_to:
+        type: integer
+      gender:
+        $ref: '#/definitions/models.GenderType'
+      name:
+        type: string
+      region_id:
+        type: integer
+      topic_id:
+        type: integer
+    type: object
+  dto.UpdateAdRequest:
+    properties:
+      id:
+        type: integer
+      image_url:
+        type: string
+      short_desc:
+        type: string
+      status:
+        $ref: '#/definitions/models.AdStatus'
+      target_url:
+        type: string
+      title:
+        type: string
+    type: object
+  httpx.Error:
+    properties:
+      error:
+        type: string
+    type: object
+  httpx.Success:
+    properties:
+      data: {}
+    type: object
+  models.AdStatus:
+    enum:
+    - turned_off
+    - moderation
+    - working
+    - rejected
+    - not_enough_money
+    type: string
+    x-enum-varnames:
+    - AdStatusTurnedOff
+    - AdStatusModeration
+    - AdStatusWorking
+    - AdStatusRejected
+    - AdStatusNotEnoughMoney
+  models.GenderType:
+    enum:
+    - man
+    - woman
+    - any
+    type: string
+    x-enum-varnames:
+    - GenderMan
+    - GenderWoman
+    - GenderAny
 host: localhost:8000
 info:
   contact: {}
@@ -68,56 +263,499 @@ info:
   title: Eshke Reklama API
   version: "1.0"
 paths:
-  /ads:
+  /ad_campaigns:
     get:
-      description: Возвращает список всех кампаний текущего рекламодателя
+      description: Кампании рекламодателя из сессии
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal.ListAdsResponse'
+            $ref: '#/definitions/dto.ListAdCampaignsResponse'
         "401":
           description: Unauthorized
           schema:
             $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
       security:
-        - CookieAuth: []
+      - CookieAuth: []
       summary: Список рекламных кампаний
       tags:
-        - ads
-  /advertiser/login:
+      - ad_campaigns
     post:
       consumes:
-        - application/json
-      description: Аутентифицирует рекламодателя по email или телефону и паролю
+      - application/json
+      description: Создаёт кампанию; рекламодатель определяется по сессии
       parameters:
-        - description: Данные для входа
-          in: body
-          name: input
-          required: true
-          schema:
-            $ref: '#/definitions/internal.LoginRequest'
+      - description: Параметры кампании
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAdCampaignRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal.LoginResponse'
+            $ref: '#/definitions/dto.CreateAdCampaignResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Создание рекламной кампании
+      tags:
+      - ad_campaigns
+  /ad_campaigns/{ad_campaign_id}:
+    delete:
+      parameters:
+      - description: ID кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Удаление рекламной кампании
+      tags:
+      - ad_campaigns
+    put:
+      consumes:
+      - application/json
+      description: Частичное обновление полей кампании
+      parameters:
+      - description: ID кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: Поля для обновления
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAdCampaignRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление рекламной кампании
+      tags:
+      - ad_campaigns
+  /ad_campaigns/{ad_campaign_id}/ad_groups:
+    get:
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListAdGroupsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Список групп объявлений
+      tags:
+      - ad_groups
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: Параметры группы
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAdGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CreateAdGroupResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Создание группы объявлений
+      tags:
+      - ad_groups
+  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}:
+    delete:
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Удаление группы объявлений
+      tags:
+      - ad_groups
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      - description: Поля для обновления
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAdGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление группы объявлений
+      tags:
+      - ad_groups
+  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads:
+    get:
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы объявлений
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListAdsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Список объявлений группы
+      tags:
+      - ads
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы объявлений
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      - description: Параметры объявления
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CreateAdResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Создание объявления
+      tags:
+      - ads
+  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}:
+    delete:
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы объявлений
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      - description: ID объявления
+        in: path
+        name: ad_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Удаление объявления
+      tags:
+      - ads
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы объявлений
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      - description: ID объявления
+        in: path
+        name: ad_id
+        required: true
+        type: integer
+      - description: Поля для обновления
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление объявления
+      tags:
+      - ads
+  /advertiser/login:
+    post:
+      consumes:
+      - application/json
+      description: Аутентифицирует рекламодателя по email или телефону и паролю
+      parameters:
+      - description: Данные для входа
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.LoginResponse'
         "400":
           description: Invalid identifier или password
           schema:
             $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Неверные учётные данные
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
       summary: Вход рекламодателя
       tags:
-        - advertiser
+      - advertiser
   /advertiser/logout:
     post:
       description: Завершает сессию текущего рекламодателя
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
@@ -125,32 +763,65 @@ paths:
             additionalProperties:
               type: string
             type: object
-      security:
-        - CookieAuth: []
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
       summary: Выход рекламодателя
       tags:
-        - advertiser
-  /advertiser/register:
-    post:
-      consumes:
-        - application/json
-      description: Создает новый аккаунт и открывает сессию
-      parameters:
-        - description: Данные для регистрации
-          in: body
-          name: input
-          required: true
-          schema:
-            $ref: '#/definitions/internal.RegisterRequest'
+      - advertiser
+  /advertiser/me:
+    get:
+      description: Возвращает данные текущего пользователя по сессии
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal.RegisterResponse'
+            $ref: '#/definitions/dto.AdvertiserProfileResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Профиль рекламодателя
+      tags:
+      - advertiser
+  /advertiser/register:
+    post:
+      consumes:
+      - application/json
+      description: Создает новый аккаунт и открывает сессию
+      parameters:
+      - description: Данные для регистрации
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RegisterResponse'
         "400":
           description: Invalid request или User already exists
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/httpx.Error'
       summary: Регистрация рекламодателя
@@ -158,7 +829,7 @@ paths:
       - advertiser
 securityDefinitions:
   CookieAuth:
-    in: header
+    in: cookie
     name: session_id
     type: apiKey
 swagger: "2.0"

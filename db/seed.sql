@@ -6,17 +6,19 @@ INSERT INTO eshkere.topic (name) VALUES ('Авто'), ('IT и Технологи
 INSERT INTO eshkere.region (name) VALUES ('Москва'), ('Санкт-Петербург'), ('Новосибирск'), ('Казань');
 
 -- 2. Рекламодатели (Advertisers)
+-- Баланс хранится в копейках (BIGINT)
 INSERT INTO eshkere.advertiser (name, email, phone_number, password_hash, password_salt, balance)
 VALUES
-    ('ООО Ромашка', 'info@romashka.ru', '9001112233', 'hash123', 'salt123', 50000.00),
-    ('ИП ТехноМир', 'ads@techno.io', '9998887766', 'hash456', 'salt456', 1500.50);
+    ('ООО Ромашка', 'info@romashka.ru', '9001112233', 'hash123', 'salt123', 5000000),
+    ('ИП ТехноМир', 'ads@techno.io', '9998887766', 'hash456', 'salt456', 150050);
 
 -- 3. Рекламные кампании (Ad Campaigns)
+-- Бюджет хранится в копейках (BIGINT)
 INSERT INTO eshkere.ad_campaign (advertiser_id, name, daily_budget, status)
 VALUES
-    (1, 'Распродажа тюльпанов', 1000.00, 'working'),
-    (1, 'Осенняя акция', 500.00, 'turned_off'),
-    (2, 'Продвижение курсов Go', 2000.00, 'working');
+    (1, 'Распродажа тюльпанов', 100000, 'working'),
+    (1, 'Осенняя акция', 50000, 'turned_off'),
+    (2, 'Продвижение курсов Go', 200000, 'working');
 
 -- 4. Группы объявлений с таргетингом (Ad Groups)
 -- Предполагаем: 1 - any, 2 - Авто, 3 - IT, 4 - Красота / 1 - any, 2 - Мск
@@ -34,7 +36,7 @@ VALUES
 
 -- 6. Партнеры и их площадки (Partners & Sites)
 INSERT INTO eshkere.partner (name, email, phone_number, password_hash, password_salt, balance)
-VALUES ('Сергей Владелец Блога', 'sergey@blog.ru', '9115554422', 'hash789', 'salt789', 0.00);
+VALUES ('Сергей Владелец Блога', 'sergey@blog.ru', '9115554422', 'hash789', 'salt789', 0);
 
 INSERT INTO eshkere.partner_site (partner_id, topic_id, region_id, age_from, age_to, gender, url)
 VALUES (1, 3, 1, 18, 60, 'any', 'https://it-news-portal.ru');

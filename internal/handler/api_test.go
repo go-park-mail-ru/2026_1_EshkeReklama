@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -11,99 +10,14 @@ import (
 	"time"
 
 	"eshkere/internal/handler/dto"
+	"eshkere/internal/middleware"
 	"eshkere/internal/models"
 	"eshkere/internal/service"
 	"eshkere/internal/session"
 
 	"github.com/gorilla/mux"
+	"go.uber.org/mock/gomock"
 )
-
-type stubService struct{}
-
-func (stubService) RegisterAdvertiser(_ context.Context, _, email, phone, password string) (*models.Advertiser, error) {
-	if email == "" || password == "" {
-		return nil, service.ErrInvalidAdvertiserArg
-	}
-	return &models.Advertiser{ID: 99, Name: "u", Email: email, Phone: phone}, nil
-}
-
-func (stubService) AuthenticateAdvertiser(_ context.Context, _, password string) (*models.Advertiser, error) {
-	if password == "bad" {
-		return nil, service.ErrInvalidCredentials
-	}
-	return &models.Advertiser{ID: 1, Email: "test@mail.com", Phone: "9000000000"}, nil
-}
-
-func (stubService) GetAdvertiserByID(_ context.Context, id int) (*models.Advertiser, error) {
-	if id != 1 {
-		return nil, sql.ErrNoRows
-	}
-	return &models.Advertiser{
-		ID:      1,
-		Name:    "Test",
-		Email:   "test@mail.com",
-		Phone:   "9000000000",
-		Balance: 100,
-	}, nil
-}
-
-func (stubService) TopUpAdvertiserBalance(_ context.Context, id int, amount int64) (int64, error) {
-	if id <= 0 || amount <= 0 {
-		return 0, service.ErrInvalidAdvertiserArg
-	}
-	return 100 + amount, nil
-}
-
-func (stubService) UpdateAdvertiserProfile(_ context.Context, id int, name, email, phone string, avatar []byte, avatarFilename, avatarContentType string) (*models.Advertiser, error) {
-	return &models.Advertiser{
-		ID:    id,
-		Name:  name,
-		Email: email,
-		Phone: phone,
-	}, nil
-}
-
-func (stubService) GenerateFeedLink(_ context.Context, advertiserID int) (string, error) {
-	return "feed-token", nil
-}
-
-func (stubService) GetAdsByFeedToken(_ context.Context, token string) ([]*models.Ad, error) {
-	return []*models.Ad{}, nil
-}
-
-func (stubService) CreateAd(context.Context, *models.Ad) (*models.Ad, error) {
-	return &models.Ad{}, nil
-}
-
-func (stubService) UpdateAd(context.Context, int, dto.UpdateAdRequest) error { return nil }
-
-func (stubService) ListAds(context.Context, int) ([]*models.Ad, error) { return nil, nil }
-
-func (stubService) DeleteAd(context.Context, int) error { return nil }
-
-func (stubService) CreateAdCampaign(context.Context, *models.AdCampaign) (*models.AdCampaign, error) {
-	return &models.AdCampaign{}, nil
-}
-
-func (stubService) UpdateAdCampaign(context.Context, int, dto.UpdateAdCampaignRequest) error {
-	return nil
-}
-
-func (stubService) ListAdCampaigns(context.Context, int) ([]*models.AdCampaign, error) {
-	return nil, nil
-}
-
-func (stubService) DeleteAdCampaign(context.Context, int) error { return nil }
-
-func (stubService) CreateAdGroup(context.Context, *models.AdGroup) (*models.AdGroup, error) {
-	return &models.AdGroup{}, nil
-}
-
-func (stubService) UpdateAdGroup(context.Context, int, dto.UpdateAdGroupRequest) error { return nil }
-
-func (stubService) ListAdGroups(context.Context, int) ([]*models.AdGroup, error) { return nil, nil }
-
-func (stubService) DeleteAdGroup(context.Context, int) error { return nil }
 
 const testCookieName = "session_id"
 
@@ -149,21 +63,53 @@ func newTestSessionManager() *session.Manager {
 	)
 }
 
-func newTestRouter(sm *session.Manager) *mux.Router {
+func newTestRouter(sm *session.Manager, svc Service) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
+	r.Use(middleware.CSRF(middleware.CSRFConfig{
+		CookieName: "csrf_token",
+		HeaderName: "X-CSRF-Token",
+	}))
+	r.HandleFunc("/__ping", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}).Methods(http.MethodGet)
 	Register(r, NewAPI(APIConfig{
 		SessionManager: sm,
-		Service:        stubService{},
+		Service:        svc,
 	}))
 	return r
 }
 
+func getCSRF(t *testing.T, r *mux.Router) *http.Cookie {
+	t.Helper()
+	req := httptest.NewRequest(http.MethodGet, "/__ping", nil)
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+	for _, c := range rr.Result().Cookies() {
+		if c.Name == "csrf_token" && c.Value != "" {
+			return c
+		}
+	}
+	t.Fatalf("csrf_token cookie not set")
+	return nil
+}
+
 func TestRegister_OK(t *testing.T) {
 	sm := newTestSessionManager()
-	r := newTestRouter(sm)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	svc := NewMockService(ctrl)
+	r := newTestRouter(sm, svc)
+
+	csrf := getCSRF(t, r)
+
+	svc.EXPECT().
+		RegisterAdvertiser(gomock.Any(), gomock.Any(), "a@a.test", "+70000000000", "secret").
+		Return(&models.Advertiser{ID: 99, Email: "a@a.test", Phone: "+70000000000"}, nil)
 
 	body := `{"email":"a@a.test","phone":"+70000000000","password":"secret"}`
 	req := httptest.NewRequest(http.MethodPost, "/advertiser/register", bytes.NewBufferString(body))
+	req.AddCookie(csrf)
+	req.Header.Set("X-CSRF-Token", csrf.Value)
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 
@@ -177,9 +123,23 @@ func TestRegister_OK(t *testing.T) {
 
 func TestLogin_UnauthorizedAndOK(t *testing.T) {
 	sm := newTestSessionManager()
-	r := newTestRouter(sm)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	svc := NewMockService(ctrl)
+	r := newTestRouter(sm, svc)
+
+	csrf := getCSRF(t, r)
+
+	svc.EXPECT().
+		AuthenticateAdvertiser(gomock.Any(), "test@mail.com", "bad").
+		Return(nil, service.ErrInvalidCredentials)
+	svc.EXPECT().
+		AuthenticateAdvertiser(gomock.Any(), "test@mail.com", "ok").
+		Return(&models.Advertiser{ID: 1, Email: "test@mail.com", Phone: "9000000000"}, nil)
 
 	req := httptest.NewRequest(http.MethodPost, "/advertiser/login", bytes.NewBufferString(`{"identifier":"test@mail.com","password":"bad"}`))
+	req.AddCookie(csrf)
+	req.Header.Set("X-CSRF-Token", csrf.Value)
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 	if rr.Code != http.StatusUnauthorized {
@@ -187,6 +147,8 @@ func TestLogin_UnauthorizedAndOK(t *testing.T) {
 	}
 
 	req2 := httptest.NewRequest(http.MethodPost, "/advertiser/login", bytes.NewBufferString(`{"identifier":"test@mail.com","password":"ok"}`))
+	req2.AddCookie(csrf)
+	req2.Header.Set("X-CSRF-Token", csrf.Value)
 	rr2 := httptest.NewRecorder()
 	r.ServeHTTP(rr2, req2)
 	if rr2.Code != http.StatusOK {
@@ -196,7 +158,22 @@ func TestLogin_UnauthorizedAndOK(t *testing.T) {
 
 func TestMe_UnauthorizedAndOK(t *testing.T) {
 	sm := newTestSessionManager()
-	r := newTestRouter(sm)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	svc := NewMockService(ctrl)
+	r := newTestRouter(sm, svc)
+
+	csrf := getCSRF(t, r)
+
+	svc.EXPECT().
+		GetAdvertiserByID(gomock.Any(), 1).
+		Return(&models.Advertiser{
+			ID:      1,
+			Name:    "Test",
+			Email:   "test@mail.com",
+			Phone:   "9000000000",
+			Balance: 100,
+		}, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/advertiser/me", nil)
 	rr := httptest.NewRecorder()
@@ -217,6 +194,7 @@ func TestMe_UnauthorizedAndOK(t *testing.T) {
 
 	req2 := httptest.NewRequest(http.MethodGet, "/advertiser/me", nil)
 	req2.AddCookie(cookies[0])
+	req2.AddCookie(csrf)
 	rr2 := httptest.NewRecorder()
 	r.ServeHTTP(rr2, req2)
 	if rr2.Code != http.StatusOK {
@@ -226,9 +204,16 @@ func TestMe_UnauthorizedAndOK(t *testing.T) {
 
 func TestLogout_AlwaysOK(t *testing.T) {
 	sm := newTestSessionManager()
-	r := newTestRouter(sm)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	svc := NewMockService(ctrl)
+	r := newTestRouter(sm, svc)
+
+	csrf := getCSRF(t, r)
 
 	req := httptest.NewRequest(http.MethodPost, "/advertiser/logout", nil)
+	req.AddCookie(csrf)
+	req.Header.Set("X-CSRF-Token", csrf.Value)
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 
@@ -239,7 +224,19 @@ func TestLogout_AlwaysOK(t *testing.T) {
 
 func TestBalance_GetAndTopUp(t *testing.T) {
 	sm := newTestSessionManager()
-	r := newTestRouter(sm)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	svc := NewMockService(ctrl)
+	r := newTestRouter(sm, svc)
+
+	csrf := getCSRF(t, r)
+
+	svc.EXPECT().
+		GetAdvertiserByID(gomock.Any(), 1).
+		Return(&models.Advertiser{ID: 1, Balance: 100}, nil)
+	svc.EXPECT().
+		TopUpAdvertiserBalance(gomock.Any(), 1, int64(150)).
+		Return(int64(250), nil)
 
 	createReq := httptest.NewRequest(http.MethodPost, "/", nil)
 	createRR := httptest.NewRecorder()
@@ -254,6 +251,7 @@ func TestBalance_GetAndTopUp(t *testing.T) {
 
 	getReq := httptest.NewRequest(http.MethodGet, "/advertiser/balance", nil)
 	getReq.AddCookie(cookies[0])
+	getReq.AddCookie(csrf)
 	getRR := httptest.NewRecorder()
 	r.ServeHTTP(getRR, getReq)
 	if getRR.Code != http.StatusOK {
@@ -262,6 +260,8 @@ func TestBalance_GetAndTopUp(t *testing.T) {
 
 	topupReq := httptest.NewRequest(http.MethodPost, "/advertiser/balance/topup", bytes.NewBufferString(`{"amount":150}`))
 	topupReq.AddCookie(cookies[0])
+	topupReq.AddCookie(csrf)
+	topupReq.Header.Set("X-CSRF-Token", csrf.Value)
 	topupRR := httptest.NewRecorder()
 	r.ServeHTTP(topupRR, topupReq)
 	if topupRR.Code != http.StatusOK {
@@ -271,7 +271,16 @@ func TestBalance_GetAndTopUp(t *testing.T) {
 
 func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
 	sm := newTestSessionManager()
-	r := newTestRouter(sm)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	svc := NewMockService(ctrl)
+	r := newTestRouter(sm, svc)
+
+	csrf := getCSRF(t, r)
+
+	svc.EXPECT().
+		ListAds(gomock.Any(), 2).
+		Return([]*models.Ad{}, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/ad_campaigns/1/ad_groups/2/ads", nil)
 	rr := httptest.NewRecorder()
@@ -293,6 +302,7 @@ func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
 
 	req2 := httptest.NewRequest(http.MethodGet, "/ad_campaigns/1/ad_groups/2/ads", nil)
 	req2.AddCookie(cookies[0])
+	req2.AddCookie(csrf)
 	rr2 := httptest.NewRecorder()
 	r.ServeHTTP(rr2, req2)
 
@@ -316,7 +326,14 @@ func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
 
 func TestFeed_EmptyList(t *testing.T) {
 	sm := newTestSessionManager()
-	r := newTestRouter(sm)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	svc := NewMockService(ctrl)
+	r := newTestRouter(sm, svc)
+
+	svc.EXPECT().
+		GetAdsByFeedToken(gomock.Any(), "feed-token").
+		Return([]*models.Ad{}, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/feed/feed-token", nil)
 	rr := httptest.NewRecorder()

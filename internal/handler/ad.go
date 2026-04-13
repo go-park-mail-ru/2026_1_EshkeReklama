@@ -4,6 +4,7 @@ import (
 	"eshkere/internal/handler/dto"
 	"eshkere/internal/middleware"
 	"eshkere/pkg/httpx"
+	"eshkere/pkg/logger"
 	"net/http"
 	"strconv"
 
@@ -36,28 +37,33 @@ func (a *API) RegisterAdsHandlers(r *mux.Router) {
 // @Security     CookieAuth
 func (a *API) CreateAd(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	reqLogger := logger.GetLoggerFromCtx(ctx)
 
 	var req dto.CreateAdRequest
 	if err := httpx.DecodeJSON(r, &req); err != nil {
+		reqLogger.Warnw("invalid create ad payload", "error", err.Error())
 		httpx.BadRequest(w, "invalid request")
 		return
 	}
 
 	ad, err := req.ToModel()
 	if err != nil {
-		httpx.InternalError(w, err.Error())
+		reqLogger.Warnw("invalid create ad model", "error", err.Error())
+		httpx.BadRequest(w, "invalid request")
 		return
 	}
 
 	groupID, err := strconv.Atoi(mux.Vars(r)["ad_group_id"])
 	if err != nil {
-		httpx.BadRequest(w, err.Error())
+		reqLogger.Warnw("invalid ad_group_id", "error", err.Error())
+		httpx.BadRequest(w, "invalid ad_group_id")
 		return
 	}
 	ad.AdGroupID = groupID
 
 	createdAd, err := a.service.CreateAd(ctx, ad)
 	if err != nil {
+		reqLogger.Warnw("create ad rejected", "error", err.Error(), "ad_group_id", groupID)
 		httpx.BadRequest(w, err.Error())
 		return
 	}
@@ -84,16 +90,19 @@ func (a *API) CreateAd(w http.ResponseWriter, r *http.Request) {
 // @Security     CookieAuth
 func (a *API) UpdateAd(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	reqLogger := logger.GetLoggerFromCtx(ctx)
 
 	adID, err := strconv.Atoi(mux.Vars(r)["ad_id"])
 	if err != nil {
-		httpx.BadRequest(w, err.Error())
+		reqLogger.Warnw("invalid ad_id", "error", err.Error())
+		httpx.BadRequest(w, "invalid ad_id")
 		return
 	}
 
 	var req dto.UpdateAdRequest
 	if err = httpx.DecodeJSON(r, &req); err != nil {
-		httpx.BadRequest(w, err.Error())
+		reqLogger.Warnw("invalid update ad payload", "error", err.Error(), "ad_id", adID)
+		httpx.BadRequest(w, "invalid request")
 		return
 	}
 
@@ -105,7 +114,8 @@ func (a *API) UpdateAd(w http.ResponseWriter, r *http.Request) {
 
 	err = a.service.UpdateAd(ctx, adID, req)
 	if err != nil {
-		httpx.InternalError(w, err.Error())
+		reqLogger.Errorw("failed to update ad", "error", err.Error(), "ad_id", adID)
+		httpx.InternalError(w, "internal error")
 		return
 	}
 
@@ -126,16 +136,19 @@ func (a *API) UpdateAd(w http.ResponseWriter, r *http.Request) {
 // @Security     CookieAuth
 func (a *API) ListAds(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	reqLogger := logger.GetLoggerFromCtx(ctx)
 
 	groupID, err := strconv.Atoi(mux.Vars(r)["ad_group_id"])
 	if err != nil {
-		httpx.BadRequest(w, err.Error())
+		reqLogger.Warnw("invalid ad_group_id", "error", err.Error())
+		httpx.BadRequest(w, "invalid ad_group_id")
 		return
 	}
 
 	ads, err := a.service.ListAds(ctx, groupID)
 	if err != nil {
-		httpx.InternalError(w, err.Error())
+		reqLogger.Errorw("failed to list ads", "error", err.Error(), "ad_group_id", groupID)
+		httpx.InternalError(w, "internal error")
 		return
 	}
 
@@ -165,16 +178,19 @@ func (a *API) ListAds(w http.ResponseWriter, r *http.Request) {
 // @Security     CookieAuth
 func (a *API) DeleteAd(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	reqLogger := logger.GetLoggerFromCtx(ctx)
 
 	adID, err := strconv.Atoi(mux.Vars(r)["ad_id"])
 	if err != nil {
-		httpx.BadRequest(w, err.Error())
+		reqLogger.Warnw("invalid ad_id", "error", err.Error())
+		httpx.BadRequest(w, "invalid ad_id")
 		return
 	}
 
 	err = a.service.DeleteAd(ctx, adID)
 	if err != nil {
-		httpx.InternalError(w, err.Error())
+		reqLogger.Errorw("failed to delete ad", "error", err.Error(), "ad_id", adID)
+		httpx.InternalError(w, "internal error")
 		return
 	}
 

@@ -5,23 +5,23 @@ import (
 	"errors"
 	"eshkere/internal/handler/dto"
 	"eshkere/internal/middleware"
-	"eshkere/internal/models"
-	"eshkere/internal/service"
 	"eshkere/pkg/httpx"
+	"eshkere/pkg/logger"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
 )
 
 func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
-	g := r.PathPrefix("/advertiser").Subrouter()
+	groups := r.PathPrefix("/advertiser").Subrouter()
 
-	g.HandleFunc("/register", a.Register).Methods(http.MethodPost)
-	g.HandleFunc("/login", a.Login).Methods(http.MethodPost)
-	g.HandleFunc("/logout", a.Logout).Methods(http.MethodPost)
+	groups.HandleFunc("/register", a.Register).Methods(http.MethodPost)
+	groups.HandleFunc("/login", a.Login).Methods(http.MethodPost)
+	groups.HandleFunc("/logout", a.Logout).Methods(http.MethodPost)
+	groups.Handle("/balance", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.GetBalance))).Methods(http.MethodGet)
+	groups.Handle("/balance/topup", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.TopUpBalance))).Methods(http.MethodPost)
 
-	g.Handle("/me", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.Me))).Methods(http.MethodGet)
+	groups.Handle("/me", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.Me))).Methods(http.MethodGet)
 }
 
 // @Summary      Регистрация рекламодателя
@@ -36,20 +36,29 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 // @Router       /advertiser/register [post]
 func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	reqLogger := logger.GetLoggerFromCtx(ctx)
 
 	var req dto.RegisterRequest
 	if err := httpx.DecodeJSON(r, &req); err != nil {
+		reqLogger.Warnw("invalid register payload", "error", err.Error())
 		httpx.BadRequest(w, "invalid request")
 		return
 	}
 
 	adv, err := a.service.RegisterAdvertiser(ctx, req.Name, req.Email, req.Phone, req.Password)
 	if err != nil {
-		a.handleRegisterError(w, err)
+		statusCode, clientMessage, isExpected := convertDomainError(err)
+		if isExpected {
+			reqLogger.Warnw("register failed", "error", err.Error())
+		} else {
+			reqLogger.Errorw("register failed", "error", err.Error())
+		}
+		httpx.ErrorJSON(w, statusCode, clientMessage)
 		return
 	}
 
-	if err := a.sessionManager.Create(w, r, adv.ID); err != nil {
+	if err = a.sessionManager.Create(w, r, adv.ID); err != nil {
+		reqLogger.Errorw("failed to create session", "error", err.Error(), "advertiser_id", adv.ID)
 		httpx.InternalError(w, "internal error")
 		return
 	}
@@ -59,19 +68,6 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 		Email: adv.Email,
 		Phone: adv.Phone,
 	})
-}
-
-func (a *API) handleRegisterError(w http.ResponseWriter, err error) {
-	switch {
-	case errors.Is(err, service.ErrEmailTaken):
-		httpx.BadRequest(w, "email already registered")
-	case errors.Is(err, service.ErrPhoneTaken):
-		httpx.BadRequest(w, "phone already registered")
-	case errors.Is(err, service.ErrInvalidAdvertiserArg):
-		httpx.BadRequest(w, err.Error())
-	default:
-		httpx.InternalError(w, "internal error")
-	}
 }
 
 // @Summary      Вход рекламодателя
@@ -87,24 +83,29 @@ func (a *API) handleRegisterError(w http.ResponseWriter, err error) {
 // @Router       /advertiser/login [post]
 func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	reqLogger := logger.GetLoggerFromCtx(ctx)
 
 	var req dto.LoginRequest
 	if err := httpx.DecodeJSON(r, &req); err != nil {
+		reqLogger.Warnw("invalid login payload", "error", err.Error())
 		httpx.BadRequest(w, "invalid request")
 		return
 	}
 
 	adv, err := a.service.AuthenticateAdvertiser(ctx, req.Identifier, req.Password)
 	if err != nil {
-		if errors.Is(err, service.ErrInvalidCredentials) {
-			httpx.Unauthorized(w, "invalid credentials")
-			return
+		statusCode, clientMessage, isExpected := convertDomainError(err)
+		if isExpected {
+			reqLogger.Warnw("login failed", "error", err.Error(), "identifier", req.Identifier)
+		} else {
+			reqLogger.Errorw("login failed", "error", err.Error(), "identifier", req.Identifier)
 		}
-		httpx.InternalError(w, "internal error")
+		httpx.ErrorJSON(w, statusCode, clientMessage)
 		return
 	}
 
-	if err := a.sessionManager.Create(w, r, adv.ID); err != nil {
+	if err = a.sessionManager.Create(w, r, adv.ID); err != nil {
+		reqLogger.Errorw("failed to create session", "error", err.Error(), "advertiser_id", adv.ID)
 		httpx.InternalError(w, "internal error")
 		return
 	}
@@ -128,9 +129,11 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 // @Security     CookieAuth
 func (a *API) Me(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	reqLogger := logger.GetLoggerFromCtx(ctx)
 
 	advertiserID, err := middleware.AdvertiserIDFromContext(ctx)
 	if err != nil {
+		reqLogger.Warnw("unauthorized profile request", "error", err.Error())
 		httpx.Unauthorized(w, "unauthorized")
 		return
 	}
@@ -138,28 +141,16 @@ func (a *API) Me(w http.ResponseWriter, r *http.Request) {
 	adv, err := a.service.GetAdvertiserByID(ctx, advertiserID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+			reqLogger.Warnw("advertiser not found", "error", err.Error(), "advertiser_id", advertiserID)
 			httpx.NotFound(w, "advertiser not found")
 			return
 		}
+		reqLogger.Errorw("failed to load advertiser profile", "error", err.Error(), "advertiser_id", advertiserID)
 		httpx.InternalError(w, "internal error")
 		return
 	}
 
-	httpx.JSON(w, http.StatusOK, advertiserToProfile(adv))
-}
-
-func advertiserToProfile(adv *models.Advertiser) dto.AdvertiserProfileResponse {
-	if adv == nil {
-		return dto.AdvertiserProfileResponse{}
-	}
-	return dto.AdvertiserProfileResponse{
-		ID:        adv.ID,
-		Name:      adv.Name,
-		Email:     adv.Email,
-		Phone:     adv.Phone,
-		Balance:   adv.Balance,
-		CreatedAt: adv.CreatedAt.Format(time.RFC3339),
-	}
+	httpx.JSON(w, http.StatusOK, dto.AdvertiserToProfile(adv))
 }
 
 // @Summary      Выход рекламодателя
@@ -170,12 +161,79 @@ func advertiserToProfile(adv *models.Advertiser) dto.AdvertiserProfileResponse {
 // @Failure      500   {object}  httpx.Error
 // @Router       /advertiser/logout [post]
 func (a *API) Logout(w http.ResponseWriter, r *http.Request) {
+	reqLogger := logger.GetLoggerFromCtx(r.Context())
+
 	if err := a.sessionManager.Destroy(w, r); err != nil {
+		reqLogger.Errorw("failed to destroy session", "error", err.Error())
 		httpx.InternalError(w, "internal error")
 		return
 	}
 
 	httpx.JSON(w, http.StatusOK, map[string]string{
 		"message": "logout ok",
+	})
+}
+
+func (a *API) GetBalance(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	reqLogger := logger.GetLoggerFromCtx(ctx)
+
+	advertiserID, err := middleware.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		reqLogger.Warnw("unauthorized get balance request", "error", err.Error())
+		httpx.Unauthorized(w, "unauthorized")
+		return
+	}
+
+	adv, err := a.service.GetAdvertiserByID(ctx, advertiserID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			reqLogger.Warnw("advertiser not found for balance", "error", err.Error(), "advertiser_id", advertiserID)
+			httpx.NotFound(w, "advertiser not found")
+			return
+		}
+
+		reqLogger.Errorw("failed to get balance", "error", err.Error(), "advertiser_id", advertiserID)
+		httpx.InternalError(w, "internal error")
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, dto.BalanceResponse{
+		Balance: adv.Balance,
+	})
+}
+
+func (a *API) TopUpBalance(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	reqLogger := logger.GetLoggerFromCtx(ctx)
+
+	advertiserID, err := middleware.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		reqLogger.Warnw("unauthorized top up request", "error", err.Error())
+		httpx.Unauthorized(w, "unauthorized")
+		return
+	}
+
+	var req dto.TopUpBalanceRequest
+	if err = httpx.DecodeJSON(r, &req); err != nil {
+		reqLogger.Warnw("invalid top up payload", "error", err.Error(), "advertiser_id", advertiserID)
+		httpx.BadRequest(w, "invalid request")
+		return
+	}
+
+	balance, err := a.service.TopUpAdvertiserBalance(ctx, advertiserID, req.Amount)
+	if err != nil {
+		statusCode, clientMessage, isExpected := convertDomainError(err)
+		if isExpected {
+			reqLogger.Warnw("balance top up rejected", "error", err.Error(), "advertiser_id", advertiserID, "amount", req.Amount)
+		} else {
+			reqLogger.Errorw("balance top up failed", "error", err.Error(), "advertiser_id", advertiserID, "amount", req.Amount)
+		}
+		httpx.ErrorJSON(w, statusCode, clientMessage)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, dto.BalanceResponse{
+		Balance: balance,
 	})
 }

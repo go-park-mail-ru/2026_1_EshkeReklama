@@ -14,13 +14,6 @@ import (
 
 const bcryptSaltMarker = "bcrypt"
 
-var (
-	ErrInvalidCredentials   = errors.New("invalid credentials")
-	ErrEmailTaken           = errors.New("email already registered")
-	ErrPhoneTaken           = errors.New("phone already registered")
-	ErrInvalidAdvertiserArg = errors.New("invalid argument")
-)
-
 func normalizeAdvertiserPhone(raw string) (string, error) {
 	var digits strings.Builder
 	for _, r := range raw {

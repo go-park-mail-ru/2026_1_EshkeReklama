@@ -47,6 +47,13 @@ func (stubService) GetAdvertiserByID(_ context.Context, id int) (*models.Adverti
 	}, nil
 }
 
+func (stubService) TopUpAdvertiserBalance(_ context.Context, id int, amount int64) (int64, error) {
+	if id <= 0 || amount <= 0 {
+		return 0, service.ErrInvalidAdvertiserArg
+	}
+	return 100 + amount, nil
+}
+
 func (stubService) CreateAd(context.Context, *models.Ad) (*models.Ad, error) {
 	return &models.Ad{}, nil
 }
@@ -210,6 +217,38 @@ func TestLogout_AlwaysOK(t *testing.T) {
 
 	if rr.Code != http.StatusOK {
 		t.Fatalf("expected 200 got %d body=%s", rr.Code, rr.Body.String())
+	}
+}
+
+func TestBalance_GetAndTopUp(t *testing.T) {
+	sm := newTestSessionManager()
+	r := newTestRouter(sm)
+
+	createReq := httptest.NewRequest(http.MethodPost, "/", nil)
+	createRR := httptest.NewRecorder()
+	if err := sm.Create(createRR, createReq, 1); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+
+	cookies := createRR.Result().Cookies()
+	if len(cookies) == 0 {
+		t.Fatalf("expected cookie")
+	}
+
+	getReq := httptest.NewRequest(http.MethodGet, "/advertiser/balance", nil)
+	getReq.AddCookie(cookies[0])
+	getRR := httptest.NewRecorder()
+	r.ServeHTTP(getRR, getReq)
+	if getRR.Code != http.StatusOK {
+		t.Fatalf("expected 200 got %d body=%s", getRR.Code, getRR.Body.String())
+	}
+
+	topupReq := httptest.NewRequest(http.MethodPost, "/advertiser/balance/topup", bytes.NewBufferString(`{"amount":150}`))
+	topupReq.AddCookie(cookies[0])
+	topupRR := httptest.NewRecorder()
+	r.ServeHTTP(topupRR, topupReq)
+	if topupRR.Code != http.StatusOK {
+		t.Fatalf("expected 200 got %d body=%s", topupRR.Code, topupRR.Body.String())
 	}
 }
 

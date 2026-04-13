@@ -7,7 +7,7 @@ import (
 
 const AdvertiserIDKey string = "advertiser_id"
 
-var ErrAdvertiserIDNotFound = errors.New("advertiser id not found in context")
+var ErrAdvertiserIDNotFound = errors.New("advertiser id not found in logger")
 
 func AdvertiserIDFromContext(ctx context.Context) (int, error) {
 	value := ctx.Value(AdvertiserIDKey)

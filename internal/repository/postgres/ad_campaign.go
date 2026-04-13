@@ -6,6 +6,7 @@ import (
 	"errors"
 	"eshkere/internal/models"
 	"fmt"
+	"time"
 )
 
 type AdCampaignRepository struct {
@@ -44,9 +45,11 @@ func (r *AdCampaignRepository) Create(ctx context.Context, c *models.AdCampaign)
 		return fmt.Errorf("ad campaign cannot be nil")
 	}
 
+	startedAt := time.Now()
 	err := r.db.QueryRowContext(ctx, insertAdCampaign,
 		c.AdvertiserID, c.Status, c.Name, c.DailyBudget,
 	).Scan(&c.ID)
+	logDBQuery(ctx, "ad_campaign.create", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("insert ad campaign: %w", err)
 	}
@@ -57,6 +60,7 @@ func (r *AdCampaignRepository) Create(ctx context.Context, c *models.AdCampaign)
 func (r *AdCampaignRepository) GetByID(ctx context.Context, id int) (*models.AdCampaign, error) {
 	var c models.AdCampaign
 
+	startedAt := time.Now()
 	err := r.db.QueryRowContext(ctx, selectAdCampaignByID, id).Scan(
 		&c.ID,
 		&c.AdvertiserID,
@@ -66,6 +70,7 @@ func (r *AdCampaignRepository) GetByID(ctx context.Context, id int) (*models.AdC
 		&c.CreatedAt,
 		&c.UpdatedAt,
 	)
+	logDBQuery(ctx, "ad_campaign.get_by_id", startedAt, err)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("ad campaign not found: %w", err)
@@ -77,7 +82,9 @@ func (r *AdCampaignRepository) GetByID(ctx context.Context, id int) (*models.AdC
 }
 
 func (r *AdCampaignRepository) ListByAdvertiserID(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error) {
+	startedAt := time.Now()
 	rows, err := r.db.QueryContext(ctx, selectAdCampaignsByAdvertiserID, advertiserID)
+	logDBQuery(ctx, "ad_campaign.list_by_advertiser_id", startedAt, err)
 	if err != nil {
 		return nil, fmt.Errorf("list ad campaigns by advertiser_id: %w", err)
 	}
@@ -112,9 +119,11 @@ func (r *AdCampaignRepository) Update(ctx context.Context, c *models.AdCampaign)
 		return fmt.Errorf("ad campaign cannot be nil")
 	}
 
+	startedAt := time.Now()
 	_, err := r.db.ExecContext(ctx, updateAdCampaign,
 		c.AdvertiserID, c.Status, c.Name, c.DailyBudget, c.UpdatedAt, c.ID,
 	)
+	logDBQuery(ctx, "ad_campaign.update", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("update ad campaign: %w", err)
 	}
@@ -123,7 +132,9 @@ func (r *AdCampaignRepository) Update(ctx context.Context, c *models.AdCampaign)
 }
 
 func (r *AdCampaignRepository) Delete(ctx context.Context, id int) error {
+	startedAt := time.Now()
 	result, err := r.db.ExecContext(ctx, deleteAdCampaign, id)
+	logDBQuery(ctx, "ad_campaign.delete", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("delete ad campaign: %w", err)
 	}

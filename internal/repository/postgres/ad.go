@@ -6,6 +6,7 @@ import (
 	"errors"
 	"eshkere/internal/models"
 	"fmt"
+	"time"
 )
 
 type AdRepository struct {
@@ -44,9 +45,11 @@ func (r *AdRepository) Create(ctx context.Context, ad *models.Ad) error {
 		return fmt.Errorf("ad cannot be nil")
 	}
 
+	startedAt := time.Now()
 	err := r.db.QueryRowContext(ctx, insertAd,
 		ad.AdGroupID, ad.Status, ad.Title, ad.ShortDesc, ad.ImageURL, ad.TargetURL,
 	).Scan(&ad.ID)
+	logDBQuery(ctx, "ad.create", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("insert ad: %w", err)
 	}
@@ -57,6 +60,7 @@ func (r *AdRepository) Create(ctx context.Context, ad *models.Ad) error {
 func (r *AdRepository) GetByID(ctx context.Context, adID int) (*models.Ad, error) {
 	var ad models.Ad
 
+	startedAt := time.Now()
 	err := r.db.QueryRowContext(ctx, selectAdByID, adID).Scan(
 		&ad.ID,
 		&ad.AdGroupID,
@@ -68,6 +72,7 @@ func (r *AdRepository) GetByID(ctx context.Context, adID int) (*models.Ad, error
 		&ad.CreatedAt,
 		&ad.UpdatedAt,
 	)
+	logDBQuery(ctx, "ad.get_by_id", startedAt, err)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("ad not found: %w", err)
@@ -79,7 +84,9 @@ func (r *AdRepository) GetByID(ctx context.Context, adID int) (*models.Ad, error
 }
 
 func (r *AdRepository) ListByAdGroupID(ctx context.Context, adGroupID int) ([]*models.Ad, error) {
+	startedAt := time.Now()
 	rows, err := r.db.QueryContext(ctx, selectAdsByAdGroupID, adGroupID)
+	logDBQuery(ctx, "ad.list_by_ad_group_id", startedAt, err)
 	if err != nil {
 		return nil, fmt.Errorf("list ads by ad_group_id: %w", err)
 	}
@@ -116,9 +123,11 @@ func (r *AdRepository) Update(ctx context.Context, ad *models.Ad) error {
 		return fmt.Errorf("ad cannot be nil")
 	}
 
+	startedAt := time.Now()
 	_, err := r.db.ExecContext(ctx, updateAd,
 		ad.AdGroupID, ad.Status, ad.Title, ad.ShortDesc, ad.ImageURL, ad.TargetURL, ad.UpdatedAt, ad.ID,
 	)
+	logDBQuery(ctx, "ad.update", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("update ad: %w", err)
 	}
@@ -127,7 +136,9 @@ func (r *AdRepository) Update(ctx context.Context, ad *models.Ad) error {
 }
 
 func (r *AdRepository) Delete(ctx context.Context, adID int) error {
+	startedAt := time.Now()
 	result, err := r.db.ExecContext(ctx, deleteAd, adID)
+	logDBQuery(ctx, "ad.delete", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("delete ad: %w", err)
 	}

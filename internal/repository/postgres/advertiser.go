@@ -6,6 +6,7 @@ import (
 	"errors"
 	"eshkere/internal/models"
 	"fmt"
+	"time"
 )
 
 type AdvertiserRepository struct {
@@ -48,9 +49,11 @@ func (r *AdvertiserRepository) Create(ctx context.Context, a *models.Advertiser)
 		return 0, fmt.Errorf("advertiser cannot be nil")
 	}
 
+	startedAt := time.Now()
 	err := r.db.QueryRowContext(ctx, insertAdvertiser,
 		a.Name, a.Email, a.Phone, a.PasswordHash, a.PasswordSalt, a.Balance,
 	).Scan(&a.ID)
+	logDBQuery(ctx, "advertiser.create", startedAt, err)
 	if err != nil {
 		return 0, fmt.Errorf("insert advertiser: %w", err)
 	}
@@ -61,6 +64,7 @@ func (r *AdvertiserRepository) Create(ctx context.Context, a *models.Advertiser)
 func (r *AdvertiserRepository) GetByID(ctx context.Context, id int) (*models.Advertiser, error) {
 	var a models.Advertiser
 
+	startedAt := time.Now()
 	err := r.db.QueryRowContext(ctx, selectAdvertiserByID, id).Scan(
 		&a.ID,
 		&a.Name,
@@ -72,6 +76,7 @@ func (r *AdvertiserRepository) GetByID(ctx context.Context, id int) (*models.Adv
 		&a.CreatedAt,
 		&a.UpdatedAt,
 	)
+	logDBQuery(ctx, "advertiser.get_by_id", startedAt, err)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("advertiser not found: %w", err)
@@ -88,6 +93,7 @@ func (r *AdvertiserRepository) GetByEmail(ctx context.Context, email string) (*m
 	}
 
 	var a models.Advertiser
+	startedAt := time.Now()
 	err := r.db.QueryRowContext(ctx, selectAdvertiserByEmail, email).Scan(
 		&a.ID,
 		&a.Name,
@@ -99,6 +105,7 @@ func (r *AdvertiserRepository) GetByEmail(ctx context.Context, email string) (*m
 		&a.CreatedAt,
 		&a.UpdatedAt,
 	)
+	logDBQuery(ctx, "advertiser.get_by_email", startedAt, err)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("advertiser not found: %w", err)
@@ -115,6 +122,7 @@ func (r *AdvertiserRepository) GetByPhone(ctx context.Context, phone string) (*m
 	}
 
 	var a models.Advertiser
+	startedAt := time.Now()
 	err := r.db.QueryRowContext(ctx, selectAdvertiserByPhone, phone).Scan(
 		&a.ID,
 		&a.Name,
@@ -126,6 +134,7 @@ func (r *AdvertiserRepository) GetByPhone(ctx context.Context, phone string) (*m
 		&a.CreatedAt,
 		&a.UpdatedAt,
 	)
+	logDBQuery(ctx, "advertiser.get_by_phone", startedAt, err)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("advertiser not found: %w", err)
@@ -141,7 +150,9 @@ func (r *AdvertiserRepository) Update(ctx context.Context, a *models.Advertiser)
 		return fmt.Errorf("advertiser cannot be nil")
 	}
 
+	startedAt := time.Now()
 	_, err := r.db.ExecContext(ctx, updateAdvertiser, a.Name, a.Email, a.Phone, a.PasswordHash, a.PasswordSalt, a.Balance, a.ID)
+	logDBQuery(ctx, "advertiser.update", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("update advertiser: %w", err)
 	}
@@ -150,7 +161,9 @@ func (r *AdvertiserRepository) Update(ctx context.Context, a *models.Advertiser)
 }
 
 func (r *AdvertiserRepository) Delete(ctx context.Context, id int) error {
+	startedAt := time.Now()
 	result, err := r.db.ExecContext(ctx, deleteAdvertiser, id)
+	logDBQuery(ctx, "advertiser.delete", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("delete advertiser: %w", err)
 	}

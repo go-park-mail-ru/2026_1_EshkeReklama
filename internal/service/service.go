@@ -11,6 +11,7 @@ type AdvertiserRepository interface {
 	GetByID(ctx context.Context, id int) (*models.Advertiser, error)
 	GetByEmail(ctx context.Context, email string) (*models.Advertiser, error)
 	GetByPhone(ctx context.Context, phone string) (*models.Advertiser, error)
+	Update(ctx context.Context, a *models.Advertiser) error
 }
 
 type PartnerRepository interface{}

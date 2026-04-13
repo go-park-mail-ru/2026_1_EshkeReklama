@@ -10,17 +10,18 @@ import (
 	"eshkere/internal/session"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 )
 
 type App struct {
 	cfg            *config.Config
+	logger         *zap.SugaredLogger
 	closers        []io.Closer
 	service        *service.Service
 	sessionManager *session.Manager
@@ -29,14 +30,16 @@ type App struct {
 func New(configPath string) *App {
 	var closers []io.Closer
 
+	logger := zap.Must(zap.NewDevelopment()).Sugar()
+
 	cfg, err := config.ReadConfig(configPath)
 	if err != nil {
-		log.Fatalf("Failed to read config: %v", err)
+		logger.Fatalf("Failed to read config: %v", err)
 	}
 
 	db, err := initDB(cfg.Postgres)
 	if err != nil {
-		log.Fatalf("Failed to init DB: %v", err)
+		logger.Fatalf("Failed to init DB: %v", err)
 	}
 
 	closers = append([]io.Closer{db}, closers...)
@@ -58,12 +61,12 @@ func New(configPath string) *App {
 		RegionRepo:      nil,
 	})
 	if err != nil {
-		log.Fatalf("Failed to init service: %v", err)
+		logger.Fatalf("Failed to init service: %v", err)
 	}
 
 	redisPool, err := initRedis(cfg.Redis)
 	if err != nil {
-		log.Fatalf("Failed to init redis: %v", err)
+		logger.Fatalf("Failed to init redis: %v", err)
 	}
 
 	closers = append(closers, redisPool)
@@ -83,6 +86,7 @@ func New(configPath string) *App {
 
 	return &App{
 		cfg:            cfg,
+		logger:         logger,
 		closers:        closers,
 		service:        svc,
 		sessionManager: sessionManager,
@@ -91,6 +95,9 @@ func New(configPath string) *App {
 
 func (a *App) Run() error {
 	router := mux.NewRouter().StrictSlash(true)
+	router.Use(middleware.RequestContext(a.logger))
+	router.Use(middleware.AccessLog())
+
 	handlers.Register(router, handlers.NewAPI(handlers.APIConfig{
 		Service:        a.service,
 		SessionManager: a.sessionManager,
@@ -106,7 +113,7 @@ func (a *App) Run() error {
 	serverErr := make(chan error, 1)
 
 	go func() {
-		log.Printf("server started on %s", server.Addr)
+		a.logger.Infow("server started", "addr", server.Addr)
 		serverErr <- server.ListenAndServe()
 	}()
 

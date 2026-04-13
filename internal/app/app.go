@@ -106,6 +106,11 @@ func (a *App) Run() error {
 	router := mux.NewRouter().StrictSlash(true)
 	router.Use(middleware.RequestContext(a.logger))
 	router.Use(middleware.AccessLog())
+	router.Use(middleware.CSRF(middleware.CSRFConfig{
+		CookieName: "csrf_token",
+		HeaderName: "X-CSRF-Token",
+		Secure:     a.cfg.Session.CookieSecure,
+	}))
 
 	handlers.Register(router, handlers.NewAPI(handlers.APIConfig{
 		Service:        a.service,

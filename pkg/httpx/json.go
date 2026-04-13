@@ -30,7 +30,9 @@ func JSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
-	_ = json.NewEncoder(w).Encode(Success{
+	enc := json.NewEncoder(w)
+	enc.SetEscapeHTML(true)
+	_ = enc.Encode(Success{
 		Data: data,
 	})
 }
@@ -39,7 +41,9 @@ func ErrorJSON(w http.ResponseWriter, statusCode int, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
-	_ = json.NewEncoder(w).Encode(Error{
+	enc := json.NewEncoder(w)
+	enc.SetEscapeHTML(true)
+	_ = enc.Encode(Error{
 		Error: message,
 	})
 }

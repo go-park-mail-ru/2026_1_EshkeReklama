@@ -24,6 +24,14 @@ type S3Storage struct {
 	publicBaseURL string
 }
 
+func avatarObjectKey(advertiserID int, filename string, unixNano int64) string {
+	ext := path.Ext(filename)
+	if ext == "" {
+		ext = ".bin"
+	}
+	return fmt.Sprintf("avatars/%d/%d%s", advertiserID, unixNano, ext)
+}
+
 func NewS3Storage(ctx context.Context, cfg config2.S3Config) (*S3Storage, error) {
 	awsCfg, err := config.LoadDefaultConfig(
 		ctx,
@@ -56,11 +64,7 @@ func NewS3Storage(ctx context.Context, cfg config2.S3Config) (*S3Storage, error)
 }
 
 func (s *S3Storage) UploadAvatar(ctx context.Context, advertiserID int, data []byte, filename string, contentType string) (string, error) {
-	ext := path.Ext(filename)
-	if ext == "" {
-		ext = ".bin"
-	}
-	key := fmt.Sprintf("avatars/%d/%d%s", advertiserID, time.Now().UnixNano(), ext)
+	key := avatarObjectKey(advertiserID, filename, time.Now().UnixNano())
 
 	_, err := s.uploader.Upload(ctx, &s3.PutObjectInput{
 		Bucket:      aws.String(s.bucket),

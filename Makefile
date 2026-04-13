@@ -11,7 +11,7 @@ db-down:
 	docker compose down
 
 coverage:
-	go test ./... -coverpkg=./... -coverprofile=coverage.out && go tool cover -func=coverage.out | tail -n 1
+	go test ./... -coverprofile=cover.out && go tool cover -func=cover.out | tail -n 1
 
 swagger:
 	swag init -g main.go -d ./cmd/eshkere,./internal/app,./internal/handler,./internal/handler/dto,./internal/models,./internal/middleware,./pkg/httpx

@@ -23,23 +23,23 @@ const (
 		VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
 
 	selectAdvertiserByID = `SELECT
-        id, name, email, phone_number, password_hash, password_salt, balance, created_at, updated_at
+        id, name, email, phone_number, avatar_url, password_hash, password_salt, balance, created_at, updated_at
     FROM eshkere.advertiser
     WHERE id = $1`
 
 	selectAdvertiserByEmail = `SELECT
-	id, name, email, phone_number, password_hash, password_salt, balance, created_at, updated_at
+	id, name, email, phone_number, avatar_url, password_hash, password_salt, balance, created_at, updated_at
 	FROM eshkere.advertiser
 	WHERE email = $1`
 
 	selectAdvertiserByPhone = `SELECT
-	id, name, email, phone_number, password_hash, password_salt, balance, created_at, updated_at
+	id, name, email, phone_number, avatar_url, password_hash, password_salt, balance, created_at, updated_at
 	FROM eshkere.advertiser
 	WHERE phone_number = $1`
 
 	updateAdvertiser = `UPDATE eshkere.advertiser SET 
-    name = $1, email = $2, phone_number = $3, password_hash = $4, password_salt = $5, balance = $6
-    WHERE id = $7`
+    name = $1, email = $2, phone_number = $3, avatar_url = $4, password_hash = $5, password_salt = $6, balance = $7
+    WHERE id = $8`
 
 	deleteAdvertiser = `DELETE FROM eshkere.advertiser WHERE id = $1`
 )
@@ -70,6 +70,7 @@ func (r *AdvertiserRepository) GetByID(ctx context.Context, id int) (*models.Adv
 		&a.Name,
 		&a.Email,
 		&a.Phone,
+		&a.AvatarURL,
 		&a.PasswordHash,
 		&a.PasswordSalt,
 		&a.Balance,
@@ -99,6 +100,7 @@ func (r *AdvertiserRepository) GetByEmail(ctx context.Context, email string) (*m
 		&a.Name,
 		&a.Email,
 		&a.Phone,
+		&a.AvatarURL,
 		&a.PasswordHash,
 		&a.PasswordSalt,
 		&a.Balance,
@@ -128,6 +130,7 @@ func (r *AdvertiserRepository) GetByPhone(ctx context.Context, phone string) (*m
 		&a.Name,
 		&a.Email,
 		&a.Phone,
+		&a.AvatarURL,
 		&a.PasswordHash,
 		&a.PasswordSalt,
 		&a.Balance,
@@ -151,7 +154,7 @@ func (r *AdvertiserRepository) Update(ctx context.Context, a *models.Advertiser)
 	}
 
 	startedAt := time.Now()
-	_, err := r.db.ExecContext(ctx, updateAdvertiser, a.Name, a.Email, a.Phone, a.PasswordHash, a.PasswordSalt, a.Balance, a.ID)
+	_, err := r.db.ExecContext(ctx, updateAdvertiser, a.Name, a.Email, a.Phone, a.AvatarURL, a.PasswordHash, a.PasswordSalt, a.Balance, a.ID)
 	logDBQuery(ctx, "advertiser.update", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("update advertiser: %w", err)

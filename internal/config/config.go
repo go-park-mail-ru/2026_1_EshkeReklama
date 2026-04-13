@@ -39,11 +39,21 @@ type SessionConfig struct {
 	CookieSecure bool          `yaml:"cookie_secure"`
 }
 
+type S3Config struct {
+	Endpoint      string `yaml:"endpoint"`
+	Region        string `yaml:"region"`
+	Bucket        string `yaml:"bucket"`
+	AccessKey     string `yaml:"access_key"`
+	SecretKey     string `yaml:"secret_key"`
+	PublicBaseURL string `yaml:"public_base_url"`
+}
+
 type Config struct {
 	HTTPServer      HTTPServerConfig `yaml:"http_server"`
 	Postgres        PostgresConfig   `yaml:"postgres"`
 	Redis           RedisConfig      `yaml:"redis"`
 	Session         SessionConfig    `yaml:"session"`
+	S3              S3Config         `yaml:"s3"`
 	CORS            CORSConfig       `yaml:"cors"`
 	GracefulTimeout time.Duration    `yaml:"graceful_timeout"`
 }

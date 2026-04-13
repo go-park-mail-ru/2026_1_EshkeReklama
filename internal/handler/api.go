@@ -13,7 +13,10 @@ type Service interface {
 	RegisterAdvertiser(ctx context.Context, name, email, phone, password string) (*models.Advertiser, error)
 	AuthenticateAdvertiser(ctx context.Context, identifier, password string) (*models.Advertiser, error)
 	GetAdvertiserByID(ctx context.Context, id int) (*models.Advertiser, error)
+	UpdateAdvertiserProfile(ctx context.Context, advertiserID int, name, email, phone string, avatar []byte, avatarFilename, avatarContentType string) (*models.Advertiser, error)
 	TopUpAdvertiserBalance(ctx context.Context, advertiserID int, amount int64) (int64, error)
+	GenerateFeedLink(ctx context.Context, advertiserID int) (string, error)
+	GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error)
 
 	CreateAd(ctx context.Context, ad *models.Ad) (*models.Ad, error)
 	UpdateAd(ctx context.Context, adID int, req dto.UpdateAdRequest) error
@@ -53,4 +56,5 @@ func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterAdCampaignHandlers(r)
 	a.RegisterAdGroupHandlers(r)
 	a.RegisterAdsHandlers(r)
+	a.RegisterFeedHandlers(r)
 }

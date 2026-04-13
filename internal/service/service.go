@@ -38,8 +38,18 @@ type AdRepository interface {
 	Create(ctx context.Context, ad *models.Ad) error
 	GetByID(ctx context.Context, adID int) (*models.Ad, error)
 	ListByAdGroupID(ctx context.Context, adGroupID int) ([]*models.Ad, error)
+	ListByAdvertiserID(ctx context.Context, advertiserID int) ([]*models.Ad, error)
 	Update(ctx context.Context, ad *models.Ad) error
 	Delete(ctx context.Context, id int) error
+}
+
+type FeedLinkRepository interface {
+	UpsertByAdvertiserID(ctx context.Context, advertiserID int, token string) error
+	GetAdvertiserIDByToken(ctx context.Context, token string) (int, error)
+}
+
+type AvatarStorage interface {
+	UploadAvatar(ctx context.Context, advertiserID int, data []byte, filename string, contentType string) (string, error)
 }
 
 type AdActionRepository interface{}
@@ -55,6 +65,8 @@ type Config struct {
 	AdCampaignRepo  AdCampaignRepository
 	AdGroupRepo     AdGroupRepository
 	AdRepo          AdRepository
+	FeedLinkRepo    FeedLinkRepository
+	AvatarStorage   AvatarStorage
 	AdActionRepo    AdActionRepository
 	TopicRepo       TopicRepository
 	RegionRepo      RegionRepository
@@ -67,6 +79,8 @@ type Service struct {
 	adCampaignRepo  AdCampaignRepository
 	adGroupRepo     AdGroupRepository
 	adRepo          AdRepository
+	feedLinkRepo    FeedLinkRepository
+	avatarStorage   AvatarStorage
 	adActionRepo    AdActionRepository
 	topicRepo       TopicRepository
 	regionRepo      RegionRepository
@@ -84,6 +98,8 @@ func NewService(cfg *Config) (*Service, error) {
 		adCampaignRepo:  cfg.AdCampaignRepo,
 		adGroupRepo:     cfg.AdGroupRepo,
 		adRepo:          cfg.AdRepo,
+		feedLinkRepo:    cfg.FeedLinkRepo,
+		avatarStorage:   cfg.AvatarStorage,
 		adActionRepo:    cfg.AdActionRepo,
 		topicRepo:       cfg.TopicRepo,
 		regionRepo:      cfg.RegionRepo,

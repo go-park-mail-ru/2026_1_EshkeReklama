@@ -33,6 +33,14 @@ const (
 	WHERE ad_group_id = $1
 	ORDER BY created_at DESC, id DESC`
 
+	selectAdsByAdvertiserID = `SELECT
+		a.id, a.ad_group_id, a.status, a.title, a.short_desc, a.image_url, a.target_url, a.created_at, a.updated_at
+	FROM eshkere.ad a
+	INNER JOIN eshkere.ad_group ag ON ag.id = a.ad_group_id
+	INNER JOIN eshkere.ad_campaign ac ON ac.id = ag.ad_campaign_id
+	WHERE ac.advertiser_id = $1
+	ORDER BY a.created_at DESC, a.id DESC`
+
 	updateAd = `UPDATE eshkere.ad SET
 		ad_group_id = $1, status = $2, title = $3, short_desc = $4, image_url = $5, target_url = $6, updated_at = $7
 	WHERE id = $8`
@@ -133,6 +141,41 @@ func (r *AdRepository) Update(ctx context.Context, ad *models.Ad) error {
 	}
 
 	return nil
+}
+
+func (r *AdRepository) ListByAdvertiserID(ctx context.Context, advertiserID int) ([]*models.Ad, error) {
+	startedAt := time.Now()
+	rows, err := r.db.QueryContext(ctx, selectAdsByAdvertiserID, advertiserID)
+	logDBQuery(ctx, "ad.list_by_advertiser_id", startedAt, err)
+	if err != nil {
+		return nil, fmt.Errorf("list ads by advertiser_id: %w", err)
+	}
+	defer rows.Close()
+
+	ads := make([]*models.Ad, 0)
+	for rows.Next() {
+		var ad models.Ad
+		if err = rows.Scan(
+			&ad.ID,
+			&ad.AdGroupID,
+			&ad.Status,
+			&ad.Title,
+			&ad.ShortDesc,
+			&ad.ImageURL,
+			&ad.TargetURL,
+			&ad.CreatedAt,
+			&ad.UpdatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("scan ad: %w", err)
+		}
+		ads = append(ads, &ad)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate ads rows: %w", err)
+	}
+
+	return ads, nil
 }
 
 func (r *AdRepository) Delete(ctx context.Context, adID int) error {

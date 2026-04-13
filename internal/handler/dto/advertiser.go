@@ -35,6 +35,7 @@ type AdvertiserProfileResponse struct {
 	Name      string `json:"name"`
 	Email     string `json:"email"`
 	Phone     string `json:"phone"`
+	AvatarURL string `json:"avatar_url,omitempty"`
 	Balance   int64  `json:"balance"`
 	CreatedAt string `json:"created_at"`
 }
@@ -56,6 +57,7 @@ func AdvertiserToProfile(adv *models.Advertiser) AdvertiserProfileResponse {
 		Name:      adv.Name,
 		Email:     adv.Email,
 		Phone:     adv.Phone,
+		AvatarURL: adv.AvatarURL.String,
 		Balance:   adv.Balance,
 		CreatedAt: adv.CreatedAt.Format(time.RFC3339),
 	}

@@ -7,7 +7,9 @@ import (
 	"eshkere/internal/middleware"
 	"eshkere/pkg/httpx"
 	"eshkere/pkg/logger"
+	"io"
 	"net/http"
+	"path/filepath"
 
 	"github.com/gorilla/mux"
 )
@@ -22,6 +24,8 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 	groups.Handle("/balance/topup", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.TopUpBalance))).Methods(http.MethodPost)
 
 	groups.Handle("/me", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.Me))).Methods(http.MethodGet)
+	groups.Handle("/me", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.UpdateProfile))).Methods(http.MethodPut)
+	groups.Handle("/feed-link", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.GenerateFeedLink))).Methods(http.MethodPost)
 }
 
 // @Summary      Регистрация рекламодателя
@@ -151,6 +155,86 @@ func (a *API) Me(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.JSON(w, http.StatusOK, dto.AdvertiserToProfile(adv))
+}
+
+func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	reqLogger := logger.GetLoggerFromCtx(ctx)
+
+	advertiserID, err := middleware.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		reqLogger.Warnw("unauthorized update profile request", "error", err.Error())
+		httpx.Unauthorized(w, "unauthorized")
+		return
+	}
+
+	if err = r.ParseMultipartForm(5 << 20); err != nil {
+		reqLogger.Warnw("invalid multipart payload", "error", err.Error(), "advertiser_id", advertiserID)
+		httpx.BadRequest(w, "invalid multipart payload")
+		return
+	}
+
+	var avatar []byte
+	var avatarFilename string
+	var avatarContentType string
+	file, fileHeader, fileErr := r.FormFile("avatar")
+	if fileErr == nil {
+		defer file.Close()
+		avatar, err = io.ReadAll(io.LimitReader(file, 5<<20))
+		if err != nil {
+			reqLogger.Errorw("failed to read avatar file", "error", err.Error(), "advertiser_id", advertiserID)
+			httpx.InternalError(w, "internal error")
+			return
+		}
+		avatarFilename = filepath.Base(fileHeader.Filename)
+		avatarContentType = fileHeader.Header.Get("Content-Type")
+	}
+
+	adv, err := a.service.UpdateAdvertiserProfile(
+		ctx,
+		advertiserID,
+		r.FormValue("name"),
+		r.FormValue("email"),
+		r.FormValue("phone"),
+		avatar,
+		avatarFilename,
+		avatarContentType,
+	)
+	if err != nil {
+		statusCode, clientMessage, isExpected := convertDomainError(err)
+		if isExpected {
+			reqLogger.Warnw("update profile rejected", "error", err.Error(), "advertiser_id", advertiserID)
+		} else {
+			reqLogger.Errorw("update profile failed", "error", err.Error(), "advertiser_id", advertiserID)
+		}
+		httpx.ErrorJSON(w, statusCode, clientMessage)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, dto.AdvertiserToProfile(adv))
+}
+
+func (a *API) GenerateFeedLink(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	reqLogger := logger.GetLoggerFromCtx(ctx)
+
+	advertiserID, err := middleware.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		reqLogger.Warnw("unauthorized generate feed link request", "error", err.Error())
+		httpx.Unauthorized(w, "unauthorized")
+		return
+	}
+
+	token, err := a.service.GenerateFeedLink(ctx, advertiserID)
+	if err != nil {
+		reqLogger.Errorw("failed to generate feed link", "error", err.Error(), "advertiser_id", advertiserID)
+		httpx.InternalError(w, "internal error")
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, dto.FeedLinkResponse{
+		URL: "/feed/" + token,
+	})
 }
 
 // @Summary      Выход рекламодателя

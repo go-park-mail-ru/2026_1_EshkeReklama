@@ -54,6 +54,23 @@ func (stubService) TopUpAdvertiserBalance(_ context.Context, id int, amount int6
 	return 100 + amount, nil
 }
 
+func (stubService) UpdateAdvertiserProfile(_ context.Context, id int, name, email, phone string, avatar []byte, avatarFilename, avatarContentType string) (*models.Advertiser, error) {
+	return &models.Advertiser{
+		ID:    id,
+		Name:  name,
+		Email: email,
+		Phone: phone,
+	}, nil
+}
+
+func (stubService) GenerateFeedLink(_ context.Context, advertiserID int) (string, error) {
+	return "feed-token", nil
+}
+
+func (stubService) GetAdsByFeedToken(_ context.Context, token string) ([]*models.Ad, error) {
+	return []*models.Ad{}, nil
+}
+
 func (stubService) CreateAd(context.Context, *models.Ad) (*models.Ad, error) {
 	return &models.Ad{}, nil
 }
@@ -294,5 +311,18 @@ func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
 	}
 	if len(envelope.Data.Ads) != 0 {
 		t.Fatalf("expected empty ads list, got %d", len(envelope.Data.Ads))
+	}
+}
+
+func TestFeed_EmptyList(t *testing.T) {
+	sm := newTestSessionManager()
+	r := newTestRouter(sm)
+
+	req := httptest.NewRequest(http.MethodGet, "/feed/feed-token", nil)
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected 200 got %d body=%s", rr.Code, rr.Body.String())
 	}
 }

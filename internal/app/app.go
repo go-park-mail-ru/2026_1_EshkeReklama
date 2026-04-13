@@ -8,6 +8,7 @@ import (
 	"eshkere/internal/repository/postgres"
 	"eshkere/internal/service"
 	"eshkere/internal/session"
+	"eshkere/internal/storage"
 	"fmt"
 	"io"
 	"net/http"
@@ -48,6 +49,12 @@ func New(configPath string) *App {
 	addGroupRepo := postgres.NewAdGroupRepository(db)
 	addRepo := postgres.NewAdRepository(db)
 	adCampaignRepo := postgres.NewAdCampaignRepository(db)
+	feedLinkRepo := postgres.NewFeedLinkRepository(db)
+
+	s3Storage, err := storage.NewS3Storage(context.Background(), cfg.S3)
+	if err != nil {
+		logger.Fatalf("Failed to init s3 storage: %v", err)
+	}
 
 	svc, err := service.NewService(&service.Config{
 		AdvertiserRepo:  advertiserRepo,
@@ -56,6 +63,8 @@ func New(configPath string) *App {
 		AdCampaignRepo:  adCampaignRepo,
 		AdGroupRepo:     addGroupRepo,
 		AdRepo:          addRepo,
+		FeedLinkRepo:    feedLinkRepo,
+		AvatarStorage:   s3Storage,
 		AdActionRepo:    nil,
 		TopicRepo:       nil,
 		RegionRepo:      nil,

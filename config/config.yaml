@@ -17,6 +17,14 @@ redis:
   port: 6379
   password: ${REDIS_PASSWORD}
   db: 0
+  max_idle: 4
+  max_active: 16
+  idle_timeout: 5m
+  wait: true
+  connect_timeout: 5s
+  read_timeout: 5s
+  write_timeout: 5s
+  ping_after_idle_for: 1m
 
 session:
   ttl: 24h

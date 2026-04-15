@@ -26,10 +26,18 @@ type CORSConfig struct {
 }
 
 type RedisConfig struct {
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	Password string `yaml:"password"`
-	DB       int    `yaml:"db"`
+	Host             string        `yaml:"host"`
+	Port             int           `yaml:"port"`
+	Password         string        `yaml:"password"`
+	DB               int           `yaml:"db"`
+	MaxIdle          int           `yaml:"max_idle"`
+	MaxActive        int           `yaml:"max_active"`
+	IdleTimeout      time.Duration `yaml:"idle_timeout"`
+	Wait             bool          `yaml:"wait"`
+	ConnectTimeout   time.Duration `yaml:"connect_timeout"`
+	ReadTimeout      time.Duration `yaml:"read_timeout"`
+	WriteTimeout     time.Duration `yaml:"write_timeout"`
+	PingAfterIdleFor time.Duration `yaml:"ping_after_idle_for"`
 }
 
 type SessionConfig struct {

@@ -12,23 +12,23 @@ func initRedis(cfg config.RedisConfig) (*redis.Pool, error) {
 	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 
 	pool := &redis.Pool{
-		MaxIdle:     4,
-		MaxActive:   16,
-		IdleTimeout: 5 * time.Minute,
-		Wait:        true,
+		MaxIdle:     cfg.MaxIdle,
+		MaxActive:   cfg.MaxActive,
+		IdleTimeout: cfg.IdleTimeout,
+		Wait:        cfg.Wait,
 		Dial: func() (redis.Conn, error) {
 			return redis.Dial(
 				"tcp",
 				addr,
 				redis.DialDatabase(cfg.DB),
 				redis.DialPassword(cfg.Password),
-				redis.DialConnectTimeout(5*time.Second),
-				redis.DialReadTimeout(5*time.Second),
-				redis.DialWriteTimeout(5*time.Second),
+				redis.DialConnectTimeout(cfg.ConnectTimeout),
+				redis.DialReadTimeout(cfg.ReadTimeout),
+				redis.DialWriteTimeout(cfg.WriteTimeout),
 			)
 		},
 		TestOnBorrow: func(c redis.Conn, lastUsed time.Time) error {
-			if time.Since(lastUsed) < time.Minute {
+			if time.Since(lastUsed) < cfg.PingAfterIdleFor {
 				return nil
 			}
 

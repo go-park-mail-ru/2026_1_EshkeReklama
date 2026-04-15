@@ -38,13 +38,14 @@ type AdRepository interface {
 	Create(ctx context.Context, ad *models.Ad) error
 	GetByID(ctx context.Context, adID int) (*models.Ad, error)
 	ListByAdGroupID(ctx context.Context, adGroupID int) ([]*models.Ad, error)
+	ListByCampaignID(ctx context.Context, campaignID int) ([]*models.Ad, error)
 	Update(ctx context.Context, ad *models.Ad) error
 	Delete(ctx context.Context, id int) error
 }
 
 type FeedLinkRepository interface {
 	Create(ctx context.Context, advertiserID int, token string) error
-	GetAdvertiserIDByToken(ctx context.Context, token string) (int, error)
+	GetCampaignIDByToken(ctx context.Context, token string) (int, error)
 }
 
 type AvatarStorage interface {

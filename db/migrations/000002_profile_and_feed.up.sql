@@ -4,7 +4,7 @@ ALTER TABLE eshkere.advertiser
     ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 
 CREATE TABLE IF NOT EXISTS eshkere.ad_feed_link (
-    advertiser_id INT PRIMARY KEY REFERENCES eshkere.advertiser(id) ON DELETE CASCADE,
+    ad_campaign_id INT PRIMARY KEY REFERENCES eshkere.ad_campaign(id) ON DELETE CASCADE,
     token         TEXT NOT NULL UNIQUE,
     created_at    TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at    TIMESTAMP WITH TIME ZONE

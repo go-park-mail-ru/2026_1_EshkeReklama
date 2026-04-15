@@ -741,6 +741,36 @@ paths:
       summary: Обновление объявления
       tags:
       - ads
+  /ad_campaigns/{ad_campaign_id}/feed:
+    post:
+      consumes:
+      - application/json
+      description: Генерирует уникальную feed-ссылку для рекламной кампании
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Создать feed-ссылку для кампании
+      tags:
+      - feed
   /advertiser/balance:
     get:
       description: Возвращает текущий баланс рекламодателя по сессии

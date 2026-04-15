@@ -718,6 +718,51 @@
                 }
             }
         },
+        "/ad_campaigns/{ad_campaign_id}/feed": {
+            "post": {
+                "description": "Генерирует уникальную feed-ссылку для рекламной кампании",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "feed"
+                ],
+                "summary": "Создать feed-ссылку для кампании",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID рекламной кампании",
+                        "name": "ad_campaign_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/advertiser/balance": {
             "get": {
                 "security": [

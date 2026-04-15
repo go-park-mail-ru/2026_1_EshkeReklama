@@ -14,7 +14,7 @@ coverage:
 	go test ./... -coverprofile=cover.out && go tool cover -func=cover.out | tail -n 1
 
 swagger:
-	swag init -g main.go -d ./cmd/eshkere,./internal/app,./internal/handler,./internal/handler/dto,./internal/models,./internal/middleware,./pkg/httpx
+	swag init -g main.go -d ./cmd/eshkere,./internal/app,./internal/handler,./internal/handler/v1,./internal/handler/v1/dto,./internal/models,./internal/handler/middleware,./pkg/httpx
 
 # пример создания новой миграции, замените add_new_type на имя миграции
 migrations-create-example:

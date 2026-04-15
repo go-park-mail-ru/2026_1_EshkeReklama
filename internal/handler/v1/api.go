@@ -16,13 +16,9 @@ type Service interface {
 	UpdateAdvertiserProfile(ctx context.Context, advertiserID int, name, email, phone string) (*models.Advertiser, error)
 	UpdateAdvertiserAvatar(ctx context.Context, advertiserID int, avatar []byte, avatarExt, avatarContentType string) (*models.Advertiser, error)
 	TopUpAdvertiserBalance(ctx context.Context, advertiserID int, amount int64) (int64, error)
-	GenerateFeedLink(ctx context.Context, advertiserID int) (string, error)
-	GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error)
 
-	CreateAd(ctx context.Context, ad *models.Ad) (*models.Ad, error)
-	UpdateAd(ctx context.Context, adID int, req *dto.UpdateAdRequest) error
-	ListAds(ctx context.Context, groupID int) ([]*models.Ad, error)
-	DeleteAd(ctx context.Context, adID int) error
+	GenerateFeedLink(ctx context.Context, campaignID int) (string, error)
+	GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error)
 
 	CreateAdCampaign(ctx context.Context, c *models.AdCampaign) (*models.AdCampaign, error)
 	UpdateAdCampaign(ctx context.Context, campaignID int, req *dto.UpdateAdCampaignRequest) error
@@ -33,6 +29,11 @@ type Service interface {
 	UpdateAdGroup(ctx context.Context, groupID int, req *dto.UpdateAdGroupRequest) error
 	ListAdGroups(ctx context.Context, campaignID int) ([]*models.AdGroup, error)
 	DeleteAdGroup(ctx context.Context, groupID int) error
+
+	CreateAd(ctx context.Context, ad *models.Ad) (*models.Ad, error)
+	UpdateAd(ctx context.Context, adID int, req *dto.UpdateAdRequest) error
+	ListAds(ctx context.Context, groupID int) ([]*models.Ad, error)
+	DeleteAd(ctx context.Context, adID int) error
 }
 
 type APIConfig struct {

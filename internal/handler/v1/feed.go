@@ -5,12 +5,14 @@ import (
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/pkg/httpx"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
 func (a *API) RegisterFeedHandlers(r *mux.Router) {
 	r.HandleFunc("/feed/{token}", a.GetFeed).Methods(http.MethodGet)
+	r.HandleFunc("/ad_campaigns/{ad_campaign_id}/feed", a.CreateFeed).Methods(http.MethodPost)
 }
 
 // @Summary      Публичный feed объявлений
@@ -39,5 +41,34 @@ func (a *API) GetFeed(w http.ResponseWriter, r *http.Request) {
 
 	httpx.JSON(w, http.StatusOK, map[string]any{
 		"ads": adsResponse,
+	})
+}
+
+// @Summary      Создать feed-ссылку для кампании
+// @Description  Генерирует уникальную feed-ссылку для рекламной кампании
+// @Tags         feed
+// @Accept       json
+// @Produce      json
+// @Param        ad_campaign_id  path      int  true  "ID рекламной кампании"
+// @Success      201    {object}  map[string]interface{}
+// @Failure      400    {object}  httpx.Error
+// @Failure      500    {object}  httpx.Error
+// @Router       /ad_campaigns/{ad_campaign_id}/feed [post]
+func (a *API) CreateFeed(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
+	if err != nil {
+		handler.HandleError(w, r, "parsing campaign id", err)
+		return
+	}
+
+	feed, err := a.service.GenerateFeedLink(ctx, campaignID)
+	if err != nil {
+		handler.HandleError(w, r, "creating feed", err)
+		return
+	}
+	httpx.JSON(w, http.StatusCreated, map[string]any{
+		"feed_link": feed,
 	})
 }

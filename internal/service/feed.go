@@ -5,18 +5,19 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
+	"errors"
 	errs "eshkere/internal/errors"
 	"fmt"
 
 	"eshkere/internal/models"
 )
 
-func (s *Service) GenerateFeedLink(ctx context.Context, advertiserID int) (string, error) {
-	if advertiserID <= 0 {
-		return "", fmt.Errorf("%w: invalid advertiser id", errs.ErrInvalidAdvertiserArg)
-	}
-	if s.feedLinkRepo == nil {
-		return "", fmt.Errorf("feed link repository is not configured")
+const BaseFeedURL = "https://eshkereklama/api/v1/feed/"
+
+func (s *Service) GenerateFeedLink(ctx context.Context, campaignID int) (string, error) {
+	campaign, err := s.adCampaignRepo.GetByID(ctx, campaignID)
+	if err != nil || campaign == nil {
+		return "", fmt.Errorf("%w: invalid campaign id", errs.BadRequestError)
 	}
 
 	token, err := generateToken(16)
@@ -24,32 +25,33 @@ func (s *Service) GenerateFeedLink(ctx context.Context, advertiserID int) (strin
 		return "", fmt.Errorf("generate feed token: %w", err)
 	}
 
-	if err = s.feedLinkRepo.Create(ctx, advertiserID, token); err != nil {
+	if err = s.feedLinkRepo.Create(ctx, campaignID, token); err != nil {
 		return "", err
 	}
 
-	return token, nil
+	return fmt.Sprintf("%s%s", BaseFeedURL, token), nil
 }
 
 func (s *Service) GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error) {
 	if token == "" {
 		return nil, fmt.Errorf("%w: empty token", errs.ErrInvalidAdvertiserArg)
 	}
-	if s.feedLinkRepo == nil {
-		return nil, fmt.Errorf("feed link repository is not configured")
-	}
 
-	advertiserID, err := s.feedLinkRepo.GetAdvertiserIDByToken(ctx, token)
+	campaignID, err := s.feedLinkRepo.GetCampaignIDByToken(ctx, token)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, sql.ErrNoRows
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("%w: feed with this token not found", errs.NotFoundError)
 		}
 		return nil, err
 	}
 
-	ads, err := s.adRepo.ListByAdGroupID(ctx, advertiserID)
+	ads, err := s.adRepo.ListByCampaignID(ctx, campaignID)
 	if err != nil {
-		return nil, err
+		return []*models.Ad{}, nil
+	}
+
+	if ads == nil {
+		return []*models.Ad{}, nil
 	}
 
 	return ads, nil

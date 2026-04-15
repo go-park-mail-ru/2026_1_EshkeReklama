@@ -157,6 +157,20 @@ func (a *API) Me(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusOK, dto.AdvertiserToProfile(adv))
 }
 
+// @Summary      Обновление профиля рекламодателя
+// @Description  Обновляет данные текущего рекламодателя по сессии
+// @Tags         advertiser
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        name   formData  string  false  "Имя рекламодателя"
+// @Param        email  formData  string  false  "Email рекламодателя"
+// @Param        phone  formData  string  false  "Телефон рекламодателя"
+// @Success      200    {object}  dto.AdvertiserProfileResponse
+// @Failure      400    {object}  httpx.Error
+// @Failure      401    {object}  httpx.Error
+// @Failure      500    {object}  httpx.Error
+// @Router       /advertiser/me [put]
+// @Security     CookieAuth
 func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	reqLogger := logger.GetLoggerFromCtx(ctx)
@@ -195,6 +209,15 @@ func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusOK, dto.AdvertiserToProfile(adv))
 }
 
+// @Summary      Генерация уникальной feed-ссылки
+// @Description  Создает или обновляет уникальную публичную ссылку на feed объявлений текущего рекламодателя
+// @Tags         advertiser
+// @Produce      json
+// @Success      200  {object}  dto.FeedLinkResponse
+// @Failure      401  {object}  httpx.Error
+// @Failure      500  {object}  httpx.Error
+// @Router       /advertiser/feed-link [post]
+// @Security     CookieAuth
 func (a *API) GenerateFeedLink(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	reqLogger := logger.GetLoggerFromCtx(ctx)
@@ -239,6 +262,16 @@ func (a *API) Logout(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summary      Баланс рекламодателя
+// @Description  Возвращает текущий баланс рекламодателя по сессии
+// @Tags         advertiser
+// @Produce      json
+// @Success      200  {object}  dto.BalanceResponse
+// @Failure      401  {object}  httpx.Error
+// @Failure      404  {object}  httpx.Error
+// @Failure      500  {object}  httpx.Error
+// @Router       /advertiser/balance [get]
+// @Security     CookieAuth
 func (a *API) GetBalance(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	reqLogger := logger.GetLoggerFromCtx(ctx)
@@ -268,6 +301,18 @@ func (a *API) GetBalance(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summary      Пополнение баланса
+// @Description  Пополняет баланс текущего рекламодателя
+// @Tags         advertiser
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.TopUpBalanceRequest  true  "Сумма пополнения"
+// @Success      200   {object}  dto.BalanceResponse
+// @Failure      400   {object}  httpx.Error
+// @Failure      401   {object}  httpx.Error
+// @Failure      500   {object}  httpx.Error
+// @Router       /advertiser/balance/topup [post]
+// @Security     CookieAuth
 func (a *API) TopUpBalance(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	reqLogger := logger.GetLoggerFromCtx(ctx)
@@ -303,6 +348,18 @@ func (a *API) TopUpBalance(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summary      Обновление аватара рекламодателя
+// @Description  Загружает JPEG, PNG или WEBP аватар текущего рекламодателя
+// @Tags         advertiser
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        avatar  formData  file  true  "Файл аватара"
+// @Success      200     {object}  dto.AdvertiserProfileResponse
+// @Failure      400     {object}  httpx.Error
+// @Failure      401     {object}  httpx.Error
+// @Failure      500     {object}  httpx.Error
+// @Router       /advertiser/me/avatar [put]
+// @Security     CookieAuth
 func (a *API) UpdateAvatar(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	reqLogger := logger.GetLoggerFromCtx(ctx)

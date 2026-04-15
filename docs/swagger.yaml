@@ -45,6 +45,8 @@ definitions:
     type: object
   dto.AdvertiserProfileResponse:
     properties:
+      avatar_url:
+        type: string
       balance:
         type: integer
       created_at:
@@ -57,6 +59,11 @@ definitions:
         type: string
       phone:
         type: string
+    type: object
+  dto.BalanceResponse:
+    properties:
+      balance:
+        type: integer
     type: object
   dto.CreateAdCampaignRequest:
     properties:
@@ -121,6 +128,11 @@ definitions:
       id:
         type: integer
     type: object
+  dto.FeedLinkResponse:
+    properties:
+      url:
+        type: string
+    type: object
   dto.ListAdCampaignsResponse:
     properties:
       advertiser_id:
@@ -184,6 +196,11 @@ definitions:
       phone:
         type: string
     type: object
+  dto.TopUpBalanceRequest:
+    properties:
+      amount:
+        type: integer
+    type: object
   dto.UpdateAdCampaignRequest:
     properties:
       daily_budget:
@@ -217,7 +234,14 @@ definitions:
       short_desc:
         type: string
       status:
-        $ref: '#/definitions/models.AdStatus'
+        allOf:
+        - $ref: '#/definitions/models.AdStatus'
+        enum:
+        - turned_off
+        - moderation
+        - working
+        - rejected
+        - not_enough_money
       target_url:
         type: string
       title:
@@ -717,6 +741,93 @@ paths:
       summary: Обновление объявления
       tags:
       - ads
+  /advertiser/balance:
+    get:
+      description: Возвращает текущий баланс рекламодателя по сессии
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BalanceResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Баланс рекламодателя
+      tags:
+      - advertiser
+  /advertiser/balance/topup:
+    post:
+      consumes:
+      - application/json
+      description: Пополняет баланс текущего рекламодателя
+      parameters:
+      - description: Сумма пополнения
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TopUpBalanceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BalanceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Пополнение баланса
+      tags:
+      - advertiser
+  /advertiser/feed-link:
+    post:
+      description: Создает или обновляет уникальную публичную ссылку на feed объявлений
+        текущего рекламодателя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeedLinkResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Генерация уникальной feed-ссылки
+      tags:
+      - advertiser
   /advertiser/login:
     post:
       consumes:
@@ -797,6 +908,82 @@ paths:
       summary: Профиль рекламодателя
       tags:
       - advertiser
+    put:
+      consumes:
+      - multipart/form-data
+      description: Обновляет данные текущего рекламодателя по сессии
+      parameters:
+      - description: Имя рекламодателя
+        in: formData
+        name: name
+        type: string
+      - description: Email рекламодателя
+        in: formData
+        name: email
+        type: string
+      - description: Телефон рекламодателя
+        in: formData
+        name: phone
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AdvertiserProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление профиля рекламодателя
+      tags:
+      - advertiser
+  /advertiser/me/avatar:
+    put:
+      consumes:
+      - multipart/form-data
+      description: Загружает JPEG, PNG или WEBP аватар текущего рекламодателя
+      parameters:
+      - description: Файл аватара
+        in: formData
+        name: avatar
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AdvertiserProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление аватара рекламодателя
+      tags:
+      - advertiser
   /advertiser/register:
     post:
       consumes:
@@ -827,6 +1014,35 @@ paths:
       summary: Регистрация рекламодателя
       tags:
       - advertiser
+  /feed/{token}:
+    get:
+      description: Возвращает объявления по публичному feed-токену; при отсутствии
+        объявлений возвращает пустой список
+      parameters:
+      - description: Feed-токен
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Публичный feed объявлений
+      tags:
+      - feed
 securityDefinitions:
   CookieAuth:
     in: cookie

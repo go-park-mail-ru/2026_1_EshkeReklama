@@ -718,6 +718,143 @@
                 }
             }
         },
+        "/advertiser/balance": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Возвращает текущий баланс рекламодателя по сессии",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "advertiser"
+                ],
+                "summary": "Баланс рекламодателя",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BalanceResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/advertiser/balance/topup": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Пополняет баланс текущего рекламодателя",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "advertiser"
+                ],
+                "summary": "Пополнение баланса",
+                "parameters": [
+                    {
+                        "description": "Сумма пополнения",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TopUpBalanceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/advertiser/feed-link": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Создает или обновляет уникальную публичную ссылку на feed объявлений текущего рекламодателя",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "advertiser"
+                ],
+                "summary": "Генерация уникальной feed-ссылки",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeedLinkResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/advertiser/login": {
             "post": {
                 "description": "Аутентифицирует рекламодателя по email или телефону и паролю",
@@ -840,6 +977,125 @@
                         }
                     }
                 }
+            },
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Обновляет данные текущего рекламодателя по сессии",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "advertiser"
+                ],
+                "summary": "Обновление профиля рекламодателя",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Имя рекламодателя",
+                        "name": "name",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Email рекламодателя",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Телефон рекламодателя",
+                        "name": "phone",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AdvertiserProfileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/advertiser/me/avatar": {
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Загружает JPEG, PNG или WEBP аватар текущего рекламодателя",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "advertiser"
+                ],
+                "summary": "Обновление аватара рекламодателя",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Файл аватара",
+                        "name": "avatar",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AdvertiserProfileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
             }
         },
         "/advertiser/register": {
@@ -875,6 +1131,48 @@
                     },
                     "400": {
                         "description": "Invalid request или User already exists",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/feed/{token}": {
+            "get": {
+                "description": "Возвращает объявления по публичному feed-токену; при отсутствии объявлений возвращает пустой список",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "feed"
+                ],
+                "summary": "Публичный feed объявлений",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Feed-токен",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/httpx.Error"
                         }
@@ -959,6 +1257,9 @@
         "dto.AdvertiserProfileResponse": {
             "type": "object",
             "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
                 "balance": {
                     "type": "integer"
                 },
@@ -976,6 +1277,14 @@
                 },
                 "phone": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.BalanceResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "integer"
                 }
             }
         },
@@ -1069,6 +1378,14 @@
             "properties": {
                 "id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.FeedLinkResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
                 }
             }
         },
@@ -1170,6 +1487,14 @@
                 }
             }
         },
+        "dto.TopUpBalanceRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.UpdateAdCampaignRequest": {
             "type": "object",
             "properties": {
@@ -1220,7 +1545,18 @@
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/models.AdStatus"
+                    "enum": [
+                        "turned_off",
+                        "moderation",
+                        "working",
+                        "rejected",
+                        "not_enough_money"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.AdStatus"
+                        }
+                    ]
                 },
                 "target_url": {
                     "type": "string"

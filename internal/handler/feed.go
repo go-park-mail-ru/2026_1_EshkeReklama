@@ -15,6 +15,15 @@ func (a *API) RegisterFeedHandlers(r *mux.Router) {
 	r.HandleFunc("/feed/{token}", a.GetFeed).Methods(http.MethodGet)
 }
 
+// @Summary      Публичный feed объявлений
+// @Description  Возвращает объявления по публичному feed-токену; при отсутствии объявлений возвращает пустой список
+// @Tags         feed
+// @Produce      json
+// @Param        token  path      string  true  "Feed-токен"
+// @Success      200    {object}  map[string]interface{}
+// @Failure      404    {object}  httpx.Error
+// @Failure      500    {object}  httpx.Error
+// @Router       /feed/{token} [get]
 func (a *API) GetFeed(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	reqLogger := logger.GetLoggerFromCtx(ctx)

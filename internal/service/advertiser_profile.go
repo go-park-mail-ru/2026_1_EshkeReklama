@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	errs "eshkere/internal/errors"
 	"fmt"
 	"strings"
 
@@ -11,7 +12,7 @@ import (
 
 func (s *Service) UpdateAdvertiserProfile(ctx context.Context, advertiserID int, name, email, phone string) (*models.Advertiser, error) {
 	if advertiserID <= 0 {
-		return nil, fmt.Errorf("%w: invalid advertiser id", ErrInvalidAdvertiserArg)
+		return nil, fmt.Errorf("%w: invalid advertiser id", errs.ErrInvalidAdvertiserArg)
 	}
 
 	adv, err := s.advertiserRepo.GetByID(ctx, advertiserID)
@@ -33,7 +34,7 @@ func (s *Service) UpdateAdvertiserProfile(ctx context.Context, advertiserID int,
 	if phone != "" {
 		normalizedPhone, normalizeErr := normalizeAdvertiserPhone(phone)
 		if normalizeErr != nil {
-			return nil, fmt.Errorf("%w: %v", ErrInvalidAdvertiserArg, normalizeErr)
+			return nil, fmt.Errorf("%w: %v", errs.ErrInvalidAdvertiserArg, normalizeErr)
 		}
 		adv.Phone = normalizedPhone
 	}
@@ -55,11 +56,11 @@ func (s *Service) UpdateAdvertiserAvatar(
 	avatarContentType string,
 ) (*models.Advertiser, error) {
 	if advertiserID <= 0 {
-		return nil, fmt.Errorf("%w: invalid advertiser id", ErrInvalidAdvertiserArg)
+		return nil, fmt.Errorf("%w: invalid advertiser id", errs.ErrInvalidAdvertiserArg)
 	}
 
 	if len(avatar) == 0 {
-		return nil, fmt.Errorf("%w: empty avatar", ErrInvalidAdvertiserArg)
+		return nil, fmt.Errorf("%w: empty avatar", errs.ErrInvalidAdvertiserArg)
 	}
 
 	if s.avatarStorage == nil {

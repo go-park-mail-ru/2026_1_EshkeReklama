@@ -24,7 +24,7 @@ func (s *Service) GenerateFeedLink(ctx context.Context, advertiserID int) (strin
 		return "", fmt.Errorf("generate feed token: %w", err)
 	}
 
-	if err = s.feedLinkRepo.UpsertByAdvertiserID(ctx, advertiserID, token); err != nil {
+	if err = s.feedLinkRepo.Create(ctx, advertiserID, token); err != nil {
 		return "", err
 	}
 

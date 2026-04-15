@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"database/sql"
+	"errors"
+	errs "eshkere/internal/errors"
 	"testing"
 
 	"eshkere/internal/models"
@@ -66,7 +68,7 @@ func TestRegisterAdvertiser_EmailTaken(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error")
 	}
-	if err != ErrEmailTaken {
+	if errors.Is(err, errs.ErrEmailTaken) {
 		t.Fatalf("expected ErrEmailTaken got %v", err)
 	}
 }
@@ -89,7 +91,7 @@ func TestAuthenticateAdvertiser_InvalidPassword(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error")
 	}
-	if err != ErrInvalidCredentials {
+	if errors.Is(err, errs.ErrInvalidCredentials) {
 		t.Fatalf("expected ErrInvalidCredentials got %v", err)
 	}
 }

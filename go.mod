@@ -7,8 +7,8 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.41.5
 	github.com/aws/aws-sdk-go-v2/config v1.32.14
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.14
-	github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.1.15
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.99.0
+	github.com/go-playground/validator/v10 v10.30.2
 	github.com/gomodule/redigo v1.9.3
 	github.com/gorilla/mux v1.8.1
 	github.com/jackc/pgx/v5 v5.8.0
@@ -17,7 +17,6 @@ require (
 	go.uber.org/mock v0.6.0
 	go.uber.org/zap v1.27.1
 	golang.org/x/crypto v0.49.0
-	golang.org/x/image v0.39.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -47,7 +46,6 @@ require (
 	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.30.2 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect

@@ -44,7 +44,7 @@ type AdRepository interface {
 }
 
 type FeedLinkRepository interface {
-	UpsertByAdvertiserID(ctx context.Context, advertiserID int, token string) error
+	Create(ctx context.Context, advertiserID int, token string) error
 	GetAdvertiserIDByToken(ctx context.Context, token string) (int, error)
 }
 

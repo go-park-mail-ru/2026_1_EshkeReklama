@@ -7,11 +7,11 @@
 //
 
 // Package handlers is a generated GoMock package.
-package handlers
+package handler
 
 import (
 	context "context"
-	dto "eshkere/internal/handler/dto"
+	dto "eshkere/internal/handler/v1/dto"
 	models "eshkere/internal/models"
 	reflect "reflect"
 

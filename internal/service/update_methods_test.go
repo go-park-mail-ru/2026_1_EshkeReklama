@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"testing"
 
-	"eshkere/internal/handler/dto"
+	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
 
 	"go.uber.org/mock/gomock"

@@ -1,7 +1,7 @@
 package v1
 
 import (
-	handlers "eshkere/internal/handler"
+	"eshkere/internal/handler"
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/pkg/httpx"
 	"net/http"
@@ -28,7 +28,7 @@ func (a *API) GetFeed(w http.ResponseWriter, r *http.Request) {
 
 	ads, err := a.service.GetAdsByFeedToken(ctx, token)
 	if err != nil {
-		handlers.HandleError(w, r, "getting ads by feed token", err)
+		handler.HandleError(w, r, "getting ads by feed token", err)
 		return
 	}
 

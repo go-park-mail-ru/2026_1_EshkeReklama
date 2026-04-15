@@ -48,8 +48,8 @@ func New(configPath string) *App {
 	closers = append([]io.Closer{db}, closers...)
 
 	advertiserRepo := postgres.NewAdvertiserRepository(db)
-	addGroupRepo := postgres.NewAdGroupRepository(db)
-	addRepo := postgres.NewAdRepository(db)
+	adGroupRepo := postgres.NewAdGroupRepository(db)
+	adRepo := postgres.NewAdRepository(db)
 	adCampaignRepo := postgres.NewAdCampaignRepository(db)
 	feedLinkRepo := postgres.NewFeedLinkRepository(db)
 
@@ -73,8 +73,8 @@ func New(configPath string) *App {
 		PartnerRepo:     nil,
 		PartnerSiteRepo: nil,
 		AdCampaignRepo:  adCampaignRepo,
-		AdGroupRepo:     addGroupRepo,
-		AdRepo:          addRepo,
+		AdGroupRepo:     adGroupRepo,
+		AdRepo:          adRepo,
 		FeedLinkRepo:    feedLinkRepo,
 		AvatarStorage:   avatarStorage,
 		AdActionRepo:    nil,

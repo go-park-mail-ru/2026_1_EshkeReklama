@@ -1,7 +1,7 @@
 package v1
 
 import (
-	handlers "eshkere/internal/handler"
+	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/pkg/httpx"
@@ -46,20 +46,20 @@ func (a *API) CreateAd(w http.ResponseWriter, r *http.Request) {
 
 	ad, err := req.ToModel()
 	if err != nil {
-		handlers.HandleError(w, r, "mapping ad model", err)
+		handler.HandleError(w, r, "mapping ad model", err)
 		return
 	}
 
 	groupID, err := strconv.Atoi(mux.Vars(r)["ad_group_id"])
 	if err != nil {
-		handlers.HandleError(w, r, "parsing group id", err)
+		handler.HandleError(w, r, "parsing group id", err)
 		return
 	}
 	ad.AdGroupID = groupID
 
 	createdAd, err := a.service.CreateAd(ctx, ad)
 	if err != nil {
-		handlers.HandleError(w, r, "creating ad", err)
+		handler.HandleError(w, r, "creating ad", err)
 		return
 	}
 
@@ -88,7 +88,7 @@ func (a *API) UpdateAd(w http.ResponseWriter, r *http.Request) {
 
 	adID, err := strconv.Atoi(mux.Vars(r)["ad_id"])
 	if err != nil {
-		handlers.HandleError(w, r, "parsing ad id", err)
+		handler.HandleError(w, r, "parsing ad id", err)
 		return
 	}
 
@@ -100,7 +100,7 @@ func (a *API) UpdateAd(w http.ResponseWriter, r *http.Request) {
 
 	err = a.service.UpdateAd(ctx, adID, req)
 	if err != nil {
-		handlers.HandleError(w, r, "updating id", err)
+		handler.HandleError(w, r, "updating id", err)
 		return
 	}
 
@@ -124,13 +124,13 @@ func (a *API) ListAds(w http.ResponseWriter, r *http.Request) {
 
 	groupID, err := strconv.Atoi(mux.Vars(r)["ad_group_id"])
 	if err != nil {
-		handlers.HandleError(w, r, "parsing group id", err)
+		handler.HandleError(w, r, "parsing group id", err)
 		return
 	}
 
 	ads, err := a.service.ListAds(ctx, groupID)
 	if err != nil {
-		handlers.HandleError(w, r, "listing ads", err)
+		handler.HandleError(w, r, "listing ads", err)
 		return
 	}
 
@@ -163,13 +163,13 @@ func (a *API) DeleteAd(w http.ResponseWriter, r *http.Request) {
 
 	adID, err := strconv.Atoi(mux.Vars(r)["ad_id"])
 	if err != nil {
-		handlers.HandleError(w, r, "parsing ad id", err)
+		handler.HandleError(w, r, "parsing ad id", err)
 		return
 	}
 
 	err = a.service.DeleteAd(ctx, adID)
 	if err != nil {
-		handlers.HandleError(w, r, "deleting ad", err)
+		handler.HandleError(w, r, "deleting ad", err)
 		return
 	}
 

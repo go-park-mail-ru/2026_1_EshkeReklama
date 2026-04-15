@@ -1,7 +1,7 @@
 package v1
 
 import (
-	handlers "eshkere/internal/handler"
+	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/pkg/ctxutils"
@@ -40,7 +40,7 @@ func (a *API) CreateAdCampaign(w http.ResponseWriter, r *http.Request) {
 
 	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
 	if err != nil {
-		handlers.HandleError(w, r, "unauthorized", err)
+		handler.HandleError(w, r, "unauthorized", err)
 		return
 	}
 
@@ -53,7 +53,7 @@ func (a *API) CreateAdCampaign(w http.ResponseWriter, r *http.Request) {
 	campaign := req.ToModel(advertiserID)
 	created, err := a.service.CreateAdCampaign(ctx, campaign)
 	if err != nil {
-		handlers.HandleError(w, r, "creating campaign", err)
+		handler.HandleError(w, r, "creating campaign", err)
 		return
 	}
 
@@ -81,7 +81,7 @@ func (a *API) UpdateAdCampaign(w http.ResponseWriter, r *http.Request) {
 
 	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
 	if err != nil {
-		handlers.HandleError(w, r, "parsing campaign id", err)
+		handler.HandleError(w, r, "parsing campaign id", err)
 		return
 	}
 
@@ -92,7 +92,7 @@ func (a *API) UpdateAdCampaign(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = a.service.UpdateAdCampaign(ctx, campaignID, req); err != nil {
-		handlers.HandleError(w, r, "updating campaign", err)
+		handler.HandleError(w, r, "updating campaign", err)
 		return
 	}
 
@@ -114,13 +114,13 @@ func (a *API) ListAdCampaigns(w http.ResponseWriter, r *http.Request) {
 
 	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
 	if err != nil {
-		handlers.HandleError(w, r, "unauthorized", err)
+		handler.HandleError(w, r, "unauthorized", err)
 		return
 	}
 
 	campaigns, err := a.service.ListAdCampaigns(ctx, advertiserID)
 	if err != nil {
-		handlers.HandleError(w, r, "listing campaigns", err)
+		handler.HandleError(w, r, "listing campaigns", err)
 		return
 	}
 
@@ -151,12 +151,12 @@ func (a *API) DeleteAdCampaign(w http.ResponseWriter, r *http.Request) {
 
 	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
 	if err != nil {
-		handlers.HandleError(w, r, "parsing campaign id", err)
+		handler.HandleError(w, r, "parsing campaign id", err)
 		return
 	}
 
 	if err = a.service.DeleteAdCampaign(ctx, campaignID); err != nil {
-		handlers.HandleError(w, r, "deleting campaign", err)
+		handler.HandleError(w, r, "deleting campaign", err)
 		return
 	}
 

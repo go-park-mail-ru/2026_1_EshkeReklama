@@ -47,7 +47,7 @@ func (s *Service) GetAdsByFeedToken(ctx context.Context, token string) ([]*model
 		return nil, err
 	}
 
-	ads, err := s.adRepo.ListByAdvertiserID(ctx, advertiserID)
+	ads, err := s.adRepo.ListByAdGroupID(ctx, advertiserID)
 	if err != nil {
 		return nil, err
 	}

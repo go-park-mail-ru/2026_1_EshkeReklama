@@ -1,7 +1,7 @@
 package v1
 
 import (
-	handlers "eshkere/internal/handler"
+	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/pkg/httpx"
@@ -39,7 +39,7 @@ func (a *API) CreateAdGroup(w http.ResponseWriter, r *http.Request) {
 
 	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
 	if err != nil {
-		handlers.HandleError(w, r, "parsing campaign id", err)
+		handler.HandleError(w, r, "parsing campaign id", err)
 		return
 	}
 
@@ -52,7 +52,7 @@ func (a *API) CreateAdGroup(w http.ResponseWriter, r *http.Request) {
 	group := req.ToModel(campaignID)
 	created, err := a.service.CreateAdGroup(ctx, group)
 	if err != nil {
-		handlers.HandleError(w, r, "creating group", err)
+		handler.HandleError(w, r, "creating group", err)
 		return
 	}
 
@@ -80,7 +80,7 @@ func (a *API) UpdateAdGroup(w http.ResponseWriter, r *http.Request) {
 
 	groupID, err := strconv.Atoi(mux.Vars(r)["ad_group_id"])
 	if err != nil {
-		handlers.HandleError(w, r, "parsing group id", err)
+		handler.HandleError(w, r, "parsing group id", err)
 		return
 	}
 
@@ -91,7 +91,7 @@ func (a *API) UpdateAdGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = a.service.UpdateAdGroup(ctx, groupID, req); err != nil {
-		handlers.HandleError(w, r, "updating group", err)
+		handler.HandleError(w, r, "updating group", err)
 		return
 	}
 
@@ -114,13 +114,13 @@ func (a *API) ListAdGroups(w http.ResponseWriter, r *http.Request) {
 
 	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
 	if err != nil {
-		handlers.HandleError(w, r, "parsing campaign id", err)
+		handler.HandleError(w, r, "parsing campaign id", err)
 		return
 	}
 
 	groups, err := a.service.ListAdGroups(ctx, campaignID)
 	if err != nil {
-		handlers.HandleError(w, r, "listing groups", err)
+		handler.HandleError(w, r, "listing groups", err)
 		return
 	}
 
@@ -152,12 +152,12 @@ func (a *API) DeleteAdGroup(w http.ResponseWriter, r *http.Request) {
 
 	groupID, err := strconv.Atoi(mux.Vars(r)["ad_group_id"])
 	if err != nil {
-		handlers.HandleError(w, r, "parsing group id", err)
+		handler.HandleError(w, r, "parsing group id", err)
 		return
 	}
 
 	if err = a.service.DeleteAdGroup(ctx, groupID); err != nil {
-		handlers.HandleError(w, r, "deleting group", err)
+		handler.HandleError(w, r, "deleting group", err)
 		return
 	}
 

@@ -52,6 +52,14 @@ func BadRequest(w http.ResponseWriter, message string) {
 	ErrorJSON(w, http.StatusBadRequest, message)
 }
 
+func AlreadyExists(w http.ResponseWriter, message string) {
+	ErrorJSON(w, http.StatusConflict, message)
+}
+
+func BusinessLogic(w http.ResponseWriter, message string) {
+	ErrorJSON(w, http.StatusUnprocessableEntity, message)
+}
+
 func Unauthorized(w http.ResponseWriter, message string) {
 	ErrorJSON(w, http.StatusUnauthorized, message)
 }

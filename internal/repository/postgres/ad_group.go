@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"eshkere/internal/models"
+	"eshkere/pkg/logger"
 	"fmt"
-	"time"
 )
 
 type AdGroupRepository struct {
@@ -45,11 +45,11 @@ func (r *AdGroupRepository) Create(ctx context.Context, g *models.AdGroup) error
 		return fmt.Errorf("ad group cannot be nil")
 	}
 
-	startedAt := time.Now()
+	logger.GetLoggerFromCtx(ctx).Debug("db: create ad_group")
+
 	err := r.db.QueryRowContext(ctx, insertAdGroup,
 		g.AdCampaignID, g.TopicID, g.RegionID, g.Name, g.AgeFrom, g.AgeTo, g.Gender,
 	).Scan(&g.ID)
-	logDBQuery(ctx, "ad_group.create", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("insert ad group: %w", err)
 	}
@@ -58,9 +58,10 @@ func (r *AdGroupRepository) Create(ctx context.Context, g *models.AdGroup) error
 }
 
 func (r *AdGroupRepository) GetByID(ctx context.Context, id int) (*models.AdGroup, error) {
+	logger.GetLoggerFromCtx(ctx).Debugf("db: get ad_group by id: %d", id)
+
 	var g models.AdGroup
 
-	startedAt := time.Now()
 	err := r.db.QueryRowContext(ctx, selectAdGroupByID, id).Scan(
 		&g.ID,
 		&g.AdCampaignID,
@@ -73,7 +74,6 @@ func (r *AdGroupRepository) GetByID(ctx context.Context, id int) (*models.AdGrou
 		&g.CreatedAt,
 		&g.UpdatedAt,
 	)
-	logDBQuery(ctx, "ad_group.get_by_id", startedAt, err)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("ad group not found: %w", err)
@@ -85,9 +85,9 @@ func (r *AdGroupRepository) GetByID(ctx context.Context, id int) (*models.AdGrou
 }
 
 func (r *AdGroupRepository) ListByCampaignID(ctx context.Context, campaignID int) ([]*models.AdGroup, error) {
-	startedAt := time.Now()
+	logger.GetLoggerFromCtx(ctx).Debugf("db: get ad_groups by campaignID: %d", campaignID)
+
 	rows, err := r.db.QueryContext(ctx, selectAdGroupsByCampaignID, campaignID)
-	logDBQuery(ctx, "ad_group.list_by_campaign_id", startedAt, err)
 	if err != nil {
 		return nil, fmt.Errorf("list ad groups by ad_campaign_id: %w", err)
 	}
@@ -125,11 +125,11 @@ func (r *AdGroupRepository) Update(ctx context.Context, g *models.AdGroup) error
 		return fmt.Errorf("ad group cannot be nil")
 	}
 
-	startedAt := time.Now()
+	logger.GetLoggerFromCtx(ctx).Debugf("db: update ad_group by id: %d", g.ID)
+
 	_, err := r.db.ExecContext(ctx, updateAdGroup,
 		g.AdCampaignID, g.TopicID, g.RegionID, g.Name, g.AgeFrom, g.AgeTo, g.Gender, g.UpdatedAt, g.ID,
 	)
-	logDBQuery(ctx, "ad_group.update", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("update ad group: %w", err)
 	}
@@ -138,9 +138,9 @@ func (r *AdGroupRepository) Update(ctx context.Context, g *models.AdGroup) error
 }
 
 func (r *AdGroupRepository) Delete(ctx context.Context, id int) error {
-	startedAt := time.Now()
+	logger.GetLoggerFromCtx(ctx).Debugf("db: delete ad_group by id: %d", id)
+
 	result, err := r.db.ExecContext(ctx, deleteAdGroup, id)
-	logDBQuery(ctx, "ad_group.delete", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("delete ad group: %w", err)
 	}

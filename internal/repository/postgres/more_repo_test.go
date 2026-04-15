@@ -12,7 +12,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
-func TestFeedLinkRepository_UpsertAndGet(t *testing.T) {
+func TestFeedLinkRepository_InsertAndGet(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("sqlmock.New: %v", err)
@@ -21,11 +21,11 @@ func TestFeedLinkRepository_UpsertAndGet(t *testing.T) {
 
 	repo := NewFeedLinkRepository(db)
 
-	mock.ExpectExec(regexp.QuoteMeta(upsertFeedLink)).
+	mock.ExpectExec(regexp.QuoteMeta(insertFeedLink)).
 		WithArgs(1, "tok").
 		WillReturnResult(sqlmock.NewResult(0, 1))
 
-	if err := repo.UpsertByAdvertiserID(context.Background(), 1, "tok"); err != nil {
+	if err := repo.InsertByAdvertiserID(context.Background(), 1, "tok"); err != nil {
 		t.Fatalf("UpsertByAdvertiserID: %v", err)
 	}
 

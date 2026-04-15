@@ -1,11 +1,9 @@
-package handlers
+package v1
 
 import (
-	"database/sql"
-	"errors"
-	"eshkere/internal/handler/dto"
+	handlers "eshkere/internal/handler"
+	"eshkere/internal/handler/v1/dto"
 	"eshkere/pkg/httpx"
-	"eshkere/pkg/logger"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -26,17 +24,11 @@ func (a *API) RegisterFeedHandlers(r *mux.Router) {
 // @Router       /feed/{token} [get]
 func (a *API) GetFeed(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	reqLogger := logger.GetLoggerFromCtx(ctx)
 	token := mux.Vars(r)["token"]
 
 	ads, err := a.service.GetAdsByFeedToken(ctx, token)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			httpx.NotFound(w, "feed not found")
-			return
-		}
-		reqLogger.Errorw("failed to get feed", "error", err.Error())
-		httpx.InternalError(w, "internal error")
+		handlers.HandleError(w, r, "getting ads by feed token", err)
 		return
 	}
 

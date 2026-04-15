@@ -3,8 +3,9 @@ package app
 import (
 	"context"
 	"eshkere/internal/config"
-	handlers "eshkere/internal/handler"
-	"eshkere/internal/middleware"
+	"eshkere/internal/handler"
+	middleware2 "eshkere/internal/handler/middleware"
+	"eshkere/internal/handler/v1"
 	"eshkere/internal/repository/postgres"
 	"eshkere/internal/service"
 	"eshkere/internal/session"
@@ -115,22 +116,22 @@ func New(configPath string) *App {
 
 func (a *App) Run() error {
 	router := mux.NewRouter().StrictSlash(true)
-	router.Use(middleware.RequestContext(a.logger))
-	router.Use(middleware.AccessLog())
-	router.Use(middleware.CSRF(middleware.CSRFConfig{
+	router.Use(middleware2.RequestContext(a.logger))
+	router.Use(middleware2.AccessLog())
+	router.Use(middleware2.CSRF(middleware2.CSRFConfig{
 		CookieName: "csrf_token",
 		HeaderName: "X-CSRF-Token",
 		Secure:     a.cfg.Session.CookieSecure,
 	}))
 
-	handlers.Register(router, handlers.NewAPI(handlers.APIConfig{
+	handlers.Register(router, v1.NewAPI(v1.APIConfig{
 		Service:        a.service,
 		SessionManager: a.sessionManager,
 	}))
 
 	server := &http.Server{
 		Addr:         a.cfg.HTTPServer.Listen,
-		Handler:      middleware.CORS(a.cfg.CORS.AllowedOrigins)(router),
+		Handler:      middleware2.CORS(a.cfg.CORS.AllowedOrigins)(router),
 		ReadTimeout:  a.cfg.HTTPServer.ReadTimeout,
 		WriteTimeout: a.cfg.HTTPServer.WriteTimeout,
 	}

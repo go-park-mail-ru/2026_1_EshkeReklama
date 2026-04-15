@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"eshkere/internal/models"
+	"eshkere/pkg/logger"
 	"fmt"
-	"time"
 )
 
 type AdRepository struct {
@@ -33,14 +33,6 @@ const (
 	WHERE ad_group_id = $1
 	ORDER BY created_at DESC, id DESC`
 
-	selectAdsByAdvertiserID = `SELECT
-		a.id, a.ad_group_id, a.status, a.title, a.short_desc, a.image_url, a.target_url, a.created_at, a.updated_at
-	FROM eshkere.ad a
-	INNER JOIN eshkere.ad_group ag ON ag.id = a.ad_group_id
-	INNER JOIN eshkere.ad_campaign ac ON ac.id = ag.ad_campaign_id
-	WHERE ac.advertiser_id = $1
-	ORDER BY a.created_at DESC, a.id DESC`
-
 	updateAd = `UPDATE eshkere.ad SET
 		ad_group_id = $1, status = $2, title = $3, short_desc = $4, image_url = $5, target_url = $6, updated_at = $7
 	WHERE id = $8`
@@ -53,11 +45,11 @@ func (r *AdRepository) Create(ctx context.Context, ad *models.Ad) error {
 		return fmt.Errorf("ad cannot be nil")
 	}
 
-	startedAt := time.Now()
+	logger.GetLoggerFromCtx(ctx).Debug("db: create ad")
+
 	err := r.db.QueryRowContext(ctx, insertAd,
 		ad.AdGroupID, ad.Status, ad.Title, ad.ShortDesc, ad.ImageURL, ad.TargetURL,
 	).Scan(&ad.ID)
-	logDBQuery(ctx, "ad.create", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("insert ad: %w", err)
 	}
@@ -66,9 +58,9 @@ func (r *AdRepository) Create(ctx context.Context, ad *models.Ad) error {
 }
 
 func (r *AdRepository) GetByID(ctx context.Context, adID int) (*models.Ad, error) {
+	logger.GetLoggerFromCtx(ctx).Debugf("db: get ad by id: %d", adID)
 	var ad models.Ad
 
-	startedAt := time.Now()
 	err := r.db.QueryRowContext(ctx, selectAdByID, adID).Scan(
 		&ad.ID,
 		&ad.AdGroupID,
@@ -80,7 +72,6 @@ func (r *AdRepository) GetByID(ctx context.Context, adID int) (*models.Ad, error
 		&ad.CreatedAt,
 		&ad.UpdatedAt,
 	)
-	logDBQuery(ctx, "ad.get_by_id", startedAt, err)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("ad not found: %w", err)
@@ -92,9 +83,9 @@ func (r *AdRepository) GetByID(ctx context.Context, adID int) (*models.Ad, error
 }
 
 func (r *AdRepository) ListByAdGroupID(ctx context.Context, adGroupID int) ([]*models.Ad, error) {
-	startedAt := time.Now()
+	logger.GetLoggerFromCtx(ctx).Debugf("db: get ads by groupID: %d", adGroupID)
+
 	rows, err := r.db.QueryContext(ctx, selectAdsByAdGroupID, adGroupID)
-	logDBQuery(ctx, "ad.list_by_ad_group_id", startedAt, err)
 	if err != nil {
 		return nil, fmt.Errorf("list ads by ad_group_id: %w", err)
 	}
@@ -131,11 +122,11 @@ func (r *AdRepository) Update(ctx context.Context, ad *models.Ad) error {
 		return fmt.Errorf("ad cannot be nil")
 	}
 
-	startedAt := time.Now()
+	logger.GetLoggerFromCtx(ctx).Debugf("db: update ad by id: %d", ad.ID)
+
 	_, err := r.db.ExecContext(ctx, updateAd,
 		ad.AdGroupID, ad.Status, ad.Title, ad.ShortDesc, ad.ImageURL, ad.TargetURL, ad.UpdatedAt, ad.ID,
 	)
-	logDBQuery(ctx, "ad.update", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("update ad: %w", err)
 	}
@@ -143,45 +134,10 @@ func (r *AdRepository) Update(ctx context.Context, ad *models.Ad) error {
 	return nil
 }
 
-func (r *AdRepository) ListByAdvertiserID(ctx context.Context, advertiserID int) ([]*models.Ad, error) {
-	startedAt := time.Now()
-	rows, err := r.db.QueryContext(ctx, selectAdsByAdvertiserID, advertiserID)
-	logDBQuery(ctx, "ad.list_by_advertiser_id", startedAt, err)
-	if err != nil {
-		return nil, fmt.Errorf("list ads by advertiser_id: %w", err)
-	}
-	defer rows.Close()
-
-	ads := make([]*models.Ad, 0)
-	for rows.Next() {
-		var ad models.Ad
-		if err = rows.Scan(
-			&ad.ID,
-			&ad.AdGroupID,
-			&ad.Status,
-			&ad.Title,
-			&ad.ShortDesc,
-			&ad.ImageURL,
-			&ad.TargetURL,
-			&ad.CreatedAt,
-			&ad.UpdatedAt,
-		); err != nil {
-			return nil, fmt.Errorf("scan ad: %w", err)
-		}
-		ads = append(ads, &ad)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("iterate ads rows: %w", err)
-	}
-
-	return ads, nil
-}
-
 func (r *AdRepository) Delete(ctx context.Context, adID int) error {
-	startedAt := time.Now()
+	logger.GetLoggerFromCtx(ctx).Debugf("db: delete ad by id: %d", adID)
+
 	result, err := r.db.ExecContext(ctx, deleteAd, adID)
-	logDBQuery(ctx, "ad.delete", startedAt, err)
 	if err != nil {
 		return fmt.Errorf("delete ad: %w", err)
 	}

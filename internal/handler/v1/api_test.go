@@ -1,16 +1,17 @@
-package handlers
+package v1
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"eshkere/internal/handler"
+	"eshkere/internal/handler/middleware"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
 	"eshkere/internal/handler/dto"
-	"eshkere/internal/middleware"
 	"eshkere/internal/models"
 	"eshkere/internal/service"
 	"eshkere/internal/session"
@@ -72,7 +73,7 @@ func newTestRouter(sm *session.Manager, svc Service) *mux.Router {
 	r.HandleFunc("/__ping", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}).Methods(http.MethodGet)
-	Register(r, NewAPI(APIConfig{
+	handlers.Register(r, NewAPI(APIConfig{
 		SessionManager: sm,
 		Service:        svc,
 	}))
@@ -97,7 +98,7 @@ func TestRegister_OK(t *testing.T) {
 	sm := newTestSessionManager()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	svc := NewMockService(ctrl)
+	svc := handlers.NewMockService(ctrl)
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
@@ -125,7 +126,7 @@ func TestLogin_UnauthorizedAndOK(t *testing.T) {
 	sm := newTestSessionManager()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	svc := NewMockService(ctrl)
+	svc := handlers.NewMockService(ctrl)
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
@@ -160,7 +161,7 @@ func TestMe_UnauthorizedAndOK(t *testing.T) {
 	sm := newTestSessionManager()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	svc := NewMockService(ctrl)
+	svc := handlers.NewMockService(ctrl)
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
@@ -206,7 +207,7 @@ func TestLogout_AlwaysOK(t *testing.T) {
 	sm := newTestSessionManager()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	svc := NewMockService(ctrl)
+	svc := handlers.NewMockService(ctrl)
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
@@ -226,7 +227,7 @@ func TestBalance_GetAndTopUp(t *testing.T) {
 	sm := newTestSessionManager()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	svc := NewMockService(ctrl)
+	svc := handlers.NewMockService(ctrl)
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
@@ -273,7 +274,7 @@ func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
 	sm := newTestSessionManager()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	svc := NewMockService(ctrl)
+	svc := handlers.NewMockService(ctrl)
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
@@ -328,7 +329,7 @@ func TestFeed_EmptyList(t *testing.T) {
 	sm := newTestSessionManager()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	svc := NewMockService(ctrl)
+	svc := handlers.NewMockService(ctrl)
 	r := newTestRouter(sm, svc)
 
 	svc.EXPECT().

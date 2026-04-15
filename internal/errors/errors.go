@@ -5,8 +5,11 @@ import (
 )
 
 var (
-	ErrInvalidCredentials   = errors.New("invalid credentials")
-	ErrEmailTaken           = errors.New("email already registered")
-	ErrPhoneTaken           = errors.New("phone already registered")
-	ErrInvalidAdvertiserArg = errors.New("invalid argument")
+	BadRequestError      = errors.New("bad request")
+	AlreadyExistsError   = errors.New("already exists")
+	BusinessLogicError   = errors.New("business logic error")
+	UnauthorizedError    = errors.New("unauthorized")
+	NotFoundError        = errors.New("not found")
+	InternalServiceError = errors.New("internal service error")
+	NotImplementedError  = errors.New("not implemented")
 )

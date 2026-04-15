@@ -1,8 +1,8 @@
-package handlers
+package v1
 
 import (
 	"context"
-	"eshkere/internal/handler/dto"
+	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
 	"eshkere/internal/session"
 

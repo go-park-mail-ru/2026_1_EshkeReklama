@@ -1,9 +1,10 @@
-package handlers
+package v1
 
 import (
 	"bytes"
 	"database/sql"
 	"errors"
+	"eshkere/internal/handler"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,11 +17,11 @@ func TestHandlers_BadRequests(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	svc := NewMockService(ctrl)
+	svc := handlers.NewMockService(ctrl)
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
-	sess := createSessionCookie(t, sm, 1)
+	sess := handlers.createSessionCookie(t, sm, 1)
 
 	// invalid ad_group_id (route var not int)
 	req := httptest.NewRequest(http.MethodPost, "/ad_campaigns/1/ad_groups/zzz/ads", bytes.NewBufferString(`{"title":"t","short_desc":"s","image_url":"i","target_url":"u"}`))
@@ -73,7 +74,7 @@ func TestFeed_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	svc := NewMockService(ctrl)
+	svc := handlers.NewMockService(ctrl)
 	r := newTestRouter(sm, svc)
 
 	svc.EXPECT().GetAdsByFeedToken(gomock.Any(), "missing").Return(nil, sql.ErrNoRows)
@@ -91,7 +92,7 @@ func TestFeed_InternalError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	svc := NewMockService(ctrl)
+	svc := handlers.NewMockService(ctrl)
 	r := newTestRouter(sm, svc)
 
 	svc.EXPECT().GetAdsByFeedToken(gomock.Any(), "tok").Return(nil, errors.New("db down"))

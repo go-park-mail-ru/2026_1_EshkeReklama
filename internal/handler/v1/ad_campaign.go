@@ -1,10 +1,11 @@
-package handlers
+package v1
 
 import (
-	"eshkere/internal/handler/dto"
-	"eshkere/internal/middleware"
+	handlers "eshkere/internal/handler"
+	"eshkere/internal/handler/middleware"
+	"eshkere/internal/handler/v1/dto"
+	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
-	"eshkere/pkg/logger"
 	"net/http"
 	"strconv"
 
@@ -36,18 +37,15 @@ func (a *API) RegisterAdCampaignHandlers(r *mux.Router) {
 // @Security     CookieAuth
 func (a *API) CreateAdCampaign(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	reqLogger := logger.GetLoggerFromCtx(ctx)
 
-	advertiserID, err := middleware.AdvertiserIDFromContext(ctx)
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
 	if err != nil {
-		reqLogger.Warnw("unauthorized create campaign request", "error", err.Error())
-		httpx.Unauthorized(w, "unauthorized")
+		handlers.HandleError(w, r, "unauthorized", err)
 		return
 	}
 
 	req, err := newJSONRequest[dto.CreateAdCampaignRequest](r)
 	if err != nil {
-		reqLogger.Warnw("invalid create campaign payload", "error", err.Error(), "advertiser_id", advertiserID)
 		httpx.BadRequest(w, "invalid request")
 		return
 	}
@@ -55,8 +53,7 @@ func (a *API) CreateAdCampaign(w http.ResponseWriter, r *http.Request) {
 	campaign := req.ToModel(advertiserID)
 	created, err := a.service.CreateAdCampaign(ctx, campaign)
 	if err != nil {
-		reqLogger.Warnw("create campaign rejected", "error", err.Error(), "advertiser_id", advertiserID)
-		httpx.BadRequest(w, err.Error())
+		handlers.HandleError(w, r, "creating campaign", err)
 		return
 	}
 
@@ -81,25 +78,21 @@ func (a *API) CreateAdCampaign(w http.ResponseWriter, r *http.Request) {
 // @Security     CookieAuth
 func (a *API) UpdateAdCampaign(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	reqLogger := logger.GetLoggerFromCtx(ctx)
 
 	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
 	if err != nil {
-		reqLogger.Warnw("invalid ad_campaign_id", "error", err.Error())
-		httpx.BadRequest(w, "invalid ad_campaign_id")
+		handlers.HandleError(w, r, "parsing campaign id", err)
 		return
 	}
 
 	req, err := newJSONRequest[dto.UpdateAdCampaignRequest](r)
 	if err != nil {
-		reqLogger.Warnw("invalid update campaign payload", "error", err.Error(), "ad_campaign_id", campaignID)
 		httpx.BadRequest(w, "invalid request")
 		return
 	}
 
-	if err = a.service.UpdateAdCampaign(ctx, campaignID, *req); err != nil {
-		reqLogger.Errorw("failed to update campaign", "error", err.Error(), "ad_campaign_id", campaignID)
-		httpx.InternalError(w, "internal error")
+	if err = a.service.UpdateAdCampaign(ctx, campaignID, req); err != nil {
+		handlers.HandleError(w, r, "updating campaign", err)
 		return
 	}
 
@@ -118,19 +111,16 @@ func (a *API) UpdateAdCampaign(w http.ResponseWriter, r *http.Request) {
 // @Security     CookieAuth
 func (a *API) ListAdCampaigns(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	reqLogger := logger.GetLoggerFromCtx(ctx)
 
-	advertiserID, err := middleware.AdvertiserIDFromContext(ctx)
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
 	if err != nil {
-		reqLogger.Warnw("unauthorized list campaigns request", "error", err.Error())
-		httpx.Unauthorized(w, "unauthorized")
+		handlers.HandleError(w, r, "unauthorized", err)
 		return
 	}
 
 	campaigns, err := a.service.ListAdCampaigns(ctx, advertiserID)
 	if err != nil {
-		reqLogger.Errorw("failed to list campaigns", "error", err.Error(), "advertiser_id", advertiserID)
-		httpx.InternalError(w, "internal error")
+		handlers.HandleError(w, r, "listing campaigns", err)
 		return
 	}
 
@@ -158,18 +148,15 @@ func (a *API) ListAdCampaigns(w http.ResponseWriter, r *http.Request) {
 // @Security     CookieAuth
 func (a *API) DeleteAdCampaign(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	reqLogger := logger.GetLoggerFromCtx(ctx)
 
 	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
 	if err != nil {
-		reqLogger.Warnw("invalid ad_campaign_id", "error", err.Error())
-		httpx.BadRequest(w, "invalid ad_campaign_id")
+		handlers.HandleError(w, r, "parsing campaign id", err)
 		return
 	}
 
 	if err = a.service.DeleteAdCampaign(ctx, campaignID); err != nil {
-		reqLogger.Errorw("failed to delete campaign", "error", err.Error(), "ad_campaign_id", campaignID)
-		httpx.InternalError(w, "internal error")
+		handlers.HandleError(w, r, "deleting campaign", err)
 		return
 	}
 

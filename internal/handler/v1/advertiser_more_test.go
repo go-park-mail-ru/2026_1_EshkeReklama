@@ -1,7 +1,8 @@
-package handlers
+package v1
 
 import (
 	"bytes"
+	"eshkere/internal/handler"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -17,11 +18,11 @@ func TestAdvertiser_UpdateProfile_WithoutAvatar(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	svc := NewMockService(ctrl)
+	svc := handlers.NewMockService(ctrl)
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
-	sess := createSessionCookie(t, sm, 1)
+	sess := handlers.createSessionCookie(t, sm, 1)
 
 	var body bytes.Buffer
 	w := multipart.NewWriter(&body)
@@ -54,11 +55,11 @@ func TestAdvertiser_GenerateFeedLink_OK(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	svc := NewMockService(ctrl)
+	svc := handlers.NewMockService(ctrl)
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
-	sess := createSessionCookie(t, sm, 1)
+	sess := handlers.createSessionCookie(t, sm, 1)
 
 	svc.EXPECT().GenerateFeedLink(gomock.Any(), 1).Return("tok", nil)
 

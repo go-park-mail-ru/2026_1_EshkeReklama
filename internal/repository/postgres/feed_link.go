@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"eshkere/pkg/logger"
 	"fmt"
-	"time"
 )
 
 type FeedLinkRepository struct {
@@ -17,17 +17,17 @@ func NewFeedLinkRepository(db *sql.DB) *FeedLinkRepository {
 }
 
 const (
-	upsertFeedLink = `INSERT INTO eshkere.ad_feed_link (advertiser_id, token)
+	insertFeedLink = `INSERT INTO eshkere.ad_feed_link (advertiser_id, token)
 		VALUES ($1, $2)
 		ON CONFLICT (advertiser_id) DO UPDATE SET token = EXCLUDED.token, updated_at = NOW()`
 
 	selectAdvertiserByFeedToken = `SELECT advertiser_id FROM eshkere.ad_feed_link WHERE token = $1`
 )
 
-func (r *FeedLinkRepository) UpsertByAdvertiserID(ctx context.Context, advertiserID int, token string) error {
-	startedAt := time.Now()
-	_, err := r.db.ExecContext(ctx, upsertFeedLink, advertiserID, token)
-	logDBQuery(ctx, "feed_link.upsert", startedAt, err)
+func (r *FeedLinkRepository) Create(ctx context.Context, advertiserID int, token string) error {
+	logger.GetLoggerFromCtx(ctx).Debugf("db: create feed link by advertiserID: %d", advertiserID)
+
+	_, err := r.db.ExecContext(ctx, insertFeedLink, advertiserID, token)
 	if err != nil {
 		return fmt.Errorf("upsert feed link: %w", err)
 	}
@@ -35,10 +35,10 @@ func (r *FeedLinkRepository) UpsertByAdvertiserID(ctx context.Context, advertise
 }
 
 func (r *FeedLinkRepository) GetAdvertiserIDByToken(ctx context.Context, token string) (int, error) {
+	logger.GetLoggerFromCtx(ctx).Debugf("db: get feed link by token: %s", token)
+
 	var advertiserID int
-	startedAt := time.Now()
 	err := r.db.QueryRowContext(ctx, selectAdvertiserByFeedToken, token).Scan(&advertiserID)
-	logDBQuery(ctx, "feed_link.get_by_token", startedAt, err)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return 0, sql.ErrNoRows

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"eshkere/internal/handler/v1"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -28,14 +29,14 @@ func createSessionCookie(t *testing.T, sm *session.Manager, advertiserID int) *h
 }
 
 func TestAdCampaign_CRUD(t *testing.T) {
-	sm := newTestSessionManager()
+	sm := v1.newTestSessionManager()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	svc := NewMockService(ctrl)
-	r := newTestRouter(sm, svc)
+	r := v1.newTestRouter(sm, svc)
 
-	csrf := getCSRF(t, r)
+	csrf := v1.getCSRF(t, r)
 	sess := createSessionCookie(t, sm, 1)
 
 	svc.EXPECT().
@@ -101,14 +102,14 @@ func TestAdCampaign_CRUD(t *testing.T) {
 }
 
 func TestAdGroup_And_Ads_CRUD(t *testing.T) {
-	sm := newTestSessionManager()
+	sm := v1.newTestSessionManager()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	svc := NewMockService(ctrl)
-	r := newTestRouter(sm, svc)
+	r := v1.newTestRouter(sm, svc)
 
-	csrf := getCSRF(t, r)
+	csrf := v1.getCSRF(t, r)
 	sess := createSessionCookie(t, sm, 1)
 
 	svc.EXPECT().

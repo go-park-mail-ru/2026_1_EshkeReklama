@@ -543,19 +543,47 @@ func (m *MockAvatarStorage) EXPECT() *MockAvatarStorageMockRecorder {
 	return m.recorder
 }
 
-// UploadAvatar mocks base method.
-func (m *MockAvatarStorage) UploadAvatar(ctx context.Context, advertiserID int, data []byte, filename, contentType string) (string, error) {
+// DeleteAvatar mocks base method.
+func (m *MockAvatarStorage) DeleteAvatar(ctx context.Context, advertiserID int, avatarURL string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UploadAvatar", ctx, advertiserID, data, filename, contentType)
+	ret := m.ctrl.Call(m, "DeleteAvatar", ctx, advertiserID, avatarURL)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAvatar indicates an expected call of DeleteAvatar.
+func (mr *MockAvatarStorageMockRecorder) DeleteAvatar(ctx, advertiserID, avatarURL any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAvatar", reflect.TypeOf((*MockAvatarStorage)(nil).DeleteAvatar), ctx, advertiserID, avatarURL)
+}
+
+// GetAvatarURL mocks base method.
+func (m *MockAvatarStorage) GetAvatarURL(avatarKey string) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAvatarURL", avatarKey)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetAvatarURL indicates an expected call of GetAvatarURL.
+func (mr *MockAvatarStorageMockRecorder) GetAvatarURL(avatarKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvatarURL", reflect.TypeOf((*MockAvatarStorage)(nil).GetAvatarURL), avatarKey)
+}
+
+// UploadAvatar mocks base method.
+func (m *MockAvatarStorage) UploadAvatar(ctx context.Context, advertiserID int, data []byte, ext, contentType string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UploadAvatar", ctx, advertiserID, data, ext, contentType)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UploadAvatar indicates an expected call of UploadAvatar.
-func (mr *MockAvatarStorageMockRecorder) UploadAvatar(ctx, advertiserID, data, filename, contentType any) *gomock.Call {
+func (mr *MockAvatarStorageMockRecorder) UploadAvatar(ctx, advertiserID, data, ext, contentType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadAvatar", reflect.TypeOf((*MockAvatarStorage)(nil).UploadAvatar), ctx, advertiserID, data, filename, contentType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadAvatar", reflect.TypeOf((*MockAvatarStorage)(nil).UploadAvatar), ctx, advertiserID, data, ext, contentType)
 }
 
 // MockAdActionRepository is a mock of AdActionRepository interface.

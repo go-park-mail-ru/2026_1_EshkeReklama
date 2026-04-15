@@ -45,8 +45,8 @@ func (a *API) CreateAdGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req dto.CreateAdGroupRequest
-	if err = httpx.DecodeJSON(r, &req); err != nil {
+	req, err := newJSONRequest[dto.CreateAdGroupRequest](r)
+	if err != nil {
 		reqLogger.Warnw("invalid create ad group payload", "error", err.Error(), "ad_campaign_id", campaignID)
 		httpx.BadRequest(w, "invalid request")
 		return
@@ -90,14 +90,14 @@ func (a *API) UpdateAdGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req dto.UpdateAdGroupRequest
-	if err = httpx.DecodeJSON(r, &req); err != nil {
+	req, err := newJSONRequest[dto.UpdateAdGroupRequest](r)
+	if err != nil {
 		reqLogger.Warnw("invalid update ad group payload", "error", err.Error(), "ad_group_id", groupID)
 		httpx.BadRequest(w, "invalid request")
 		return
 	}
 
-	if err = a.service.UpdateAdGroup(ctx, groupID, req); err != nil {
+	if err = a.service.UpdateAdGroup(ctx, groupID, *req); err != nil {
 		reqLogger.Errorw("failed to update ad group", "error", err.Error(), "ad_group_id", groupID)
 		httpx.InternalError(w, "internal error")
 		return

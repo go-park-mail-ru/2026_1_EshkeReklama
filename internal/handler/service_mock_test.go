@@ -307,16 +307,31 @@ func (mr *MockServiceMockRecorder) UpdateAdGroup(ctx, groupID, req any) *gomock.
 }
 
 // UpdateAdvertiserProfile mocks base method.
-func (m *MockService) UpdateAdvertiserProfile(ctx context.Context, advertiserID int, name, email, phone string, avatar []byte, avatarFilename, avatarContentType string) (*models.Advertiser, error) {
+func (m *MockService) UpdateAdvertiserProfile(ctx context.Context, advertiserID int, name, email, phone string) (*models.Advertiser, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateAdvertiserProfile", ctx, advertiserID, name, email, phone, avatar, avatarFilename, avatarContentType)
+	ret := m.ctrl.Call(m, "UpdateAdvertiserProfile", ctx, advertiserID, name, email, phone)
 	ret0, _ := ret[0].(*models.Advertiser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateAdvertiserProfile indicates an expected call of UpdateAdvertiserProfile.
-func (mr *MockServiceMockRecorder) UpdateAdvertiserProfile(ctx, advertiserID, name, email, phone, avatar, avatarFilename, avatarContentType any) *gomock.Call {
+func (mr *MockServiceMockRecorder) UpdateAdvertiserProfile(ctx, advertiserID, name, email, phone any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAdvertiserProfile", reflect.TypeOf((*MockService)(nil).UpdateAdvertiserProfile), ctx, advertiserID, name, email, phone, avatar, avatarFilename, avatarContentType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAdvertiserProfile", reflect.TypeOf((*MockService)(nil).UpdateAdvertiserProfile), ctx, advertiserID, name, email, phone)
+}
+
+// UpdateAdvertiserAvatar mocks base method.
+func (m *MockService) UpdateAdvertiserAvatar(ctx context.Context, advertiserID int, avatar []byte, avatarExt, avatarContentType string) (*models.Advertiser, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAdvertiserAvatar", ctx, advertiserID, avatar, avatarExt, avatarContentType)
+	ret0, _ := ret[0].(*models.Advertiser)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateAdvertiserAvatar indicates an expected call of UpdateAdvertiserAvatar.
+func (mr *MockServiceMockRecorder) UpdateAdvertiserAvatar(ctx, advertiserID, avatar, avatarExt, avatarContentType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAdvertiserAvatar", reflect.TypeOf((*MockService)(nil).UpdateAdvertiserAvatar), ctx, advertiserID, avatar, avatarExt, avatarContentType)
 }

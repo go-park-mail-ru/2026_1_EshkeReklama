@@ -39,6 +39,8 @@ s3:
   access_key: ${S3_ACCESS_KEY}
   secret_key: ${S3_SECRET_KEY}
   public_base_url: ${S3_PUBLIC_BASE_URL}
+  # для MinIO / кастомного endpoint обычно true; для нативного AWS S3 — false
+  force_path_style: true
 
 cors:
   allowed_origins:

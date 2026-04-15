@@ -8,13 +8,14 @@ import (
 	"eshkere/internal/repository/postgres"
 	"eshkere/internal/service"
 	"eshkere/internal/session"
-	"eshkere/internal/storage"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	s3 "eshkere/internal/storage/s3"
 
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -51,10 +52,20 @@ func New(configPath string) *App {
 	adCampaignRepo := postgres.NewAdCampaignRepository(db)
 	feedLinkRepo := postgres.NewFeedLinkRepository(db)
 
-	s3Storage, err := storage.NewS3Storage(context.Background(), cfg.S3)
+	s3Client, err := s3.NewClient(context.Background(), s3.Config{
+		Region:          cfg.S3.Region,
+		Bucket:          cfg.S3.Bucket,
+		Endpoint:        cfg.S3.Endpoint,
+		AccessKeyID:     cfg.S3.AccessKey,
+		SecretAccessKey: cfg.S3.SecretKey,
+		ForcePathStyle:  cfg.S3.ForcePathStyle,
+		PublicBaseURL:   cfg.S3.PublicBaseURL,
+	})
 	if err != nil {
-		logger.Fatalf("Failed to init s3 storage: %v", err)
+		logger.Fatalf("Failed to create S3 client: %v", err)
 	}
+
+	avatarStorage := s3.NewAvatarStorage(s3Client, "")
 
 	svc, err := service.NewService(&service.Config{
 		AdvertiserRepo:  advertiserRepo,
@@ -64,7 +75,7 @@ func New(configPath string) *App {
 		AdGroupRepo:     addGroupRepo,
 		AdRepo:          addRepo,
 		FeedLinkRepo:    feedLinkRepo,
-		AvatarStorage:   s3Storage,
+		AvatarStorage:   avatarStorage,
 		AdActionRepo:    nil,
 		TopicRepo:       nil,
 		RegionRepo:      nil,

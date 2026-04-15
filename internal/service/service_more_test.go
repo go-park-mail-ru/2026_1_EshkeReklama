@@ -59,7 +59,7 @@ func TestTopUpAdvertiserBalance_OK(t *testing.T) {
 	}
 }
 
-func TestUpdateAdvertiserProfile_UploadAvatar(t *testing.T) {
+func TestUpdateAdvertiserAvatar_UploadsAvatar(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -74,13 +74,47 @@ func TestUpdateAdvertiserProfile_UploadAvatar(t *testing.T) {
 		UploadAvatar(gomock.Any(), 1, []byte("img"), "a.png", "image/png").
 		Return("https://cdn/avatar.png", nil)
 	advRepo.EXPECT().Update(gomock.Any(), adv).Return(nil)
+	st.EXPECT().
+		GetAvatarURL("https://cdn/avatar.png").
+		Return("https://cdn/avatar.png")
 
-	updated, err := svc.UpdateAdvertiserProfile(context.Background(), 1, "n", "e@test", "+7 900 123-45-67", []byte("img"), "a.png", "image/png")
+	updated, err := svc.UpdateAdvertiserAvatar(context.Background(), 1, []byte("img"), "a.png", "image/png")
 	if err != nil {
-		t.Fatalf("UpdateAdvertiserProfile: %v", err)
+		t.Fatalf("UpdateAdvertiserAvatar: %v", err)
 	}
 	if updated.AvatarURL.Valid != true {
 		t.Fatalf("expected avatar url to be set")
+	}
+}
+
+func TestUpdateAdvertiserAvatar_DeletesPrevious(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	advRepo := NewMockAdvertiserRepository(ctrl)
+	st := NewMockAvatarStorage(ctrl)
+
+	svc, _ := NewService(&Config{AdvertiserRepo: advRepo, AvatarStorage: st})
+
+	adv := &models.Advertiser{
+		ID:        1,
+		AvatarURL: sql.NullString{String: "https://cdn/avatars/1/old.png", Valid: true},
+	}
+	advRepo.EXPECT().GetByID(gomock.Any(), 1).Return(adv, nil)
+	st.EXPECT().
+		UploadAvatar(gomock.Any(), 1, []byte("img"), "a.png", "image/png").
+		Return("https://cdn/avatars/1/new.png", nil)
+	advRepo.EXPECT().Update(gomock.Any(), adv).Return(nil)
+	st.EXPECT().
+		DeleteAvatar(gomock.Any(), 1, "https://cdn/avatars/1/old.png").
+		Return(nil)
+	st.EXPECT().
+		GetAvatarURL("https://cdn/avatars/1/new.png").
+		Return("https://cdn/avatars/1/new.png")
+
+	_, err := svc.UpdateAdvertiserAvatar(context.Background(), 1, []byte("img"), "a.png", "image/png")
+	if err != nil {
+		t.Fatalf("UpdateAdvertiserAvatar: %v", err)
 	}
 }
 

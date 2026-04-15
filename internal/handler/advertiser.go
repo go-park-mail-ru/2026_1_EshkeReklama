@@ -7,9 +7,7 @@ import (
 	"eshkere/internal/middleware"
 	"eshkere/pkg/httpx"
 	"eshkere/pkg/logger"
-	"io"
 	"net/http"
-	"path/filepath"
 
 	"github.com/gorilla/mux"
 )
@@ -25,6 +23,8 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 
 	groups.Handle("/me", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.Me))).Methods(http.MethodGet)
 	groups.Handle("/me", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.UpdateProfile))).Methods(http.MethodPut)
+	groups.Handle("/me/avatar", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.UpdateAvatar))).Methods(http.MethodPut)
+
 	groups.Handle("/feed-link", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.GenerateFeedLink))).Methods(http.MethodPost)
 }
 
@@ -42,8 +42,8 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	reqLogger := logger.GetLoggerFromCtx(ctx)
 
-	var req dto.RegisterRequest
-	if err := httpx.DecodeJSON(r, &req); err != nil {
+	req, err := newJSONRequest[dto.RegisterRequest](r)
+	if err != nil {
 		reqLogger.Warnw("invalid register payload", "error", err.Error())
 		httpx.BadRequest(w, "invalid request")
 		return
@@ -89,8 +89,8 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	reqLogger := logger.GetLoggerFromCtx(ctx)
 
-	var req dto.LoginRequest
-	if err := httpx.DecodeJSON(r, &req); err != nil {
+	req, err := newJSONRequest[dto.LoginRequest](r)
+	if err != nil {
 		reqLogger.Warnw("invalid login payload", "error", err.Error())
 		httpx.BadRequest(w, "invalid request")
 		return
@@ -174,31 +174,12 @@ func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var avatar []byte
-	var avatarFilename string
-	var avatarContentType string
-	file, fileHeader, fileErr := r.FormFile("avatar")
-	if fileErr == nil {
-		defer file.Close()
-		avatar, err = io.ReadAll(io.LimitReader(file, 5<<20))
-		if err != nil {
-			reqLogger.Errorw("failed to read avatar file", "error", err.Error(), "advertiser_id", advertiserID)
-			httpx.InternalError(w, "internal error")
-			return
-		}
-		avatarFilename = filepath.Base(fileHeader.Filename)
-		avatarContentType = fileHeader.Header.Get("Content-Type")
-	}
-
 	adv, err := a.service.UpdateAdvertiserProfile(
 		ctx,
 		advertiserID,
 		r.FormValue("name"),
 		r.FormValue("email"),
 		r.FormValue("phone"),
-		avatar,
-		avatarFilename,
-		avatarContentType,
 	)
 	if err != nil {
 		statusCode, clientMessage, isExpected := convertDomainError(err)
@@ -298,8 +279,8 @@ func (a *API) TopUpBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req dto.TopUpBalanceRequest
-	if err = httpx.DecodeJSON(r, &req); err != nil {
+	req, err := newJSONRequest[dto.TopUpBalanceRequest](r)
+	if err != nil {
 		reqLogger.Warnw("invalid top up payload", "error", err.Error(), "advertiser_id", advertiserID)
 		httpx.BadRequest(w, "invalid request")
 		return
@@ -320,4 +301,57 @@ func (a *API) TopUpBalance(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusOK, dto.BalanceResponse{
 		Balance: balance,
 	})
+}
+
+func (a *API) UpdateAvatar(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	reqLogger := logger.GetLoggerFromCtx(ctx)
+
+	advertiserID, err := middleware.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		reqLogger.Warnw("unauthorized update avatar request", "error", err.Error())
+		httpx.Unauthorized(w, "unauthorized")
+		return
+	}
+
+	if err = r.ParseMultipartForm(maxAvatarSize); err != nil {
+		reqLogger.Warnw("invalid multipart payload", "error", err.Error(), "advertiser_id", advertiserID)
+		httpx.BadRequest(w, "invalid multipart payload")
+		return
+	}
+
+	file, fileHeader, err := r.FormFile("avatar")
+	if err != nil {
+		reqLogger.Warnw("avatar file is required", "error", err.Error(), "advertiser_id", advertiserID)
+		httpx.BadRequest(w, "avatar file is required")
+		return
+	}
+	defer file.Close()
+
+	uploaded, err := ParseAndValidateImage(fileHeader)
+	if err != nil {
+		reqLogger.Warnw("invalid avatar file", "error", err.Error(), "advertiser_id", advertiserID)
+		httpx.BadRequest(w, "invalid avatar file")
+		return
+	}
+
+	adv, err := a.service.UpdateAdvertiserAvatar(
+		ctx,
+		advertiserID,
+		uploaded.Data,
+		uploaded.Ext,
+		uploaded.ContentType,
+	)
+	if err != nil {
+		statusCode, clientMessage, isExpected := convertDomainError(err)
+		if isExpected {
+			reqLogger.Warnw("update avatar rejected", "error", err.Error(), "advertiser_id", advertiserID)
+		} else {
+			reqLogger.Errorw("update avatar failed", "error", err.Error(), "advertiser_id", advertiserID)
+		}
+		httpx.ErrorJSON(w, statusCode, clientMessage)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, dto.AdvertiserToProfile(adv))
 }

@@ -49,7 +49,9 @@ type FeedLinkRepository interface {
 }
 
 type AvatarStorage interface {
-	UploadAvatar(ctx context.Context, advertiserID int, data []byte, filename string, contentType string) (string, error)
+	UploadAvatar(ctx context.Context, advertiserID int, data []byte, ext string, contentType string) (string, error)
+	DeleteAvatar(ctx context.Context, advertiserID int, avatarKey string) error
+	GetAvatarURL(avatarKey string) string
 }
 
 type AdActionRepository interface{}

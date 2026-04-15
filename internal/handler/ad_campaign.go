@@ -45,8 +45,8 @@ func (a *API) CreateAdCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req dto.CreateAdCampaignRequest
-	if err = httpx.DecodeJSON(r, &req); err != nil {
+	req, err := newJSONRequest[dto.CreateAdCampaignRequest](r)
+	if err != nil {
 		reqLogger.Warnw("invalid create campaign payload", "error", err.Error(), "advertiser_id", advertiserID)
 		httpx.BadRequest(w, "invalid request")
 		return
@@ -90,14 +90,14 @@ func (a *API) UpdateAdCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req dto.UpdateAdCampaignRequest
-	if err = httpx.DecodeJSON(r, &req); err != nil {
+	req, err := newJSONRequest[dto.UpdateAdCampaignRequest](r)
+	if err != nil {
 		reqLogger.Warnw("invalid update campaign payload", "error", err.Error(), "ad_campaign_id", campaignID)
 		httpx.BadRequest(w, "invalid request")
 		return
 	}
 
-	if err = a.service.UpdateAdCampaign(ctx, campaignID, req); err != nil {
+	if err = a.service.UpdateAdCampaign(ctx, campaignID, *req); err != nil {
 		reqLogger.Errorw("failed to update campaign", "error", err.Error(), "ad_campaign_id", campaignID)
 		httpx.InternalError(w, "internal error")
 		return

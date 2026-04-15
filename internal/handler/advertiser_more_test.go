@@ -31,11 +31,8 @@ func TestAdvertiser_UpdateProfile_WithoutAvatar(t *testing.T) {
 	_ = w.Close()
 
 	svc.EXPECT().
-		UpdateAdvertiserProfile(gomock.Any(), 1, "New Name", "NEW@MAIL.TEST", "+7 900 123-45-67", gomock.Any(), "", "").
-		DoAndReturn(func(_ any, _ int, name, email, phone string, avatar []byte, avatarFilename, avatarContentType string) (*models.Advertiser, error) {
-			if len(avatar) != 0 {
-				t.Fatalf("expected no avatar")
-			}
+		UpdateAdvertiserProfile(gomock.Any(), 1, "New Name", "NEW@MAIL.TEST", "+7 900 123-45-67").
+		DoAndReturn(func(_ any, _ int, name, email, phone string) (*models.Advertiser, error) {
 			return &models.Advertiser{ID: 1, Name: name, Email: email, Phone: phone}, nil
 		})
 

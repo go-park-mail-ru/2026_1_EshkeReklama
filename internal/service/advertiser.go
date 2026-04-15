@@ -142,5 +142,13 @@ func (s *Service) GetAdvertiserByID(ctx context.Context, id int) (*models.Advert
 	if id <= 0 {
 		return nil, fmt.Errorf("%w: invalid id", ErrInvalidAdvertiserArg)
 	}
-	return s.advertiserRepo.GetByID(ctx, id)
+
+	adv, err := s.advertiserRepo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	s.decorateAdvertiserAvatarURL(adv)
+
+	return adv, nil
 }

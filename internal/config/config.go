@@ -48,12 +48,13 @@ type SessionConfig struct {
 }
 
 type S3Config struct {
-	Endpoint      string `yaml:"endpoint"`
-	Region        string `yaml:"region"`
-	Bucket        string `yaml:"bucket"`
-	AccessKey     string `yaml:"access_key"`
-	SecretKey     string `yaml:"secret_key"`
-	PublicBaseURL string `yaml:"public_base_url"`
+	Endpoint       string `yaml:"endpoint"`
+	Region         string `yaml:"region"`
+	Bucket         string `yaml:"bucket"`
+	AccessKey      string `yaml:"access_key"`
+	SecretKey      string `yaml:"secret_key"`
+	PublicBaseURL  string `yaml:"public_base_url"`
+	ForcePathStyle bool   `yaml:"force_path_style"`
 }
 
 type Config struct {

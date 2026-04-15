@@ -39,8 +39,8 @@ func (a *API) CreateAd(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	reqLogger := logger.GetLoggerFromCtx(ctx)
 
-	var req dto.CreateAdRequest
-	if err := httpx.DecodeJSON(r, &req); err != nil {
+	req, err := newJSONRequest[dto.CreateAdRequest](r)
+	if err != nil {
 		reqLogger.Warnw("invalid create ad payload", "error", err.Error())
 		httpx.BadRequest(w, "invalid request")
 		return
@@ -99,8 +99,8 @@ func (a *API) UpdateAd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req dto.UpdateAdRequest
-	if err = httpx.DecodeJSON(r, &req); err != nil {
+	req, err := newJSONRequest[dto.UpdateAdRequest](r)
+	if err != nil {
 		reqLogger.Warnw("invalid update ad payload", "error", err.Error(), "ad_id", adID)
 		httpx.BadRequest(w, "invalid request")
 		return
@@ -112,7 +112,7 @@ func (a *API) UpdateAd(w http.ResponseWriter, r *http.Request) {
 	//	return
 	//}
 
-	err = a.service.UpdateAd(ctx, adID, req)
+	err = a.service.UpdateAd(ctx, adID, *req)
 	if err != nil {
 		reqLogger.Errorw("failed to update ad", "error", err.Error(), "ad_id", adID)
 		httpx.InternalError(w, "internal error")

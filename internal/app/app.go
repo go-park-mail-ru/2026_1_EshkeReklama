@@ -124,7 +124,7 @@ func (a *App) Run() error {
 		Secure:     a.cfg.Session.CookieSecure,
 	}))
 
-	handlers.Register(router, v1.NewAPI(v1.APIConfig{
+	handler.Register(router, v1.NewAPI(v1.APIConfig{
 		Service:        a.service,
 		SessionManager: a.sessionManager,
 	}))

@@ -48,12 +48,12 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 
 	adv, err := a.service.RegisterAdvertiser(ctx, req.Name, req.Email, req.Phone, req.Password)
 	if err != nil {
-		handlers.HandleError(w, r, "register advertiser", err)
+		handler.HandleError(w, r, "register advertiser", err)
 		return
 	}
 
 	if err = a.sessionManager.Create(w, r, adv.ID); err != nil {
-		handlers.HandleError(w, r, "creating session", err)
+		handler.HandleError(w, r, "creating session", err)
 		return
 	}
 
@@ -86,12 +86,12 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 
 	adv, err := a.service.AuthenticateAdvertiser(ctx, req.Identifier, req.Password)
 	if err != nil {
-		handlers.HandleError(w, r, "auth advertiser", err)
+		handler.HandleError(w, r, "auth advertiser", err)
 		return
 	}
 
 	if err = a.sessionManager.Create(w, r, adv.ID); err != nil {
-		handlers.HandleError(w, r, "creating session", err)
+		handler.HandleError(w, r, "creating session", err)
 		return
 	}
 
@@ -117,13 +117,13 @@ func (a *API) Me(w http.ResponseWriter, r *http.Request) {
 
 	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
 	if err != nil {
-		handlers.HandleError(w, r, "getting advertiser id from ctx", err)
+		handler.HandleError(w, r, "getting advertiser id from ctx", err)
 		return
 	}
 
 	adv, err := a.service.GetAdvertiserByID(ctx, advertiserID)
 	if err != nil {
-		handlers.HandleError(w, r, "getting advertiser by id", err)
+		handler.HandleError(w, r, "getting advertiser by id", err)
 	}
 
 	httpx.JSON(w, http.StatusOK, dto.AdvertiserToProfile(adv))
@@ -148,12 +148,12 @@ func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
 	if err != nil {
-		handlers.HandleError(w, r, "getting advertiser id from ctx", err)
+		handler.HandleError(w, r, "getting advertiser id from ctx", err)
 		return
 	}
 
 	if err = r.ParseMultipartForm(5 << 20); err != nil {
-		handlers.HandleError(w, r, "parsing multipart form", err)
+		handler.HandleError(w, r, "parsing multipart form", err)
 		return
 	}
 
@@ -165,7 +165,7 @@ func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		r.FormValue("phone"),
 	)
 	if err != nil {
-		handlers.HandleError(w, r, "updating profile", err)
+		handler.HandleError(w, r, "updating profile", err)
 		return
 	}
 
@@ -186,13 +186,13 @@ func (a *API) GenerateFeedLink(w http.ResponseWriter, r *http.Request) {
 
 	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
 	if err != nil {
-		handlers.HandleError(w, r, "getting advertiser id from ctx", err)
+		handler.HandleError(w, r, "getting advertiser id from ctx", err)
 		return
 	}
 
 	token, err := a.service.GenerateFeedLink(ctx, advertiserID)
 	if err != nil {
-		handlers.HandleError(w, r, "generating feed link", err)
+		handler.HandleError(w, r, "generating feed link", err)
 		return
 	}
 
@@ -211,7 +211,7 @@ func (a *API) GenerateFeedLink(w http.ResponseWriter, r *http.Request) {
 func (a *API) Logout(w http.ResponseWriter, r *http.Request) {
 
 	if err := a.sessionManager.Destroy(w, r); err != nil {
-		handlers.HandleError(w, r, "destroying session", err)
+		handler.HandleError(w, r, "destroying session", err)
 		return
 	}
 
@@ -235,13 +235,13 @@ func (a *API) GetBalance(w http.ResponseWriter, r *http.Request) {
 
 	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
 	if err != nil {
-		handlers.HandleError(w, r, "getting advertiser id from ctx", err)
+		handler.HandleError(w, r, "getting advertiser id from ctx", err)
 		return
 	}
 
 	adv, err := a.service.GetAdvertiserByID(ctx, advertiserID)
 	if err != nil {
-		handlers.HandleError(w, r, "getting advertiser by id", err)
+		handler.HandleError(w, r, "getting advertiser by id", err)
 		return
 	}
 
@@ -267,7 +267,7 @@ func (a *API) TopUpBalance(w http.ResponseWriter, r *http.Request) {
 
 	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
 	if err != nil {
-		handlers.HandleError(w, r, "getting advertiser id from ctx", err)
+		handler.HandleError(w, r, "getting advertiser id from ctx", err)
 		return
 	}
 
@@ -279,7 +279,7 @@ func (a *API) TopUpBalance(w http.ResponseWriter, r *http.Request) {
 
 	balance, err := a.service.TopUpAdvertiserBalance(ctx, advertiserID, req.Amount)
 	if err != nil {
-		handlers.HandleError(w, r, "topping up advertiser balance", err)
+		handler.HandleError(w, r, "topping up advertiser balance", err)
 		return
 	}
 
@@ -305,25 +305,25 @@ func (a *API) UpdateAvatar(w http.ResponseWriter, r *http.Request) {
 
 	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
 	if err != nil {
-		handlers.HandleError(w, r, "getting advertiser id from ctx", err)
+		handler.HandleError(w, r, "getting advertiser id from ctx", err)
 		return
 	}
 
 	if err = r.ParseMultipartForm(maxAvatarSize); err != nil {
-		handlers.HandleError(w, r, "parsing multipart form", err)
+		handler.HandleError(w, r, "parsing multipart form", err)
 		return
 	}
 
 	file, fileHeader, err := r.FormFile("avatar")
 	if err != nil {
-		handlers.HandleError(w, r, "uploading avatar", err)
+		handler.HandleError(w, r, "uploading avatar", err)
 		return
 	}
 	defer file.Close()
 
 	uploaded, err := ParseAndValidateImage(fileHeader)
 	if err != nil {
-		handlers.HandleError(w, r, "parsing and validating image", err)
+		handler.HandleError(w, r, "parsing and validating image", err)
 		return
 	}
 
@@ -335,7 +335,7 @@ func (a *API) UpdateAvatar(w http.ResponseWriter, r *http.Request) {
 		uploaded.ContentType,
 	)
 	if err != nil {
-		handlers.HandleError(w, r, "updating advertiser avatar", err)
+		handler.HandleError(w, r, "updating advertiser avatar", err)
 		return
 	}
 

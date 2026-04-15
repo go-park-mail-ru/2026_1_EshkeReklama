@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
-	"eshkere/internal/handler/dto"
+	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
 	"time"
 )
@@ -15,7 +15,7 @@ func (s *Service) CreateAdGroup(ctx context.Context, g *models.AdGroup) (*models
 	return g, nil
 }
 
-func (s *Service) UpdateAdGroup(ctx context.Context, groupID int, req dto.UpdateAdGroupRequest) error {
+func (s *Service) UpdateAdGroup(ctx context.Context, groupID int, req *dto.UpdateAdGroupRequest) error {
 	current, err := s.adGroupRepo.GetByID(ctx, groupID)
 	if err != nil {
 		return err

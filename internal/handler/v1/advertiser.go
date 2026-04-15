@@ -1,14 +1,11 @@
 package v1
 
 import (
-	"database/sql"
-	"errors"
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
-	"eshkere/pkg/logger"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -45,7 +42,6 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 
 	req, err := newJSONRequest[dto.RegisterRequest](r)
 	if err != nil {
-		reqLogger.Warnw("invalid register payload", "error", err.Error())
 		httpx.BadRequest(w, "invalid request")
 		return
 	}
@@ -84,7 +80,6 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 
 	req, err := newJSONRequest[dto.LoginRequest](r)
 	if err != nil {
-		reqLogger.Warnw("invalid login payload", "error", err.Error())
 		httpx.BadRequest(w, "invalid request")
 		return
 	}
@@ -278,7 +273,6 @@ func (a *API) TopUpBalance(w http.ResponseWriter, r *http.Request) {
 
 	req, err := newJSONRequest[dto.TopUpBalanceRequest](r)
 	if err != nil {
-		reqLogger.Warnw("invalid top up payload", "error", err.Error(), "advertiser_id", advertiserID)
 		httpx.BadRequest(w, "invalid request")
 		return
 	}
@@ -308,33 +302,28 @@ func (a *API) TopUpBalance(w http.ResponseWriter, r *http.Request) {
 // @Security     CookieAuth
 func (a *API) UpdateAvatar(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	reqLogger := logger.GetLoggerFromCtx(ctx)
 
-	advertiserID, err := middleware.AdvertiserIDFromContext(ctx)
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
 	if err != nil {
-		reqLogger.Warnw("unauthorized update avatar request", "error", err.Error())
-		httpx.Unauthorized(w, "unauthorized")
+		handlers.HandleError(w, r, "getting advertiser id from ctx", err)
 		return
 	}
 
 	if err = r.ParseMultipartForm(maxAvatarSize); err != nil {
-		reqLogger.Warnw("invalid multipart payload", "error", err.Error(), "advertiser_id", advertiserID)
-		httpx.BadRequest(w, "invalid multipart payload")
+		handlers.HandleError(w, r, "parsing multipart form", err)
 		return
 	}
 
 	file, fileHeader, err := r.FormFile("avatar")
 	if err != nil {
-		reqLogger.Warnw("avatar file is required", "error", err.Error(), "advertiser_id", advertiserID)
-		httpx.BadRequest(w, "avatar file is required")
+		handlers.HandleError(w, r, "uploading avatar", err)
 		return
 	}
 	defer file.Close()
 
 	uploaded, err := ParseAndValidateImage(fileHeader)
 	if err != nil {
-		reqLogger.Warnw("invalid avatar file", "error", err.Error(), "advertiser_id", advertiserID)
-		httpx.BadRequest(w, "invalid avatar file")
+		handlers.HandleError(w, r, "parsing and validating image", err)
 		return
 	}
 
@@ -346,13 +335,7 @@ func (a *API) UpdateAvatar(w http.ResponseWriter, r *http.Request) {
 		uploaded.ContentType,
 	)
 	if err != nil {
-		statusCode, clientMessage, isExpected := convertDomainError(err)
-		if isExpected {
-			reqLogger.Warnw("update avatar rejected", "error", err.Error(), "advertiser_id", advertiserID)
-		} else {
-			reqLogger.Errorw("update avatar failed", "error", err.Error(), "advertiser_id", advertiserID)
-		}
-		httpx.ErrorJSON(w, statusCode, clientMessage)
+		handlers.HandleError(w, r, "updating advertiser avatar", err)
 		return
 	}
 

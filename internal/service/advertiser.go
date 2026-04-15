@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	errs "eshkere/internal/errors"
 	"fmt"
 	"strings"
 
@@ -46,14 +47,14 @@ func (s *Service) RegisterAdvertiser(ctx context.Context, name, email, phone, pa
 	password = strings.TrimSpace(password)
 
 	if email == "" || !strings.Contains(email, "@") {
-		return nil, fmt.Errorf("%w: invalid email", ErrInvalidAdvertiserArg)
+		return nil, fmt.Errorf("%w: invalid email", errs.ErrInvalidAdvertiserArg)
 	}
 	nphone, err := normalizeAdvertiserPhone(phone)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrInvalidAdvertiserArg, err)
+		return nil, fmt.Errorf("%w: %v", errs.ErrInvalidAdvertiserArg, err)
 	}
 	if len(password) < 6 {
-		return nil, fmt.Errorf("%w: password too short", ErrInvalidAdvertiserArg)
+		return nil, fmt.Errorf("%w: password too short", errs.ErrInvalidAdvertiserArg)
 	}
 
 	if name == "" {
@@ -62,7 +63,7 @@ func (s *Service) RegisterAdvertiser(ctx context.Context, name, email, phone, pa
 
 	_, errEmail := s.advertiserRepo.GetByEmail(ctx, email)
 	if errEmail == nil {
-		return nil, ErrEmailTaken
+		return nil, errs.ErrEmailTaken
 	}
 	if !errors.Is(errEmail, sql.ErrNoRows) {
 		return nil, errEmail
@@ -70,7 +71,7 @@ func (s *Service) RegisterAdvertiser(ctx context.Context, name, email, phone, pa
 
 	_, errPhone := s.advertiserRepo.GetByPhone(ctx, nphone)
 	if errPhone == nil {
-		return nil, ErrPhoneTaken
+		return nil, errs.ErrPhoneTaken
 	}
 	if !errors.Is(errPhone, sql.ErrNoRows) {
 		return nil, errPhone
@@ -102,7 +103,7 @@ func (s *Service) AuthenticateAdvertiser(ctx context.Context, identifier, passwo
 	identifier = strings.TrimSpace(identifier)
 	password = strings.TrimSpace(password)
 	if identifier == "" || password == "" {
-		return nil, ErrInvalidCredentials
+		return nil, errs.ErrInvalidCredentials
 	}
 
 	var (
@@ -116,31 +117,31 @@ func (s *Service) AuthenticateAdvertiser(ctx context.Context, identifier, passwo
 	} else {
 		phone, nerr := normalizeAdvertiserPhone(identifier)
 		if nerr != nil {
-			return nil, ErrInvalidCredentials
+			return nil, errs.ErrInvalidCredentials
 		}
 		adv, err = s.advertiserRepo.GetByPhone(ctx, phone)
 	}
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrInvalidCredentials
+			return nil, errs.ErrInvalidCredentials
 		}
 		return nil, err
 	}
 
 	if adv.PasswordSalt == bcryptSaltMarker || strings.HasPrefix(adv.PasswordHash, "$2") {
 		if err := bcrypt.CompareHashAndPassword([]byte(adv.PasswordHash), []byte(password)); err != nil {
-			return nil, ErrInvalidCredentials
+			return nil, errs.ErrInvalidCredentials
 		}
 		return adv, nil
 	}
 
-	return nil, ErrInvalidCredentials
+	return nil, errs.ErrInvalidCredentials
 }
 
 func (s *Service) GetAdvertiserByID(ctx context.Context, id int) (*models.Advertiser, error) {
 	if id <= 0 {
-		return nil, fmt.Errorf("%w: invalid id", ErrInvalidAdvertiserArg)
+		return nil, fmt.Errorf("%w: invalid id", errs.ErrInvalidAdvertiserArg)
 	}
 
 	adv, err := s.advertiserRepo.GetByID(ctx, id)

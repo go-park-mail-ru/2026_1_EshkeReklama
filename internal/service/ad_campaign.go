@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
-	"eshkere/internal/handler/dto"
+	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
 	"time"
 )
@@ -15,7 +15,7 @@ func (s *Service) CreateAdCampaign(ctx context.Context, c *models.AdCampaign) (*
 	return c, nil
 }
 
-func (s *Service) UpdateAdCampaign(ctx context.Context, campaignID int, req dto.UpdateAdCampaignRequest) error {
+func (s *Service) UpdateAdCampaign(ctx context.Context, campaignID int, req *dto.UpdateAdCampaignRequest) error {
 	current, err := s.adCampaignRepo.GetByID(ctx, campaignID)
 	if err != nil {
 		return err

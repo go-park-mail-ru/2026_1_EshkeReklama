@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
+	errs "eshkere/internal/errors"
 	"fmt"
 
 	"eshkere/internal/models"
@@ -12,7 +13,7 @@ import (
 
 func (s *Service) GenerateFeedLink(ctx context.Context, advertiserID int) (string, error) {
 	if advertiserID <= 0 {
-		return "", fmt.Errorf("%w: invalid advertiser id", ErrInvalidAdvertiserArg)
+		return "", fmt.Errorf("%w: invalid advertiser id", errs.ErrInvalidAdvertiserArg)
 	}
 	if s.feedLinkRepo == nil {
 		return "", fmt.Errorf("feed link repository is not configured")
@@ -32,7 +33,7 @@ func (s *Service) GenerateFeedLink(ctx context.Context, advertiserID int) (strin
 
 func (s *Service) GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error) {
 	if token == "" {
-		return nil, fmt.Errorf("%w: empty token", ErrInvalidAdvertiserArg)
+		return nil, fmt.Errorf("%w: empty token", errs.ErrInvalidAdvertiserArg)
 	}
 	if s.feedLinkRepo == nil {
 		return nil, fmt.Errorf("feed link repository is not configured")

@@ -2,15 +2,16 @@ package service
 
 import (
 	"context"
+	errs "eshkere/internal/errors"
 	"fmt"
 )
 
 func (s *Service) TopUpAdvertiserBalance(ctx context.Context, advertiserID int, amount int64) (int64, error) {
 	if advertiserID <= 0 {
-		return 0, fmt.Errorf("%w: invalid advertiser id", ErrInvalidAdvertiserArg)
+		return 0, fmt.Errorf("%w: invalid advertiser id", errs.ErrInvalidAdvertiserArg)
 	}
 	if amount <= 0 {
-		return 0, fmt.Errorf("%w: amount must be positive", ErrInvalidAdvertiserArg)
+		return 0, fmt.Errorf("%w: amount must be positive", errs.ErrInvalidAdvertiserArg)
 	}
 
 	adv, err := s.advertiserRepo.GetByID(ctx, advertiserID)

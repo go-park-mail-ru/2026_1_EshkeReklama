@@ -20,17 +20,17 @@ type Service interface {
 	GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error)
 
 	CreateAd(ctx context.Context, ad *models.Ad) (*models.Ad, error)
-	UpdateAd(ctx context.Context, adID int, req dto.UpdateAdRequest) error
+	UpdateAd(ctx context.Context, adID int, req *dto.UpdateAdRequest) error
 	ListAds(ctx context.Context, groupID int) ([]*models.Ad, error)
 	DeleteAd(ctx context.Context, adID int) error
 
 	CreateAdCampaign(ctx context.Context, c *models.AdCampaign) (*models.AdCampaign, error)
-	UpdateAdCampaign(ctx context.Context, campaignID int, req dto.UpdateAdCampaignRequest) error
+	UpdateAdCampaign(ctx context.Context, campaignID int, req *dto.UpdateAdCampaignRequest) error
 	ListAdCampaigns(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
 	DeleteAdCampaign(ctx context.Context, campaignID int) error
 
 	CreateAdGroup(ctx context.Context, g *models.AdGroup) (*models.AdGroup, error)
-	UpdateAdGroup(ctx context.Context, groupID int, req dto.UpdateAdGroupRequest) error
+	UpdateAdGroup(ctx context.Context, groupID int, req *dto.UpdateAdGroupRequest) error
 	ListAdGroups(ctx context.Context, campaignID int) ([]*models.AdGroup, error)
 	DeleteAdGroup(ctx context.Context, groupID int) error
 }

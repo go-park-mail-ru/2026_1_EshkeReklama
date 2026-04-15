@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"eshkere/internal/session"
+	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
 	"net/http"
 )
@@ -22,7 +23,7 @@ func Auth(sm *session.Manager) func(http.Handler) http.Handler {
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), AdvertiserIDKey, sess.AdvertiserID)
+			ctx := context.WithValue(r.Context(), ctxutils.AdvertiserIDKey, sess.AdvertiserID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

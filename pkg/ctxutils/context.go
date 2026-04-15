@@ -1,4 +1,4 @@
-package pkg
+package ctxutils
 
 import (
 	"context"
@@ -11,7 +11,7 @@ type ContextKey string
 
 const (
 	AdvertiserIDKey ContextKey = "advertiser_id"
-	requestIDKey    ContextKey = "request_id"
+	RequestIDKey    ContextKey = "request_id"
 )
 
 var ErrAdvertiserIDNotFound = errors.New("advertiser id not found in logger")
@@ -31,11 +31,11 @@ func AdvertiserIDFromContext(ctx context.Context) (int, error) {
 }
 
 func CtxWithRequestID(parent context.Context, requestID string) context.Context {
-	return context.WithValue(parent, requestIDKey, requestID)
+	return context.WithValue(parent, RequestIDKey, requestID)
 }
 
 func RequestIDFromCtx(ctx context.Context) string {
-	v := ctx.Value(requestIDKey)
+	v := ctx.Value(RequestIDKey)
 	id, ok := v.(string)
 	if !ok {
 		return ""

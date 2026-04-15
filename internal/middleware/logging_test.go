@@ -1,11 +1,10 @@
 package middleware
 
 import (
+	"eshkere/pkg/ctxutils"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"eshkere/pkg"
 
 	"go.uber.org/zap"
 )
@@ -35,7 +34,7 @@ func TestAccessLog_WrapsStatusCode(t *testing.T) {
 
 func TestRequestContext_SetsRequestID(t *testing.T) {
 	h := RequestContext(zap.NewNop().Sugar())(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if pkg.RequestIDFromCtx(r.Context()) == "" {
+		if ctxutils.RequestIDFromCtx(r.Context()) == "" {
 			t.Fatalf("expected request id in context")
 		}
 		w.WriteHeader(http.StatusOK)

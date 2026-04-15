@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"eshkere/pkg"
+	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/logger"
 	"net/http"
 	"time"
@@ -26,14 +26,14 @@ func RequestContext(baseLogger *zap.SugaredLogger) func(http.Handler) http.Handl
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			requestID := r.Header.Get(requestIDHeader)
 			if requestID == "" {
-				requestID = pkg.NewRequestID()
+				requestID = ctxutils.NewRequestID()
 			}
 
 			w.Header().Set(requestIDHeader, requestID)
 
-			reqLogger := baseLogger.With("request_id", requestID)
+			reqLogger := baseLogger.With(ctxutils.RequestIDKey, requestID)
 			ctx := logger.CtxWithLogger(r.Context(), reqLogger)
-			ctx = pkg.CtxWithRequestID(ctx, requestID)
+			ctx = ctxutils.CtxWithRequestID(ctx, requestID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

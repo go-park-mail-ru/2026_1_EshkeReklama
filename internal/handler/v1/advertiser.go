@@ -23,8 +23,6 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 	groups.Handle("/me", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.Me))).Methods(http.MethodGet)
 	groups.Handle("/me", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.UpdateProfile))).Methods(http.MethodPut)
 	groups.Handle("/me/avatar", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.UpdateAvatar))).Methods(http.MethodPut)
-
-	groups.Handle("/feed-link", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.GenerateFeedLink))).Methods(http.MethodPost)
 }
 
 // @Summary      Регистрация рекламодателя
@@ -170,35 +168,6 @@ func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.JSON(w, http.StatusOK, dto.AdvertiserToProfile(adv))
-}
-
-// @Summary      Генерация уникальной feed-ссылки
-// @Description  Создает или обновляет уникальную публичную ссылку на feed объявлений текущего рекламодателя
-// @Tags         advertiser
-// @Produce      json
-// @Success      200  {object}  dto.FeedLinkResponse
-// @Failure      401  {object}  httpx.Error
-// @Failure      500  {object}  httpx.Error
-// @Router       /advertiser/feed-link [post]
-// @Security     CookieAuth
-func (a *API) GenerateFeedLink(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
-	if err != nil {
-		handler.HandleError(w, r, "getting advertiser id from ctx", err)
-		return
-	}
-
-	token, err := a.service.GenerateFeedLink(ctx, advertiserID)
-	if err != nil {
-		handler.HandleError(w, r, "generating feed link", err)
-		return
-	}
-
-	httpx.JSON(w, http.StatusOK, dto.FeedLinkResponse{
-		URL: "/feed/" + token,
-	})
 }
 
 // @Summary      Выход рекламодателя

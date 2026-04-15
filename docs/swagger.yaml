@@ -128,11 +128,6 @@ definitions:
       id:
         type: integer
     type: object
-  dto.FeedLinkResponse:
-    properties:
-      url:
-        type: string
-    type: object
   dto.ListAdCampaignsResponse:
     properties:
       advertiser_id:
@@ -832,30 +827,6 @@ paths:
       security:
       - CookieAuth: []
       summary: Пополнение баланса
-      tags:
-      - advertiser
-  /advertiser/feed-link:
-    post:
-      description: Создает или обновляет уникальную публичную ссылку на feed объявлений
-        текущего рекламодателя
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.FeedLinkResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/httpx.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/httpx.Error'
-      security:
-      - CookieAuth: []
-      summary: Генерация уникальной feed-ссылки
       tags:
       - advertiser
   /advertiser/login:

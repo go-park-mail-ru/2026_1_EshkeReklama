@@ -68,7 +68,7 @@ func (a *API) CreateFeed(w http.ResponseWriter, r *http.Request) {
 		handler.HandleError(w, r, "creating feed", err)
 		return
 	}
-	httpx.JSON(w, http.StatusCreated, map[string]any{
-		"feed_link": feed,
+	httpx.JSON(w, http.StatusCreated, dto.FeedLinkResponse{
+		URL: feed,
 	})
 }

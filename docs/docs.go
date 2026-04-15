@@ -869,43 +869,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertiser/feed-link": {
-            "post": {
-                "security": [
-                    {
-                        "CookieAuth": []
-                    }
-                ],
-                "description": "Создает или обновляет уникальную публичную ссылку на feed объявлений текущего рекламодателя",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "advertiser"
-                ],
-                "summary": "Генерация уникальной feed-ссылки",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.FeedLinkResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/advertiser/login": {
             "post": {
                 "description": "Аутентифицирует рекламодателя по email или телефону и паролю",
@@ -1429,14 +1392,6 @@ const docTemplate = `{
             "properties": {
                 "id": {
                     "type": "integer"
-                }
-            }
-        },
-        "dto.FeedLinkResponse": {
-            "type": "object",
-            "properties": {
-                "url": {
-                    "type": "string"
                 }
             }
         },

@@ -19,6 +19,7 @@ type Service interface {
 
 	GenerateFeedLink(ctx context.Context, campaignID int) (string, error)
 	GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error)
+	GetCampaignByFeedToken(ctx context.Context, token string) (*models.AdCampaign, error)
 
 	CreateAdCampaign(ctx context.Context, c *models.AdCampaign) (*models.AdCampaign, error)
 	UpdateAdCampaign(ctx context.Context, campaignID int, req *dto.UpdateAdCampaignRequest) error

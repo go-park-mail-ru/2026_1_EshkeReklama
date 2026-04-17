@@ -1,12 +1,13 @@
 package v1
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"path/filepath"
 	"strings"
+
+	errs "eshkere/internal/errors"
 )
 
 const maxAvatarSize = 5 << 20 // 5 MB
@@ -17,17 +18,17 @@ type UploadedImage struct {
 	Ext         string
 }
 
-func ParseAndValidateImage(file *multipart.FileHeader) (*UploadedImage, error) {
-	if file == nil {
-		return nil, errors.New("avatar file is required")
+func ParseAndValidateImage(file multipart.File, header *multipart.FileHeader) (*UploadedImage, error) {
+	if header == nil {
+		return nil, fmt.Errorf("%w: avatar file is required", errs.BadRequestError)
 	}
 
-	if file.Size > maxAvatarSize {
-		return nil, errors.New("avatar file is too large")
+	if header.Size > maxAvatarSize {
+		return nil, fmt.Errorf("%w: avatar file is too large", errs.BadRequestError)
 	}
 
-	contentType := strings.TrimSpace(file.Header.Get("Content-Type"))
-	ext := strings.ToLower(filepath.Ext(file.Filename))
+	contentType := strings.TrimSpace(header.Header.Get("Content-Type"))
+	ext := strings.ToLower(filepath.Ext(header.Filename))
 
 	switch contentType {
 	case "image/jpeg":
@@ -43,22 +44,16 @@ func ParseAndValidateImage(file *multipart.FileHeader) (*UploadedImage, error) {
 			ext = ".webp"
 		}
 	default:
-		return nil, fmt.Errorf("unsupported avatar content type: %s", contentType)
+		return nil, fmt.Errorf("%w: unsupported avatar content type: %s", errs.BadRequestError, contentType)
 	}
 
-	src, err := file.Open()
-	if err != nil {
-		return nil, fmt.Errorf("open avatar file: %w", err)
-	}
-	defer src.Close()
-
-	data, err := io.ReadAll(io.LimitReader(src, maxAvatarSize+1))
+	data, err := io.ReadAll(io.LimitReader(file, maxAvatarSize+1))
 	if err != nil {
 		return nil, fmt.Errorf("read avatar file: %w", err)
 	}
 
 	if len(data) > maxAvatarSize {
-		return nil, errors.New("avatar file is too large")
+		return nil, fmt.Errorf("%w: avatar file is too large", errs.BadRequestError)
 	}
 
 	return &UploadedImage{

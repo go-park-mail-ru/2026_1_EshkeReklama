@@ -12,7 +12,7 @@ import (
 	"eshkere/internal/models"
 )
 
-const BaseFeedURL = "https://eshkereklama/api/v1/feed/"
+const BaseFeedURL = "https://eshkereklama/api/feed/"
 
 func (s *Service) GenerateFeedLink(ctx context.Context, campaignID int) (string, error) {
 	campaign, err := s.adCampaignRepo.GetByID(ctx, campaignID)
@@ -29,7 +29,23 @@ func (s *Service) GenerateFeedLink(ctx context.Context, campaignID int) (string,
 		return "", err
 	}
 
-	return fmt.Sprintf("%s%s", BaseFeedURL, token), nil
+	return fmt.Sprintf("%s%s/widget", BaseFeedURL, token), nil
+}
+
+func (s *Service) GetCampaignByFeedToken(ctx context.Context, token string) (*models.AdCampaign, error) {
+	if token == "" {
+		return nil, fmt.Errorf("%w: empty token", errs.ErrInvalidAdvertiserArg)
+	}
+
+	campaignID, err := s.feedLinkRepo.GetCampaignIDByToken(ctx, token)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("%w: feed with this token not found", errs.NotFoundError)
+		}
+		return nil, err
+	}
+
+	return s.adCampaignRepo.GetByID(ctx, campaignID)
 }
 
 func (s *Service) GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error) {

@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"errors"
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
@@ -285,12 +286,16 @@ func (a *API) UpdateAvatar(w http.ResponseWriter, r *http.Request) {
 
 	file, fileHeader, err := r.FormFile("avatar")
 	if err != nil {
+		if errors.Is(err, http.ErrMissingFile) {
+			httpx.BadRequest(w, "avatar file is required")
+			return
+		}
 		handler.HandleError(w, r, "uploading avatar", err)
 		return
 	}
 	defer file.Close()
 
-	uploaded, err := ParseAndValidateImage(fileHeader)
+	uploaded, err := ParseAndValidateImage(file, fileHeader)
 	if err != nil {
 		handler.HandleError(w, r, "parsing and validating image", err)
 		return

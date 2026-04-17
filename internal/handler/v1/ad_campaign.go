@@ -20,6 +20,7 @@ func (a *API) RegisterAdCampaignHandlers(r *mux.Router) {
 	campaigns.HandleFunc("", a.ListAdCampaigns).Methods(http.MethodGet)
 	campaigns.HandleFunc("/{ad_campaign_id}", a.UpdateAdCampaign).Methods(http.MethodPut)
 	campaigns.HandleFunc("/{ad_campaign_id}", a.DeleteAdCampaign).Methods(http.MethodDelete)
+	campaigns.HandleFunc("/{ad_campaign_id}/feed", a.CreateFeed).Methods(http.MethodPost)
 }
 
 // CreateAdCampaign создаёт рекламную кампанию для текущего рекламодателя (ID из сессии).

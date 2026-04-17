@@ -30,6 +30,18 @@ func (s *Service) UpdateAdCampaign(ctx context.Context, campaignID int, req *dto
 	if req.DailyBudget != nil {
 		current.DailyBudget = *req.DailyBudget
 	}
+	if req.Title != nil {
+		current.Title = *req.Title
+	}
+	if req.ShortDesc != nil {
+		current.ShortDesc = *req.ShortDesc
+	}
+	if req.ImageURL != nil {
+		current.ImageURL = *req.ImageURL
+	}
+	if req.TargetURL != nil {
+		current.TargetURL = *req.TargetURL
+	}
 	current.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
 	return s.adCampaignRepo.Update(ctx, current)

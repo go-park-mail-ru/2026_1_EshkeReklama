@@ -1,3 +1,5 @@
+name: eshkere
+
 services:
   app:
     build:
@@ -78,6 +80,24 @@ services:
       - "9001:9001"
     volumes:
       - minio_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio-init:
+    image: minio/mc:latest
+    restart: "no"
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        mc alias set local http://minio:9000 ${S3_ACCESS_KEY:-minioadmin} ${S3_SECRET_KEY:-minioadmin};
+        mc mb --ignore-existing local/${S3_BUCKET:-eshkere-media};
+        mc anonymous set public local/${S3_BUCKET:-eshkere-media};
+      "
 
 volumes:
   postgres_data:

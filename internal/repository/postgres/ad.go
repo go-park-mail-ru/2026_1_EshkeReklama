@@ -159,6 +159,10 @@ func (r *AdRepository) ListByAdCampaignID(ctx context.Context, campaignID int) (
 	return ads, nil
 }
 
+func (r *AdRepository) ListByCampaignID(ctx context.Context, campaignID int) ([]*models.Ad, error) {
+	return r.ListByAdCampaignID(ctx, campaignID)
+}
+
 func (r *AdRepository) Update(ctx context.Context, ad *models.Ad) error {
 	if ad == nil {
 		return fmt.Errorf("ad cannot be nil")

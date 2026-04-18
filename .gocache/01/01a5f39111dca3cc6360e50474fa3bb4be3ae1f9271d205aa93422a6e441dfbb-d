@@ -1,0 +1,13 @@
+./ad.go
+./ad_campaign.go
+./ad_group.go
+./advertiser.go
+./advertiser_balance.go
+./advertiser_profile.go
+./feed.go
+./service.go
+./advertiser_test.go
+./repo_mocks_test.go
+./service_more_test.go
+./simple_methods_test.go
+./update_methods_test.go

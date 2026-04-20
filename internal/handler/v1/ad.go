@@ -16,8 +16,8 @@ func (a *API) RegisterAdsHandlers(r *mux.Router) {
 
 	adsGroup.Use(middleware.Auth(a.sessionManager))
 	adsGroup.HandleFunc("", a.CreateAd).Methods(http.MethodPost)
-	adsGroup.HandleFunc("/{ad_id}", a.UpdateAd).Methods(http.MethodPut)
 	adsGroup.HandleFunc("", a.ListAds).Methods(http.MethodGet)
+	adsGroup.HandleFunc("/{ad_id}", a.UpdateAd).Methods(http.MethodPut)
 	adsGroup.HandleFunc("/{ad_id}", a.DeleteAd).Methods(http.MethodDelete)
 }
 

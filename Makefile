@@ -1,14 +1,10 @@
-.PHONY: db-up db-down dev
+.PHONY: up down
 
-db-up:
-	docker compose up -d
+up:
+	docker compose up -d --build
 
-# Поднимает Postgres, Redis и миграции, затем запускает API (нужен .env с POSTGRES_* и REDIS_HOST=localhost).
-dev: db-up
-	go run ./cmd/eshkere -config ./config/config.yaml
-
-db-down:
-	docker compose down
+down:
+	docker compose down -v
 
 coverage:
 	go test ./... -coverprofile=cover.out && go tool cover -func=cover.out | tail -n 1

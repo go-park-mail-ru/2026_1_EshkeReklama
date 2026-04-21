@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"eshkere/pkg/ctxutils"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -40,7 +41,7 @@ func TestAuthMiddleware_UnauthorizedAndOK(t *testing.T) {
 	)
 
 	protected := Auth(sm)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		id, err := AdvertiserIDFromContext(r.Context())
+		id, err := ctxutils.AdvertiserIDFromContext(r.Context())
 		if err != nil || id != 5 {
 			t.Fatalf("expected advertiser id 5, got id=%d err=%v", id, err)
 		}

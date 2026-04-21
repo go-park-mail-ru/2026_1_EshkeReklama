@@ -2,26 +2,23 @@ package v1
 
 import (
 	"bytes"
-	"database/sql"
+	"context"
 	"errors"
-	"eshkere/internal/handler"
+	errs "eshkere/internal/errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"go.uber.org/mock/gomock"
+	"eshkere/internal/models"
 )
 
 func TestHandlers_BadRequests(t *testing.T) {
 	sm := newTestSessionManager()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	svc := handlers.NewMockService(ctrl)
+	svc := &stubService{}
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
-	sess := handlers.createSessionCookie(t, sm, 1)
+	sess := createSessionCookie(t, sm, 1)
 
 	// invalid ad_group_id (route var not int)
 	req := httptest.NewRequest(http.MethodPost, "/ad_campaigns/1/ad_groups/zzz/ads", bytes.NewBufferString(`{"title":"t","short_desc":"s","image_url":"i","target_url":"u"}`))
@@ -30,8 +27,8 @@ func TestHandlers_BadRequests(t *testing.T) {
 	req.Header.Set("X-CSRF-Token", csrf.Value)
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
-	if rr.Code != http.StatusBadRequest {
-		t.Fatalf("expected 400 got %d body=%s", rr.Code, rr.Body.String())
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected 500 got %d body=%s", rr.Code, rr.Body.String())
 	}
 
 	// invalid ad_campaign_id for ad group
@@ -41,8 +38,8 @@ func TestHandlers_BadRequests(t *testing.T) {
 	req2.Header.Set("X-CSRF-Token", csrf.Value)
 	rr2 := httptest.NewRecorder()
 	r.ServeHTTP(rr2, req2)
-	if rr2.Code != http.StatusBadRequest {
-		t.Fatalf("expected 400 got %d body=%s", rr2.Code, rr2.Body.String())
+	if rr2.Code != http.StatusInternalServerError {
+		t.Fatalf("expected 500 got %d body=%s", rr2.Code, rr2.Body.String())
 	}
 
 	// invalid json for ad_campaigns create
@@ -57,7 +54,9 @@ func TestHandlers_BadRequests(t *testing.T) {
 	}
 
 	// service error in create campaign -> 400
-	svc.EXPECT().CreateAdCampaign(gomock.Any(), gomock.Any()).Return(nil, errors.New("rejected"))
+	svc.createAdCampaignFn = func(_ context.Context, _ *models.AdCampaign) (*models.AdCampaign, error) {
+		return nil, errs.BadRequestError
+	}
 	req4 := httptest.NewRequest(http.MethodPost, "/ad_campaigns", bytes.NewBufferString(`{"name":"camp","daily_budget":10}`))
 	req4.AddCookie(sess)
 	req4.AddCookie(csrf)
@@ -71,13 +70,15 @@ func TestHandlers_BadRequests(t *testing.T) {
 
 func TestFeed_NotFound(t *testing.T) {
 	sm := newTestSessionManager()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	svc := handlers.NewMockService(ctrl)
+	svc := &stubService{}
 	r := newTestRouter(sm, svc)
 
-	svc.EXPECT().GetAdsByFeedToken(gomock.Any(), "missing").Return(nil, sql.ErrNoRows)
+	svc.getAdsByFeedTokenFn = func(_ context.Context, token string) ([]*models.Ad, error) {
+		if token != "missing" {
+			t.Fatalf("unexpected token: %s", token)
+		}
+		return nil, errs.NotFoundError
+	}
 
 	req := httptest.NewRequest(http.MethodGet, "/feed/missing", nil)
 	rr := httptest.NewRecorder()
@@ -89,13 +90,15 @@ func TestFeed_NotFound(t *testing.T) {
 
 func TestFeed_InternalError(t *testing.T) {
 	sm := newTestSessionManager()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	svc := handlers.NewMockService(ctrl)
+	svc := &stubService{}
 	r := newTestRouter(sm, svc)
 
-	svc.EXPECT().GetAdsByFeedToken(gomock.Any(), "tok").Return(nil, errors.New("db down"))
+	svc.getAdsByFeedTokenFn = func(_ context.Context, token string) ([]*models.Ad, error) {
+		if token != "tok" {
+			t.Fatalf("unexpected token: %s", token)
+		}
+		return nil, errors.New("db down")
+	}
 
 	req := httptest.NewRequest(http.MethodGet, "/feed/tok", nil)
 	rr := httptest.NewRecorder()

@@ -4,26 +4,188 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"eshkere/internal/handler"
+	handlers "eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
+	errs "eshkere/internal/errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"eshkere/internal/handler/dto"
+	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
-	"eshkere/internal/service"
 	"eshkere/internal/session"
 
 	"github.com/gorilla/mux"
-	"go.uber.org/mock/gomock"
 )
 
 const testCookieName = "session_id"
 
 type memoryStore struct {
 	sessions map[string]session.Session
+}
+
+type stubService struct {
+	registerAdvertiserFn      func(ctx context.Context, name, email, phone, password string) (*models.Advertiser, error)
+	authenticateAdvertiserFn  func(ctx context.Context, identifier, password string) (*models.Advertiser, error)
+	getAdvertiserByIDFn       func(ctx context.Context, id int) (*models.Advertiser, error)
+	updateAdvertiserProfileFn func(ctx context.Context, advertiserID int, name, email, phone string) (*models.Advertiser, error)
+	updateAdvertiserAvatarFn  func(ctx context.Context, advertiserID int, avatar []byte, avatarExt, avatarContentType string) (*models.Advertiser, error)
+	topUpAdvertiserBalanceFn  func(ctx context.Context, advertiserID int, amount int64) (int64, error)
+	generateFeedLinkFn        func(ctx context.Context, campaignID int) (string, error)
+	getAdsByFeedTokenFn       func(ctx context.Context, token string) ([]*models.Ad, error)
+	createAdCampaignFn        func(ctx context.Context, c *models.AdCampaign) (*models.AdCampaign, error)
+	updateAdCampaignFn        func(ctx context.Context, campaignID int, req *dto.UpdateAdCampaignRequest) error
+	listAdCampaignsFn         func(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
+	deleteAdCampaignFn        func(ctx context.Context, campaignID int) error
+	createAdGroupFn           func(ctx context.Context, g *models.AdGroup) (*models.AdGroup, error)
+	updateAdGroupFn           func(ctx context.Context, groupID int, req *dto.UpdateAdGroupRequest) error
+	listAdGroupsFn            func(ctx context.Context, campaignID int) ([]*models.AdGroup, error)
+	deleteAdGroupFn           func(ctx context.Context, groupID int) error
+	createAdFn                func(ctx context.Context, ad *models.Ad) (*models.Ad, error)
+	updateAdFn                func(ctx context.Context, adID int, req *dto.UpdateAdRequest) error
+	listAdsFn                 func(ctx context.Context, groupID int) ([]*models.Ad, error)
+	deleteAdFn                func(ctx context.Context, adID int) error
+}
+
+func (s *stubService) RegisterAdvertiser(ctx context.Context, name, email, phone, password string) (*models.Advertiser, error) {
+	if s.registerAdvertiserFn != nil {
+		return s.registerAdvertiserFn(ctx, name, email, phone, password)
+	}
+	return nil, nil
+}
+
+func (s *stubService) AuthenticateAdvertiser(ctx context.Context, identifier, password string) (*models.Advertiser, error) {
+	if s.authenticateAdvertiserFn != nil {
+		return s.authenticateAdvertiserFn(ctx, identifier, password)
+	}
+	return nil, nil
+}
+
+func (s *stubService) GetAdvertiserByID(ctx context.Context, id int) (*models.Advertiser, error) {
+	if s.getAdvertiserByIDFn != nil {
+		return s.getAdvertiserByIDFn(ctx, id)
+	}
+	return nil, nil
+}
+
+func (s *stubService) UpdateAdvertiserProfile(ctx context.Context, advertiserID int, name, email, phone string) (*models.Advertiser, error) {
+	if s.updateAdvertiserProfileFn != nil {
+		return s.updateAdvertiserProfileFn(ctx, advertiserID, name, email, phone)
+	}
+	return nil, nil
+}
+
+func (s *stubService) UpdateAdvertiserAvatar(ctx context.Context, advertiserID int, avatar []byte, avatarExt, avatarContentType string) (*models.Advertiser, error) {
+	if s.updateAdvertiserAvatarFn != nil {
+		return s.updateAdvertiserAvatarFn(ctx, advertiserID, avatar, avatarExt, avatarContentType)
+	}
+	return nil, nil
+}
+
+func (s *stubService) TopUpAdvertiserBalance(ctx context.Context, advertiserID int, amount int64) (int64, error) {
+	if s.topUpAdvertiserBalanceFn != nil {
+		return s.topUpAdvertiserBalanceFn(ctx, advertiserID, amount)
+	}
+	return 0, nil
+}
+
+func (s *stubService) GenerateFeedLink(ctx context.Context, campaignID int) (string, error) {
+	if s.generateFeedLinkFn != nil {
+		return s.generateFeedLinkFn(ctx, campaignID)
+	}
+	return "", nil
+}
+
+func (s *stubService) GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error) {
+	if s.getAdsByFeedTokenFn != nil {
+		return s.getAdsByFeedTokenFn(ctx, token)
+	}
+	return nil, nil
+}
+
+func (s *stubService) CreateAdCampaign(ctx context.Context, c *models.AdCampaign) (*models.AdCampaign, error) {
+	if s.createAdCampaignFn != nil {
+		return s.createAdCampaignFn(ctx, c)
+	}
+	return nil, nil
+}
+
+func (s *stubService) UpdateAdCampaign(ctx context.Context, campaignID int, req *dto.UpdateAdCampaignRequest) error {
+	if s.updateAdCampaignFn != nil {
+		return s.updateAdCampaignFn(ctx, campaignID, req)
+	}
+	return nil
+}
+
+func (s *stubService) ListAdCampaigns(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error) {
+	if s.listAdCampaignsFn != nil {
+		return s.listAdCampaignsFn(ctx, advertiserID)
+	}
+	return nil, nil
+}
+
+func (s *stubService) DeleteAdCampaign(ctx context.Context, campaignID int) error {
+	if s.deleteAdCampaignFn != nil {
+		return s.deleteAdCampaignFn(ctx, campaignID)
+	}
+	return nil
+}
+
+func (s *stubService) CreateAdGroup(ctx context.Context, g *models.AdGroup) (*models.AdGroup, error) {
+	if s.createAdGroupFn != nil {
+		return s.createAdGroupFn(ctx, g)
+	}
+	return nil, nil
+}
+
+func (s *stubService) UpdateAdGroup(ctx context.Context, groupID int, req *dto.UpdateAdGroupRequest) error {
+	if s.updateAdGroupFn != nil {
+		return s.updateAdGroupFn(ctx, groupID, req)
+	}
+	return nil
+}
+
+func (s *stubService) ListAdGroups(ctx context.Context, campaignID int) ([]*models.AdGroup, error) {
+	if s.listAdGroupsFn != nil {
+		return s.listAdGroupsFn(ctx, campaignID)
+	}
+	return nil, nil
+}
+
+func (s *stubService) DeleteAdGroup(ctx context.Context, groupID int) error {
+	if s.deleteAdGroupFn != nil {
+		return s.deleteAdGroupFn(ctx, groupID)
+	}
+	return nil
+}
+
+func (s *stubService) CreateAd(ctx context.Context, ad *models.Ad) (*models.Ad, error) {
+	if s.createAdFn != nil {
+		return s.createAdFn(ctx, ad)
+	}
+	return nil, nil
+}
+
+func (s *stubService) UpdateAd(ctx context.Context, adID int, req *dto.UpdateAdRequest) error {
+	if s.updateAdFn != nil {
+		return s.updateAdFn(ctx, adID, req)
+	}
+	return nil
+}
+
+func (s *stubService) ListAds(ctx context.Context, groupID int) ([]*models.Ad, error) {
+	if s.listAdsFn != nil {
+		return s.listAdsFn(ctx, groupID)
+	}
+	return nil, nil
+}
+
+func (s *stubService) DeleteAd(ctx context.Context, adID int) error {
+	if s.deleteAdFn != nil {
+		return s.deleteAdFn(ctx, adID)
+	}
+	return nil
 }
 
 func newMemoryStore() *memoryStore {
@@ -64,6 +226,20 @@ func newTestSessionManager() *session.Manager {
 	)
 }
 
+func createSessionCookie(t *testing.T, sm *session.Manager, advertiserID int) *http.Cookie {
+	t.Helper()
+	req := httptest.NewRequest(http.MethodPost, "/", nil)
+	rr := httptest.NewRecorder()
+	if err := sm.Create(rr, req, advertiserID); err != nil {
+		t.Fatalf("Create session: %v", err)
+	}
+	cookies := rr.Result().Cookies()
+	if len(cookies) == 0 {
+		t.Fatalf("expected session cookie")
+	}
+	return cookies[0]
+}
+
 func newTestRouter(sm *session.Manager, svc Service) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 	r.Use(middleware.CSRF(middleware.CSRFConfig{
@@ -96,16 +272,17 @@ func getCSRF(t *testing.T, r *mux.Router) *http.Cookie {
 
 func TestRegister_OK(t *testing.T) {
 	sm := newTestSessionManager()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	svc := handlers.NewMockService(ctrl)
+	svc := &stubService{}
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
 
-	svc.EXPECT().
-		RegisterAdvertiser(gomock.Any(), gomock.Any(), "a@a.test", "+70000000000", "secret").
-		Return(&models.Advertiser{ID: 99, Email: "a@a.test", Phone: "+70000000000"}, nil)
+	svc.registerAdvertiserFn = func(_ context.Context, _ string, email, phone, password string) (*models.Advertiser, error) {
+		if email != "a@a.test" || phone != "+70000000000" || password != "secret" {
+			t.Fatalf("unexpected register args: email=%s phone=%s password=%s", email, phone, password)
+		}
+		return &models.Advertiser{ID: 99, Email: email, Phone: phone}, nil
+	}
 
 	body := `{"email":"a@a.test","phone":"+70000000000","password":"secret"}`
 	req := httptest.NewRequest(http.MethodPost, "/advertiser/register", bytes.NewBufferString(body))
@@ -124,19 +301,24 @@ func TestRegister_OK(t *testing.T) {
 
 func TestLogin_UnauthorizedAndOK(t *testing.T) {
 	sm := newTestSessionManager()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	svc := handlers.NewMockService(ctrl)
+	svc := &stubService{}
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
 
-	svc.EXPECT().
-		AuthenticateAdvertiser(gomock.Any(), "test@mail.com", "bad").
-		Return(nil, service.ErrInvalidCredentials)
-	svc.EXPECT().
-		AuthenticateAdvertiser(gomock.Any(), "test@mail.com", "ok").
-		Return(&models.Advertiser{ID: 1, Email: "test@mail.com", Phone: "9000000000"}, nil)
+	svc.authenticateAdvertiserFn = func(_ context.Context, identifier, password string) (*models.Advertiser, error) {
+		if identifier != "test@mail.com" {
+			t.Fatalf("unexpected identifier: %s", identifier)
+		}
+		if password == "bad" {
+			return nil, errs.ErrInvalidCredentials
+		}
+		if password == "ok" {
+			return &models.Advertiser{ID: 1, Email: "test@mail.com", Phone: "9000000000"}, nil
+		}
+		t.Fatalf("unexpected password: %s", password)
+		return nil, nil
+	}
 
 	req := httptest.NewRequest(http.MethodPost, "/advertiser/login", bytes.NewBufferString(`{"identifier":"test@mail.com","password":"bad"}`))
 	req.AddCookie(csrf)
@@ -159,22 +341,23 @@ func TestLogin_UnauthorizedAndOK(t *testing.T) {
 
 func TestMe_UnauthorizedAndOK(t *testing.T) {
 	sm := newTestSessionManager()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	svc := handlers.NewMockService(ctrl)
+	svc := &stubService{}
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
 
-	svc.EXPECT().
-		GetAdvertiserByID(gomock.Any(), 1).
-		Return(&models.Advertiser{
+	svc.getAdvertiserByIDFn = func(_ context.Context, id int) (*models.Advertiser, error) {
+		if id != 1 {
+			t.Fatalf("unexpected advertiser id: %d", id)
+		}
+		return &models.Advertiser{
 			ID:      1,
 			Name:    "Test",
 			Email:   "test@mail.com",
 			Phone:   "9000000000",
 			Balance: 100,
-		}, nil)
+		}, nil
+	}
 
 	req := httptest.NewRequest(http.MethodGet, "/advertiser/me", nil)
 	rr := httptest.NewRecorder()
@@ -205,9 +388,7 @@ func TestMe_UnauthorizedAndOK(t *testing.T) {
 
 func TestLogout_AlwaysOK(t *testing.T) {
 	sm := newTestSessionManager()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	svc := handlers.NewMockService(ctrl)
+	svc := &stubService{}
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
@@ -225,19 +406,23 @@ func TestLogout_AlwaysOK(t *testing.T) {
 
 func TestBalance_GetAndTopUp(t *testing.T) {
 	sm := newTestSessionManager()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	svc := handlers.NewMockService(ctrl)
+	svc := &stubService{}
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
 
-	svc.EXPECT().
-		GetAdvertiserByID(gomock.Any(), 1).
-		Return(&models.Advertiser{ID: 1, Balance: 100}, nil)
-	svc.EXPECT().
-		TopUpAdvertiserBalance(gomock.Any(), 1, int64(150)).
-		Return(int64(250), nil)
+	svc.getAdvertiserByIDFn = func(_ context.Context, id int) (*models.Advertiser, error) {
+		if id != 1 {
+			t.Fatalf("unexpected advertiser id: %d", id)
+		}
+		return &models.Advertiser{ID: 1, Balance: 100}, nil
+	}
+	svc.topUpAdvertiserBalanceFn = func(_ context.Context, advertiserID int, amount int64) (int64, error) {
+		if advertiserID != 1 || amount != 150 {
+			t.Fatalf("unexpected topup args: advertiserID=%d amount=%d", advertiserID, amount)
+		}
+		return 250, nil
+	}
 
 	createReq := httptest.NewRequest(http.MethodPost, "/", nil)
 	createRR := httptest.NewRecorder()
@@ -272,16 +457,17 @@ func TestBalance_GetAndTopUp(t *testing.T) {
 
 func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
 	sm := newTestSessionManager()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	svc := handlers.NewMockService(ctrl)
+	svc := &stubService{}
 	r := newTestRouter(sm, svc)
 
 	csrf := getCSRF(t, r)
 
-	svc.EXPECT().
-		ListAds(gomock.Any(), 2).
-		Return([]*models.Ad{}, nil)
+	svc.listAdsFn = func(_ context.Context, groupID int) ([]*models.Ad, error) {
+		if groupID != 2 {
+			t.Fatalf("unexpected group id: %d", groupID)
+		}
+		return []*models.Ad{}, nil
+	}
 
 	req := httptest.NewRequest(http.MethodGet, "/ad_campaigns/1/ad_groups/2/ads", nil)
 	rr := httptest.NewRecorder()
@@ -327,14 +513,15 @@ func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
 
 func TestFeed_EmptyList(t *testing.T) {
 	sm := newTestSessionManager()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	svc := handlers.NewMockService(ctrl)
+	svc := &stubService{}
 	r := newTestRouter(sm, svc)
 
-	svc.EXPECT().
-		GetAdsByFeedToken(gomock.Any(), "feed-token").
-		Return([]*models.Ad{}, nil)
+	svc.getAdsByFeedTokenFn = func(_ context.Context, token string) ([]*models.Ad, error) {
+		if token != "feed-token" {
+			t.Fatalf("unexpected token: %s", token)
+		}
+		return []*models.Ad{}, nil
+	}
 
 	req := httptest.NewRequest(http.MethodGet, "/feed/feed-token", nil)
 	rr := httptest.NewRecorder()

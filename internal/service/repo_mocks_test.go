@@ -437,19 +437,19 @@ func (mr *MockAdRepositoryMockRecorder) ListByAdGroupID(ctx, adGroupID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAdGroupID", reflect.TypeOf((*MockAdRepository)(nil).ListByAdGroupID), ctx, adGroupID)
 }
 
-// ListByAdvertiserID mocks base method.
-func (m *MockAdRepository) ListByAdvertiserID(ctx context.Context, advertiserID int) ([]*models.Ad, error) {
+// ListByCampaignID mocks base method.
+func (m *MockAdRepository) ListByCampaignID(ctx context.Context, campaignID int) ([]*models.Ad, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListByAdvertiserID", ctx, advertiserID)
+	ret := m.ctrl.Call(m, "ListByCampaignID", ctx, campaignID)
 	ret0, _ := ret[0].([]*models.Ad)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListByAdvertiserID indicates an expected call of ListByAdvertiserID.
-func (mr *MockAdRepositoryMockRecorder) ListByAdvertiserID(ctx, advertiserID any) *gomock.Call {
+// ListByCampaignID indicates an expected call of ListByCampaignID.
+func (mr *MockAdRepositoryMockRecorder) ListByCampaignID(ctx, campaignID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAdvertiserID", reflect.TypeOf((*MockAdRepository)(nil).ListByAdvertiserID), ctx, advertiserID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByCampaignID", reflect.TypeOf((*MockAdRepository)(nil).ListByCampaignID), ctx, campaignID)
 }
 
 // Update mocks base method.
@@ -490,33 +490,33 @@ func (m *MockFeedLinkRepository) EXPECT() *MockFeedLinkRepositoryMockRecorder {
 	return m.recorder
 }
 
-// GetAdvertiserIDByToken mocks base method.
-func (m *MockFeedLinkRepository) GetAdvertiserIDByToken(ctx context.Context, token string) (int, error) {
+// Create mocks base method.
+func (m *MockFeedLinkRepository) Create(ctx context.Context, campaignID int, token string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAdvertiserIDByToken", ctx, token)
+	ret := m.ctrl.Call(m, "Create", ctx, campaignID, token)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockFeedLinkRepositoryMockRecorder) Create(ctx, campaignID, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockFeedLinkRepository)(nil).Create), ctx, campaignID, token)
+}
+
+// GetCampaignIDByToken mocks base method.
+func (m *MockFeedLinkRepository) GetCampaignIDByToken(ctx context.Context, token string) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCampaignIDByToken", ctx, token)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAdvertiserIDByToken indicates an expected call of GetAdvertiserIDByToken.
-func (mr *MockFeedLinkRepositoryMockRecorder) GetAdvertiserIDByToken(ctx, token any) *gomock.Call {
+// GetCampaignIDByToken indicates an expected call of GetCampaignIDByToken.
+func (mr *MockFeedLinkRepositoryMockRecorder) GetCampaignIDByToken(ctx, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdvertiserIDByToken", reflect.TypeOf((*MockFeedLinkRepository)(nil).GetAdvertiserIDByToken), ctx, token)
-}
-
-// UpsertByAdvertiserID mocks base method.
-func (m *MockFeedLinkRepository) UpsertByAdvertiserID(ctx context.Context, advertiserID int, token string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpsertByAdvertiserID", ctx, advertiserID, token)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpsertByAdvertiserID indicates an expected call of UpsertByAdvertiserID.
-func (mr *MockFeedLinkRepositoryMockRecorder) UpsertByAdvertiserID(ctx, advertiserID, token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertByAdvertiserID", reflect.TypeOf((*MockFeedLinkRepository)(nil).UpsertByAdvertiserID), ctx, advertiserID, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampaignIDByToken", reflect.TypeOf((*MockFeedLinkRepository)(nil).GetCampaignIDByToken), ctx, token)
 }
 
 // MockAvatarStorage is a mock of AvatarStorage interface.

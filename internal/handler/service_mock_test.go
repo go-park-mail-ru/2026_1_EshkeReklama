@@ -265,7 +265,7 @@ func (mr *MockServiceMockRecorder) TopUpAdvertiserBalance(ctx, advertiserID, amo
 }
 
 // UpdateAd mocks base method.
-func (m *MockService) UpdateAd(ctx context.Context, adID int, req dto.UpdateAdRequest) error {
+func (m *MockService) UpdateAd(ctx context.Context, adID int, req *dto.UpdateAdRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateAd", ctx, adID, req)
 	ret0, _ := ret[0].(error)
@@ -279,7 +279,7 @@ func (mr *MockServiceMockRecorder) UpdateAd(ctx, adID, req any) *gomock.Call {
 }
 
 // UpdateAdCampaign mocks base method.
-func (m *MockService) UpdateAdCampaign(ctx context.Context, campaignID int, req dto.UpdateAdCampaignRequest) error {
+func (m *MockService) UpdateAdCampaign(ctx context.Context, campaignID int, req *dto.UpdateAdCampaignRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateAdCampaign", ctx, campaignID, req)
 	ret0, _ := ret[0].(error)
@@ -293,7 +293,7 @@ func (mr *MockServiceMockRecorder) UpdateAdCampaign(ctx, campaignID, req any) *g
 }
 
 // UpdateAdGroup mocks base method.
-func (m *MockService) UpdateAdGroup(ctx context.Context, groupID int, req dto.UpdateAdGroupRequest) error {
+func (m *MockService) UpdateAdGroup(ctx context.Context, groupID int, req *dto.UpdateAdGroupRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateAdGroup", ctx, groupID, req)
 	ret0, _ := ret[0].(error)

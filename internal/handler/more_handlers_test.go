@@ -1,18 +1,95 @@
-package handler
+package handler_test
 
 import (
 	"bytes"
+	"context"
+	handlers "eshkere/internal/handler"
+	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1"
+	"eshkere/internal/handler/v1/dto"
+	"eshkere/internal/models"
+	"eshkere/internal/session"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
-	"eshkere/internal/handler/dto"
-	"eshkere/internal/models"
-	"eshkere/internal/session"
+	"github.com/gorilla/mux"
 
 	"go.uber.org/mock/gomock"
 )
+
+type memoryStore struct {
+	sessions map[string]session.Session
+}
+
+func newMemoryStore() *memoryStore {
+	return &memoryStore{
+		sessions: make(map[string]session.Session),
+	}
+}
+
+func (s *memoryStore) Save(_ context.Context, sessionID string, sess session.Session, _ time.Duration) error {
+	s.sessions[sessionID] = sess
+	return nil
+}
+
+func (s *memoryStore) Get(_ context.Context, sessionID string) (session.Session, error) {
+	sess, ok := s.sessions[sessionID]
+	if !ok {
+		return session.Session{}, session.ErrStoreSessionNotFound
+	}
+
+	return sess, nil
+}
+
+func (s *memoryStore) Delete(_ context.Context, sessionID string) error {
+	delete(s.sessions, sessionID)
+	return nil
+}
+
+func newTestSessionManager() *session.Manager {
+	return session.NewManager(
+		newMemoryStore(),
+		24*time.Hour,
+		session.CookieConfig{
+			Name:     "session_id",
+			Path:     "/",
+			HTTPOnly: true,
+			SameSite: http.SameSiteLaxMode,
+		},
+	)
+}
+
+func newTestRouter(sm *session.Manager, svc v1.Service) *mux.Router {
+	r := mux.NewRouter().StrictSlash(true)
+	r.Use(middleware.CSRF(middleware.CSRFConfig{
+		CookieName: "csrf_token",
+		HeaderName: "X-CSRF-Token",
+	}))
+	r.HandleFunc("/__ping", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}).Methods(http.MethodGet)
+	handlers.Register(r, v1.NewAPI(v1.APIConfig{
+		SessionManager: sm,
+		Service:        svc,
+	}))
+	return r
+}
+
+func getCSRF(t *testing.T, r *mux.Router) *http.Cookie {
+	t.Helper()
+	req := httptest.NewRequest(http.MethodGet, "/__ping", nil)
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+	for _, c := range rr.Result().Cookies() {
+		if c.Name == "csrf_token" && c.Value != "" {
+			return c
+		}
+	}
+	t.Fatalf("csrf_token cookie not set")
+	return nil
+}
 
 func createSessionCookie(t *testing.T, sm *session.Manager, advertiserID int) *http.Cookie {
 	t.Helper()
@@ -29,14 +106,14 @@ func createSessionCookie(t *testing.T, sm *session.Manager, advertiserID int) *h
 }
 
 func TestAdCampaign_CRUD(t *testing.T) {
-	sm := v1.newTestSessionManager()
+	sm := newTestSessionManager()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	svc := NewMockService(ctrl)
-	r := v1.newTestRouter(sm, svc)
+	svc := handlers.NewMockService(ctrl)
+	r := newTestRouter(sm, svc)
 
-	csrf := v1.getCSRF(t, r)
+	csrf := getCSRF(t, r)
 	sess := createSessionCookie(t, sm, 1)
 
 	svc.EXPECT().
@@ -75,7 +152,7 @@ func TestAdCampaign_CRUD(t *testing.T) {
 	newName := "new"
 	budget := int64(99)
 	svc.EXPECT().
-		UpdateAdCampaign(gomock.Any(), 42, dto.UpdateAdCampaignRequest{Name: &newName, DailyBudget: &budget}).
+		UpdateAdCampaign(gomock.Any(), 42, &dto.UpdateAdCampaignRequest{Name: &newName, DailyBudget: &budget}).
 		Return(nil)
 
 	updReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/42", bytes.NewBufferString(`{"name":"new","daily_budget":99}`))
@@ -102,14 +179,14 @@ func TestAdCampaign_CRUD(t *testing.T) {
 }
 
 func TestAdGroup_And_Ads_CRUD(t *testing.T) {
-	sm := v1.newTestSessionManager()
+	sm := newTestSessionManager()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	svc := NewMockService(ctrl)
-	r := v1.newTestRouter(sm, svc)
+	svc := handlers.NewMockService(ctrl)
+	r := newTestRouter(sm, svc)
 
-	csrf := v1.getCSRF(t, r)
+	csrf := getCSRF(t, r)
 	sess := createSessionCookie(t, sm, 1)
 
 	svc.EXPECT().

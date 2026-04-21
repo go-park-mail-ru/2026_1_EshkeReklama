@@ -68,7 +68,7 @@ func TestRegisterAdvertiser_EmailTaken(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error")
 	}
-	if errors.Is(err, errs.ErrEmailTaken) {
+	if !errors.Is(err, errs.ErrEmailTaken) {
 		t.Fatalf("expected ErrEmailTaken got %v", err)
 	}
 }
@@ -91,7 +91,7 @@ func TestAuthenticateAdvertiser_InvalidPassword(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error")
 	}
-	if errors.Is(err, errs.ErrInvalidCredentials) {
+	if !errors.Is(err, errs.ErrInvalidCredentials) {
 		t.Fatalf("expected ErrInvalidCredentials got %v", err)
 	}
 }

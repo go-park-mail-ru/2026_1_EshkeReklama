@@ -25,17 +25,17 @@ func TestFeedLinkRepository_InsertAndGet(t *testing.T) {
 		WithArgs(1, "tok").
 		WillReturnResult(sqlmock.NewResult(0, 1))
 
-	if err := repo.InsertByAdvertiserID(context.Background(), 1, "tok"); err != nil {
-		t.Fatalf("UpsertByAdvertiserID: %v", err)
+	if err := repo.Create(context.Background(), 1, "tok"); err != nil {
+		t.Fatalf("Create: %v", err)
 	}
 
-	mock.ExpectQuery(regexp.QuoteMeta(selectAdvertiserByFeedToken)).
+	mock.ExpectQuery(regexp.QuoteMeta(selectCampaignIDByFeedToken)).
 		WithArgs("tok").
-		WillReturnRows(sqlmock.NewRows([]string{"advertiser_id"}).AddRow(1))
+		WillReturnRows(sqlmock.NewRows([]string{"campaign_id"}).AddRow(1))
 
-	id, err := repo.GetAdvertiserIDByToken(context.Background(), "tok")
+	id, err := repo.GetCampaignIDByToken(context.Background(), "tok")
 	if err != nil {
-		t.Fatalf("GetAdvertiserIDByToken: %v", err)
+		t.Fatalf("GetCampaignIDByToken: %v", err)
 	}
 	if id != 1 {
 		t.Fatalf("expected 1 got %d", id)

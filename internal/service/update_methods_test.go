@@ -34,7 +34,7 @@ func TestUpdateAdCampaign_UpdatesProvidedFields(t *testing.T) {
 	name := "new"
 	budget := int64(99)
 	status := models.AdStatusRejected
-	if err := svc.UpdateAdCampaign(context.Background(), 1, dto.UpdateAdCampaignRequest{Name: &name, DailyBudget: &budget, Status: &status}); err != nil {
+	if err := svc.UpdateAdCampaign(context.Background(), 1, &dto.UpdateAdCampaignRequest{Name: &name, DailyBudget: &budget, Status: &status}); err != nil {
 		t.Fatalf("UpdateAdCampaign: %v", err)
 	}
 }
@@ -61,7 +61,7 @@ func TestUpdateAdGroup_UpdatesProvidedFields(t *testing.T) {
 
 	name := "new"
 	ageFrom := 21
-	if err := svc.UpdateAdGroup(context.Background(), 1, dto.UpdateAdGroupRequest{Name: &name, AgeFrom: &ageFrom}); err != nil {
+	if err := svc.UpdateAdGroup(context.Background(), 1, &dto.UpdateAdGroupRequest{Name: &name, AgeFrom: &ageFrom}); err != nil {
 		t.Fatalf("UpdateAdGroup: %v", err)
 	}
 }
@@ -108,13 +108,20 @@ func TestUpdateAd_SetsUpdatedAt(t *testing.T) {
 		})
 
 	title := "new"
-	if err := svc.UpdateAd(context.Background(), 9, dto.UpdateAdRequest{Title: &title}); err != nil {
+	if err := svc.UpdateAd(context.Background(), 9, &dto.UpdateAdRequest{Title: &title}); err != nil {
 		t.Fatalf("UpdateAd: %v", err)
 	}
 }
 
 func TestGenerateFeedLink_InvalidArgs(t *testing.T) {
-	svc, _ := NewService(&Config{})
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	campaignRepo := NewMockAdCampaignRepository(ctrl)
+	svc, _ := NewService(&Config{AdCampaignRepo: campaignRepo})
+
+	campaignRepo.EXPECT().GetByID(gomock.Any(), 0).Return(nil, sql.ErrNoRows)
+
 	if _, err := svc.GenerateFeedLink(context.Background(), 0); err == nil {
 		t.Fatalf("expected error")
 	}

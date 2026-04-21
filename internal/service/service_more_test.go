@@ -124,23 +124,27 @@ func TestGenerateFeedLink_And_GetAdsByFeedToken_OK(t *testing.T) {
 
 	feedRepo := NewMockFeedLinkRepository(ctrl)
 	adRepo := NewMockAdRepository(ctrl)
+	campaignRepo := NewMockAdCampaignRepository(ctrl)
 
-	svc, _ := NewService(&Config{FeedLinkRepo: feedRepo, AdRepo: adRepo})
+	svc, _ := NewService(&Config{FeedLinkRepo: feedRepo, AdRepo: adRepo, AdCampaignRepo: campaignRepo})
 
+	campaignRepo.EXPECT().
+		GetByID(gomock.Any(), 1).
+		Return(&models.AdCampaign{ID: 1}, nil)
 	feedRepo.EXPECT().
-		UpsertByAdvertiserID(gomock.Any(), 1, gomock.Any()).
+		Create(gomock.Any(), 1, gomock.Any()).
 		Return(nil)
 
 	token, err := svc.GenerateFeedLink(context.Background(), 1)
 	if err != nil {
 		t.Fatalf("GenerateFeedLink: %v", err)
 	}
-	if token == "" {
+	if token == "" || token == BaseFeedURL {
 		t.Fatalf("expected token")
 	}
 
-	feedRepo.EXPECT().GetAdvertiserIDByToken(gomock.Any(), "t").Return(1, nil)
-	adRepo.EXPECT().ListByAdvertiserID(gomock.Any(), 1).Return([]*models.Ad{}, nil)
+	feedRepo.EXPECT().GetCampaignIDByToken(gomock.Any(), "t").Return(1, nil)
+	adRepo.EXPECT().ListByCampaignID(gomock.Any(), 1).Return([]*models.Ad{}, nil)
 
 	ads, err := svc.GetAdsByFeedToken(context.Background(), "t")
 	if err != nil {
@@ -158,13 +162,13 @@ func TestGetAdsByFeedToken_NotFound(t *testing.T) {
 	feedRepo := NewMockFeedLinkRepository(ctrl)
 	svc, _ := NewService(&Config{FeedLinkRepo: feedRepo, AdRepo: NewMockAdRepository(ctrl)})
 
-	feedRepo.EXPECT().GetAdvertiserIDByToken(gomock.Any(), "t").Return(0, sql.ErrNoRows)
+	feedRepo.EXPECT().GetCampaignIDByToken(gomock.Any(), "t").Return(0, sql.ErrNoRows)
 
 	_, err := svc.GetAdsByFeedToken(context.Background(), "t")
 	if err == nil {
 		t.Fatalf("expected error")
 	}
-	if err != sql.ErrNoRows {
-		t.Fatalf("expected sql.ErrNoRows got %v", err)
+	if err == sql.ErrNoRows {
+		t.Fatalf("expected wrapped not-found error, got %v", err)
 	}
 }

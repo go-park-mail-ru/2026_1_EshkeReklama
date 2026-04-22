@@ -12,7 +12,7 @@ import (
 	"eshkere/internal/models"
 )
 
-const BaseFeedURL = "https://eshkereklama/api/v1/feed/"
+const BaseFeedURL = "https://eshkereklama.ru/feed/"
 
 func (s *Service) GenerateFeedLink(ctx context.Context, campaignID int) (string, error) {
 	campaign, err := s.adCampaignRepo.GetByID(ctx, campaignID)
@@ -45,7 +45,7 @@ func (s *Service) GetAdsByFeedToken(ctx context.Context, token string) ([]*model
 		return nil, err
 	}
 
-	ads, err := s.adRepo.ListByCampaignID(ctx, campaignID)
+	ads, err := s.adRepo.ListByAdCampaignID(ctx, campaignID)
 	if err != nil {
 		return []*models.Ad{}, nil
 	}

@@ -17,11 +17,11 @@ func NewFeedLinkRepository(db *sql.DB) *FeedLinkRepository {
 }
 
 const (
-	insertFeedLink = `INSERT INTO eshkere.ad_feed_link (campaign_id, token)
+	insertFeedLink = `INSERT INTO eshkere.ad_feed_link (ad_campaign_id, token)
 		VALUES ($1, $2)
-		ON CONFLICT (campaign_id) DO UPDATE SET token = EXCLUDED.token, updated_at = NOW()`
+		ON CONFLICT (ad_campaign_id) DO UPDATE SET token = EXCLUDED.token, updated_at = NOW()`
 
-	selectCampaignIDByFeedToken = `SELECT campaign_id FROM eshkere.ad_feed_link WHERE token = $1`
+	selectCampaignIDByFeedToken = `SELECT ad_campaign_id FROM eshkere.ad_feed_link WHERE token = $1`
 )
 
 func (r *FeedLinkRepository) Create(ctx context.Context, campaignID int, token string) error {

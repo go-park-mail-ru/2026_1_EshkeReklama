@@ -123,7 +123,7 @@ func (r *AdvertiserRepository) GetByPhone(ctx context.Context, phone string) (*m
 		return nil, fmt.Errorf("phone cannot be empty")
 	}
 
-	logger.GetLoggerFromCtx(ctx).Debugf("db: get advertiser by phone: %d", phone)
+	logger.GetLoggerFromCtx(ctx).Debugf("db: get advertiser by phone: %s", phone)
 
 	var a models.Advertiser
 	err := r.db.QueryRowContext(ctx, selectAdvertiserByPhone, phone).Scan(

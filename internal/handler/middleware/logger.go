@@ -31,7 +31,7 @@ func RequestContext(baseLogger *zap.SugaredLogger) func(http.Handler) http.Handl
 
 			w.Header().Set(requestIDHeader, requestID)
 
-			reqLogger := baseLogger.With(ctxutils.RequestIDKey, requestID)
+			reqLogger := baseLogger.With(string(ctxutils.RequestIDKey), requestID)
 			ctx := logger.CtxWithLogger(r.Context(), reqLogger)
 			ctx = ctxutils.CtxWithRequestID(ctx, requestID)
 			next.ServeHTTP(w, r.WithContext(ctx))

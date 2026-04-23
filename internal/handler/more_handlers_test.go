@@ -6,8 +6,8 @@ import (
 	handlers "eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1"
-	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 	"eshkere/internal/session"
 	"net/http"
 	"net/http/httptest"
@@ -118,12 +118,11 @@ func TestAdCampaign_CRUD(t *testing.T) {
 
 	svc.EXPECT().
 		CreateAdCampaign(gomock.Any(), gomock.Any()).
-		DoAndReturn(func(_ any, c *models.AdCampaign) (*models.AdCampaign, error) {
-			if c.AdvertiserID != 1 || c.Name != "camp" || c.DailyBudget != 10 {
-				t.Fatalf("unexpected campaign: %+v", c)
+		DoAndReturn(func(_ any, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error) {
+			if in.AdvertiserID != 1 || in.Name != "camp" || in.DailyBudget != 10 {
+				t.Fatalf("unexpected campaign input: %+v", in)
 			}
-			c.ID = 42
-			return c, nil
+			return &models.AdCampaign{ID: 42}, nil
 		})
 
 	createReq := httptest.NewRequest(http.MethodPost, "/ad_campaigns", bytes.NewBufferString(`{"name":"camp","daily_budget":10}`))
@@ -152,7 +151,7 @@ func TestAdCampaign_CRUD(t *testing.T) {
 	newName := "new"
 	budget := int64(99)
 	svc.EXPECT().
-		UpdateAdCampaign(gomock.Any(), 42, &dto.UpdateAdCampaignRequest{Name: &newName, DailyBudget: &budget}).
+		UpdateAdCampaign(gomock.Any(), &serviceinput.UpdateAdCampaign{ID: 42, Name: &newName, DailyBudget: &budget}).
 		Return(nil)
 
 	updReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/42", bytes.NewBufferString(`{"name":"new","daily_budget":99}`))
@@ -191,12 +190,11 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 
 	svc.EXPECT().
 		CreateAdGroup(gomock.Any(), gomock.Any()).
-		DoAndReturn(func(_ any, g *models.AdGroup) (*models.AdGroup, error) {
-			if g.AdCampaignID != 10 || g.Name != "g" {
-				t.Fatalf("unexpected group: %+v", g)
+		DoAndReturn(func(_ any, in *serviceinput.CreateAdGroup) (*models.AdGroup, error) {
+			if in.AdCampaignID != 10 || in.Name != "g" {
+				t.Fatalf("unexpected group input: %+v", in)
 			}
-			g.ID = 5
-			return g, nil
+			return &models.AdGroup{ID: 5}, nil
 		})
 
 	createGroupReq := httptest.NewRequest(http.MethodPost, "/ad_campaigns/10/ad_groups", bytes.NewBufferString(`{"topic_id":1,"region_id":2,"name":"g","age_from":18,"age_to":25,"gender":"any"}`))
@@ -219,7 +217,7 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", listGroupRR.Code, listGroupRR.Body.String())
 	}
 
-	svc.EXPECT().UpdateAdGroup(gomock.Any(), 5, gomock.Any()).Return(nil)
+	svc.EXPECT().UpdateAdGroup(gomock.Any(), gomock.Any()).Return(nil)
 	updGroupReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/10/ad_groups/5", bytes.NewBufferString(`{"name":"g2"}`))
 	updGroupReq.AddCookie(sess)
 	updGroupReq.AddCookie(csrf)
@@ -243,12 +241,11 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 
 	svc.EXPECT().
 		CreateAd(gomock.Any(), gomock.Any()).
-		DoAndReturn(func(_ any, ad *models.Ad) (*models.Ad, error) {
-			if ad.AdGroupID != 2 || ad.Title != "t" {
-				t.Fatalf("unexpected ad: %+v", ad)
+		DoAndReturn(func(_ any, in *serviceinput.CreateAd) (*models.Ad, error) {
+			if in.AdGroupID != 2 || in.Title != "t" {
+				t.Fatalf("unexpected ad input: %+v", in)
 			}
-			ad.ID = 9
-			return ad, nil
+			return &models.Ad{ID: 9}, nil
 		})
 
 	createAdReq := httptest.NewRequest(http.MethodPost, "/ad_campaigns/1/ad_groups/2/ads", bytes.NewBufferString(`{"title":"t","short_desc":"s","image_url":"i","target_url":"u"}`))
@@ -261,7 +258,7 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", createAdRR.Code, createAdRR.Body.String())
 	}
 
-	svc.EXPECT().UpdateAd(gomock.Any(), 9, gomock.Any()).Return(nil)
+	svc.EXPECT().UpdateAd(gomock.Any(), gomock.Any()).Return(nil)
 	updAdReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/1/ad_groups/2/ads/9", bytes.NewBufferString(`{"title":"t2"}`))
 	updAdReq.AddCookie(sess)
 	updAdReq.AddCookie(csrf)

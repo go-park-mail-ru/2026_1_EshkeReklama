@@ -130,11 +130,9 @@ func (a *API) Me(w http.ResponseWriter, r *http.Request) {
 // @Summary      Обновление профиля рекламодателя
 // @Description  Обновляет данные текущего рекламодателя по сессии
 // @Tags         advertiser
-// @Accept       multipart/form-data
+// @Accept       json
 // @Produce      json
-// @Param        name   formData  string  false  "Имя рекламодателя"
-// @Param        email  formData  string  false  "Email рекламодателя"
-// @Param        phone  formData  string  false  "Телефон рекламодателя"
+// @Param        body   body      dto.UpdateAdvertiserProfileRequest  true  "Поля для обновления профиля"
 // @Success      200    {object}  dto.AdvertiserProfileResponse
 // @Failure      400    {object}  httpx.Error
 // @Failure      401    {object}  httpx.Error
@@ -150,18 +148,13 @@ func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = r.ParseMultipartForm(5 << 20); err != nil {
-		handler.HandleError(w, r, "parsing multipart form", err)
+	req, err := newJSONRequest[dto.UpdateAdvertiserProfileRequest](r)
+	if err != nil {
+		httpx.BadRequest(w, "invalid request")
 		return
 	}
 
-	adv, err := a.service.UpdateAdvertiserProfile(
-		ctx,
-		advertiserID,
-		r.FormValue("name"),
-		r.FormValue("email"),
-		r.FormValue("phone"),
-	)
+	adv, err := a.service.UpdateAdvertiserProfile(ctx, req.ToInput(advertiserID))
 	if err != nil {
 		handler.HandleError(w, r, "updating profile", err)
 		return

@@ -1,6 +1,9 @@
 package dto
 
-import "eshkere/internal/models"
+import (
+	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
+)
 
 type CreateAdGroupRequest struct {
 	TopicID  int               `json:"topic_id" validate:"required"`
@@ -11,8 +14,8 @@ type CreateAdGroupRequest struct {
 	Gender   models.GenderType `json:"gender" validate:"required"`
 }
 
-func (c *CreateAdGroupRequest) ToModel(campaignID int) *models.AdGroup {
-	return &models.AdGroup{
+func (c *CreateAdGroupRequest) ToInput(campaignID int) *serviceinput.CreateAdGroup {
+	return &serviceinput.CreateAdGroup{
 		AdCampaignID: campaignID,
 		TopicID:      c.TopicID,
 		RegionID:     c.RegionID,
@@ -34,6 +37,18 @@ type UpdateAdGroupRequest struct {
 	AgeFrom  *int               `json:"age_from" validate:"omitempty"`
 	AgeTo    *int               `json:"age_to" validate:"omitempty"`
 	Gender   *models.GenderType `json:"gender" validate:"omitempty"`
+}
+
+func (u *UpdateAdGroupRequest) ToInput(groupID int) *serviceinput.UpdateAdGroup {
+	return &serviceinput.UpdateAdGroup{
+		ID:       groupID,
+		TopicID:  u.TopicID,
+		RegionID: u.RegionID,
+		Name:     u.Name,
+		AgeFrom:  u.AgeFrom,
+		AgeTo:    u.AgeTo,
+		Gender:   u.Gender,
+	}
 }
 
 type AdGroupResponse struct {
@@ -58,7 +73,22 @@ func ToAdGroupResponse(g *models.AdGroup) *AdGroupResponse {
 	}
 }
 
+func ToAdGroupResponses(groups []*models.AdGroup) []*AdGroupResponse {
+	out := make([]*AdGroupResponse, 0, len(groups))
+	for _, group := range groups {
+		out = append(out, ToAdGroupResponse(group))
+	}
+	return out
+}
+
 type ListAdGroupsResponse struct {
 	AdCampaignID int                `json:"ad_campaign_id"`
 	Groups       []*AdGroupResponse `json:"groups"`
+}
+
+func ToListAdGroupsResponse(campaignID int, groups []*models.AdGroup) ListAdGroupsResponse {
+	return ListAdGroupsResponse{
+		AdCampaignID: campaignID,
+		Groups:       ToAdGroupResponses(groups),
+	}
 }

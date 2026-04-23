@@ -3,12 +3,14 @@ package v1
 import (
 	"bytes"
 	"context"
-	"mime/multipart"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 )
 
 func TestAdvertiser_UpdateProfile_WithoutAvatar(t *testing.T) {
@@ -19,22 +21,24 @@ func TestAdvertiser_UpdateProfile_WithoutAvatar(t *testing.T) {
 	csrf := getCSRF(t, r)
 	sess := createSessionCookie(t, sm, 1)
 
-	var body bytes.Buffer
-	w := multipart.NewWriter(&body)
-	_ = w.WriteField("name", "New Name")
-	_ = w.WriteField("email", "NEW@MAIL.TEST")
-	_ = w.WriteField("phone", "+7 900 123-45-67")
-	_ = w.Close()
-
-	svc.updateAdvertiserProfileFn = func(_ context.Context, advertiserID int, name, email, phone string) (*models.Advertiser, error) {
-		if advertiserID != 1 {
-			t.Fatalf("unexpected advertiser id: %d", advertiserID)
-		}
-		return &models.Advertiser{ID: 1, Name: name, Email: email, Phone: phone}, nil
+	body, err := json.Marshal(dto.UpdateAdvertiserProfileRequest{
+		Name:  "New Name",
+		Email: "NEW@MAIL.TEST",
+		Phone: "+7 900 123-45-67",
+	})
+	if err != nil {
+		t.Fatalf("marshal request: %v", err)
 	}
 
-	req := httptest.NewRequest(http.MethodPut, "/advertiser/me", &body)
-	req.Header.Set("Content-Type", w.FormDataContentType())
+	svc.updateAdvertiserProfileFn = func(_ context.Context, in *serviceinput.UpdateAdvertiserProfile) (*models.Advertiser, error) {
+		if in.AdvertiserID != 1 {
+			t.Fatalf("unexpected advertiser id: %d", in.AdvertiserID)
+		}
+		return &models.Advertiser{ID: 1, Name: in.Name, Email: in.Email, Phone: in.Phone}, nil
+	}
+
+	req := httptest.NewRequest(http.MethodPut, "/advertiser/me", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
 	req.AddCookie(sess)
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)

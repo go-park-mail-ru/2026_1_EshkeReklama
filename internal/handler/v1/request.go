@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"eshkere/internal/handler/v1/dto"
 	"net/http"
 
 	"eshkere/pkg/httpx"
@@ -14,7 +15,15 @@ type validatableRequest interface {
 
 var requestValidator = validator.New()
 
-func newJSONRequest[T any](r *http.Request) (*T, error) {
+type GenericSettingsRequest interface {
+	dto.CreateAdRequest | dto.UpdateAdvertiserProfileRequest |
+		dto.CreateAdCampaignRequest | dto.UpdateAdCampaignRequest |
+		dto.CreateAdGroupRequest | dto.UpdateAdGroupRequest |
+		dto.RegisterRequest | dto.LoginRequest | dto.TopUpBalanceRequest |
+		dto.UpdateAdRequest
+}
+
+func newJSONRequest[T GenericSettingsRequest](r *http.Request) (*T, error) {
 	req := new(T)
 
 	if err := httpx.DecodeJSON(r, req); err != nil {

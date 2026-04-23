@@ -3,41 +3,51 @@ package service
 import (
 	"context"
 	"database/sql"
-	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 	"time"
 )
 
-func (s *Service) CreateAdGroup(ctx context.Context, g *models.AdGroup) (*models.AdGroup, error) {
+func (s *Service) CreateAdGroup(ctx context.Context, in *serviceinput.CreateAdGroup) (*models.AdGroup, error) {
+	g := &models.AdGroup{
+		AdCampaignID: in.AdCampaignID,
+		TopicID:      in.TopicID,
+		RegionID:     in.RegionID,
+		Name:         in.Name,
+		AgeFrom:      in.AgeFrom,
+		AgeTo:        in.AgeTo,
+		Gender:       in.Gender,
+	}
+
 	if err := s.adGroupRepo.Create(ctx, g); err != nil {
 		return nil, err
 	}
 	return g, nil
 }
 
-func (s *Service) UpdateAdGroup(ctx context.Context, groupID int, req *dto.UpdateAdGroupRequest) error {
-	current, err := s.adGroupRepo.GetByID(ctx, groupID)
+func (s *Service) UpdateAdGroup(ctx context.Context, in *serviceinput.UpdateAdGroup) error {
+	current, err := s.adGroupRepo.GetByID(ctx, in.ID)
 	if err != nil {
 		return err
 	}
 
-	if req.TopicID != nil {
-		current.TopicID = *req.TopicID
+	if in.TopicID != nil {
+		current.TopicID = *in.TopicID
 	}
-	if req.RegionID != nil {
-		current.RegionID = *req.RegionID
+	if in.RegionID != nil {
+		current.RegionID = *in.RegionID
 	}
-	if req.Name != nil {
-		current.Name = *req.Name
+	if in.Name != nil {
+		current.Name = *in.Name
 	}
-	if req.AgeFrom != nil {
-		current.AgeFrom = *req.AgeFrom
+	if in.AgeFrom != nil {
+		current.AgeFrom = *in.AgeFrom
 	}
-	if req.AgeTo != nil {
-		current.AgeTo = *req.AgeTo
+	if in.AgeTo != nil {
+		current.AgeTo = *in.AgeTo
 	}
-	if req.Gender != nil {
-		current.Gender = *req.Gender
+	if in.Gender != nil {
+		current.Gender = *in.Gender
 	}
 	current.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 

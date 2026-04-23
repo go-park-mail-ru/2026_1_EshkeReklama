@@ -9,12 +9,9 @@ import (
 
 func TestToModel_AdCampaign(t *testing.T) {
 	req := CreateAdCampaignRequest{Name: "n", DailyBudget: 10}
-	m := req.ToModel(7)
-	if m.AdvertiserID != 7 || m.Name != "n" || m.DailyBudget != 10 {
-		t.Fatalf("unexpected model: %+v", m)
-	}
-	if m.Status != models.AdStatusModeration {
-		t.Fatalf("expected moderation status")
+	in := req.ToInput(7)
+	if in.AdvertiserID != 7 || in.Name != "n" || in.DailyBudget != 10 {
+		t.Fatalf("unexpected input: %+v", in)
 	}
 }
 
@@ -23,6 +20,14 @@ func TestToAdResponse(t *testing.T) {
 	resp := ToAdResponse(ad)
 	if resp.ID != 1 || resp.Title != "t" || resp.TargetURL != "u" {
 		t.Fatalf("unexpected resp: %+v", resp)
+	}
+}
+
+func TestToListAdsResponse(t *testing.T) {
+	ads := []*models.Ad{{ID: 1, Title: "t"}}
+	resp := ToListAdsResponse(7, ads)
+	if resp.GroupID != 7 || len(resp.Ads) != 1 || resp.Ads[0].ID != 1 {
+		t.Fatalf("unexpected list ads response: %+v", resp)
 	}
 }
 
@@ -42,9 +47,9 @@ func TestAdvertiserToProfile_NilAndNonNil(t *testing.T) {
 
 func TestToModel_AdGroup(t *testing.T) {
 	req := CreateAdGroupRequest{TopicID: 1, RegionID: 2, Name: "g", AgeFrom: 18, AgeTo: 25, Gender: "any"}
-	m := req.ToModel(10)
-	if m.AdCampaignID != 10 || m.TopicID != 1 || m.Gender != "any" {
-		t.Fatalf("unexpected model: %+v", m)
+	in := req.ToInput(10)
+	if in.AdCampaignID != 10 || in.TopicID != 1 || in.Gender != "any" {
+		t.Fatalf("unexpected input: %+v", in)
 	}
 }
 
@@ -56,6 +61,14 @@ func TestToAdCampaignResponse(t *testing.T) {
 	}
 }
 
+func TestToListAdCampaignsResponse(t *testing.T) {
+	campaigns := []*models.AdCampaign{{ID: 1, Name: "n"}}
+	resp := ToListAdCampaignsResponse(5, campaigns)
+	if resp.AdvertiserID != 5 || len(resp.Campaigns) != 1 || resp.Campaigns[0].ID != 1 {
+		t.Fatalf("unexpected list campaigns response: %+v", resp)
+	}
+}
+
 func TestToAdGroupResponse(t *testing.T) {
 	g := &models.AdGroup{ID: 1, TopicID: 2, RegionID: 3, Name: "n", AgeFrom: 1, AgeTo: 2, Gender: "any"}
 	resp := ToAdGroupResponse(g)
@@ -64,13 +77,34 @@ func TestToAdGroupResponse(t *testing.T) {
 	}
 }
 
-func TestCreateAdRequest_ToModel(t *testing.T) {
-	req := CreateAdRequest{Title: "t", ShortDesc: "s", ImageURL: "i", TargetURL: "u"}
-	ad, err := req.ToModel()
-	if err != nil {
-		t.Fatalf("ToModel: %v", err)
+func TestToListAdGroupsResponse(t *testing.T) {
+	groups := []*models.AdGroup{{ID: 1, TopicID: 2}}
+	resp := ToListAdGroupsResponse(9, groups)
+	if resp.AdCampaignID != 9 || len(resp.Groups) != 1 || resp.Groups[0].ID != 1 {
+		t.Fatalf("unexpected list groups response: %+v", resp)
 	}
-	if ad.Title != "t" || ad.TargetURL != "u" {
-		t.Fatalf("unexpected ad: %+v", ad)
+}
+
+func TestCreateAdRequest_ToInput(t *testing.T) {
+	req := CreateAdRequest{Title: "t", ShortDesc: "s", ImageURL: "i", TargetURL: "u"}
+	in := req.ToInput(3)
+	if in.AdGroupID != 3 || in.Title != "t" || in.TargetURL != "u" {
+		t.Fatalf("unexpected input: %+v", in)
+	}
+}
+
+func TestUpdateAdvertiserProfileRequest_ToInput(t *testing.T) {
+	req := UpdateAdvertiserProfileRequest{Name: "n", Email: "e", Phone: "p"}
+	in := req.ToInput(7)
+	if in.AdvertiserID != 7 || in.Name != "n" || in.Email != "e" || in.Phone != "p" {
+		t.Fatalf("unexpected input: %+v", in)
+	}
+}
+
+func TestToFeedResponse(t *testing.T) {
+	ads := []*models.Ad{{ID: 1, Title: "t"}}
+	resp := ToFeedResponse(ads)
+	if len(resp.Ads) != 1 || resp.Ads[0].ID != 1 {
+		t.Fatalf("unexpected feed response: %+v", resp)
 	}
 }

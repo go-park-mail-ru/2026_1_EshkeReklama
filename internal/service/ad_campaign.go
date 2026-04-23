@@ -3,32 +3,39 @@ package service
 import (
 	"context"
 	"database/sql"
-	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 	"time"
 )
 
-func (s *Service) CreateAdCampaign(ctx context.Context, c *models.AdCampaign) (*models.AdCampaign, error) {
+func (s *Service) CreateAdCampaign(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error) {
+	c := &models.AdCampaign{
+		AdvertiserID: in.AdvertiserID,
+		Status:       models.AdStatusModeration,
+		Name:         in.Name,
+		DailyBudget:  in.DailyBudget,
+	}
+
 	if err := s.adCampaignRepo.Create(ctx, c); err != nil {
 		return nil, err
 	}
 	return c, nil
 }
 
-func (s *Service) UpdateAdCampaign(ctx context.Context, campaignID int, req *dto.UpdateAdCampaignRequest) error {
-	current, err := s.adCampaignRepo.GetByID(ctx, campaignID)
+func (s *Service) UpdateAdCampaign(ctx context.Context, in *serviceinput.UpdateAdCampaign) error {
+	current, err := s.adCampaignRepo.GetByID(ctx, in.ID)
 	if err != nil {
 		return err
 	}
 
-	if req.Name != nil {
-		current.Name = *req.Name
+	if in.Name != nil {
+		current.Name = *in.Name
 	}
-	if req.Status != nil {
-		current.Status = *req.Status
+	if in.Status != nil {
+		current.Status = *in.Status
 	}
-	if req.DailyBudget != nil {
-		current.DailyBudget = *req.DailyBudget
+	if in.DailyBudget != nil {
+		current.DailyBudget = *in.DailyBudget
 	}
 	current.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 

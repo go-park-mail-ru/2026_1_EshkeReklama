@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"testing"
 
-	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 
 	"go.uber.org/mock/gomock"
 )
@@ -34,7 +34,12 @@ func TestUpdateAdCampaign_UpdatesProvidedFields(t *testing.T) {
 	name := "new"
 	budget := int64(99)
 	status := models.AdStatusRejected
-	if err := svc.UpdateAdCampaign(context.Background(), 1, &dto.UpdateAdCampaignRequest{Name: &name, DailyBudget: &budget, Status: &status}); err != nil {
+	if err := svc.UpdateAdCampaign(context.Background(), &serviceinput.UpdateAdCampaign{
+		ID:          1,
+		Name:        &name,
+		DailyBudget: &budget,
+		Status:      &status,
+	}); err != nil {
 		t.Fatalf("UpdateAdCampaign: %v", err)
 	}
 }
@@ -61,7 +66,11 @@ func TestUpdateAdGroup_UpdatesProvidedFields(t *testing.T) {
 
 	name := "new"
 	ageFrom := 21
-	if err := svc.UpdateAdGroup(context.Background(), 1, &dto.UpdateAdGroupRequest{Name: &name, AgeFrom: &ageFrom}); err != nil {
+	if err := svc.UpdateAdGroup(context.Background(), &serviceinput.UpdateAdGroup{
+		ID:      1,
+		Name:    &name,
+		AgeFrom: &ageFrom,
+	}); err != nil {
 		t.Fatalf("UpdateAdGroup: %v", err)
 	}
 }
@@ -73,16 +82,18 @@ func TestCreateAd_SetsModerationStatus(t *testing.T) {
 	repo := NewMockAdRepository(ctrl)
 	svc, _ := NewService(&Config{AdRepo: repo})
 
-	ad := &models.Ad{AdGroupID: 2, Title: "t"}
 	repo.EXPECT().Create(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ context.Context, a *models.Ad) error {
-			if a.Status != models.AdStatusModeration {
-				t.Fatalf("expected moderation, got %v", a.Status)
+			if a.AdGroupID != 2 || a.Title != "t" || a.Status != models.AdStatusModeration {
+				t.Fatalf("unexpected ad: %+v", a)
 			}
 			return nil
 		})
 
-	if _, err := svc.CreateAd(context.Background(), ad); err != nil {
+	if _, err := svc.CreateAd(context.Background(), &serviceinput.CreateAd{
+		AdGroupID: 2,
+		Title:     "t",
+	}); err != nil {
 		t.Fatalf("CreateAd: %v", err)
 	}
 }
@@ -108,7 +119,7 @@ func TestUpdateAd_SetsUpdatedAt(t *testing.T) {
 		})
 
 	title := "new"
-	if err := svc.UpdateAd(context.Background(), 9, &dto.UpdateAdRequest{Title: &title}); err != nil {
+	if err := svc.UpdateAd(context.Background(), &serviceinput.UpdateAd{ID: 9, Title: &title}); err != nil {
 		t.Fatalf("UpdateAd: %v", err)
 	}
 }
@@ -136,7 +147,10 @@ func TestUpdateAdvertiserProfile_InvalidPhone(t *testing.T) {
 
 	advRepo.EXPECT().GetByID(gomock.Any(), 1).Return(&models.Advertiser{ID: 1}, nil)
 
-	_, err := svc.UpdateAdvertiserProfile(context.Background(), 1, "", "", "bad")
+	_, err := svc.UpdateAdvertiserProfile(context.Background(), &serviceinput.UpdateAdvertiserProfile{
+		AdvertiserID: 1,
+		Phone:        "bad",
+	})
 	if err == nil {
 		t.Fatalf("expected error")
 	}

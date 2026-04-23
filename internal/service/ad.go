@@ -3,12 +3,19 @@ package service
 import (
 	"context"
 	"database/sql"
-	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 	"time"
 )
 
-func (s *Service) CreateAd(ctx context.Context, ad *models.Ad) (*models.Ad, error) {
+func (s *Service) CreateAd(ctx context.Context, in *serviceinput.CreateAd) (*models.Ad, error) {
+	ad := &models.Ad{
+		AdGroupID: in.AdGroupID,
+		Title:     in.Title,
+		ShortDesc: in.ShortDesc,
+		ImageURL:  in.ImageURL,
+		TargetURL: in.TargetURL,
+	}
 	ad.Status = models.AdStatusModeration
 
 	if err := s.adRepo.Create(ctx, ad); err != nil {
@@ -18,26 +25,26 @@ func (s *Service) CreateAd(ctx context.Context, ad *models.Ad) (*models.Ad, erro
 	return ad, nil
 }
 
-func (s *Service) UpdateAd(ctx context.Context, adID int, req *dto.UpdateAdRequest) error {
-	currentAd, err := s.adRepo.GetByID(ctx, adID)
+func (s *Service) UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error {
+	currentAd, err := s.adRepo.GetByID(ctx, in.ID)
 	if err != nil {
 		return err
 	}
 
-	if req.Title != nil {
-		currentAd.Title = *req.Title
+	if in.Title != nil {
+		currentAd.Title = *in.Title
 	}
-	if req.Status != nil {
-		currentAd.Status = *req.Status
+	if in.Status != nil {
+		currentAd.Status = *in.Status
 	}
-	if req.ShortDesc != nil {
-		currentAd.ShortDesc = *req.ShortDesc
+	if in.ShortDesc != nil {
+		currentAd.ShortDesc = *in.ShortDesc
 	}
-	if req.ImageURL != nil {
-		currentAd.ImageURL = *req.ImageURL
+	if in.ImageURL != nil {
+		currentAd.ImageURL = *in.ImageURL
 	}
-	if req.TargetURL != nil {
-		currentAd.TargetURL = *req.TargetURL
+	if in.TargetURL != nil {
+		currentAd.TargetURL = *in.TargetURL
 	}
 	currentAd.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 

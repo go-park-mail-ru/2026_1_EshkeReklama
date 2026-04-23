@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 
 	"go.uber.org/mock/gomock"
 )
@@ -19,9 +20,18 @@ func TestService_PassthroughMethods(t *testing.T) {
 
 	svc, _ := NewService(&Config{AdCampaignRepo: cRepo, AdGroupRepo: gRepo, AdRepo: aRepo})
 
-	c := &models.AdCampaign{AdvertiserID: 1}
-	cRepo.EXPECT().Create(gomock.Any(), c).Return(nil)
-	if _, err := svc.CreateAdCampaign(context.Background(), c); err != nil {
+	cRepo.EXPECT().Create(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, c *models.AdCampaign) error {
+			if c.AdvertiserID != 1 || c.Name != "camp" || c.DailyBudget != 10 || c.Status != models.AdStatusModeration {
+				t.Fatalf("unexpected campaign: %+v", c)
+			}
+			return nil
+		})
+	if _, err := svc.CreateAdCampaign(context.Background(), &serviceinput.CreateAdCampaign{
+		AdvertiserID: 1,
+		Name:         "camp",
+		DailyBudget:  10,
+	}); err != nil {
 		t.Fatalf("CreateAdCampaign: %v", err)
 	}
 	cRepo.EXPECT().ListByAdvertiserID(gomock.Any(), 1).Return([]*models.AdCampaign{}, nil)
@@ -33,9 +43,22 @@ func TestService_PassthroughMethods(t *testing.T) {
 		t.Fatalf("DeleteAdCampaign: %v", err)
 	}
 
-	g := &models.AdGroup{AdCampaignID: 1}
-	gRepo.EXPECT().Create(gomock.Any(), g).Return(nil)
-	if _, err := svc.CreateAdGroup(context.Background(), g); err != nil {
+	gRepo.EXPECT().Create(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, g *models.AdGroup) error {
+			if g.AdCampaignID != 1 || g.Name != "group" || g.Gender != "any" {
+				t.Fatalf("unexpected group: %+v", g)
+			}
+			return nil
+		})
+	if _, err := svc.CreateAdGroup(context.Background(), &serviceinput.CreateAdGroup{
+		AdCampaignID: 1,
+		TopicID:      1,
+		RegionID:     2,
+		Name:         "group",
+		AgeFrom:      18,
+		AgeTo:        25,
+		Gender:       "any",
+	}); err != nil {
 		t.Fatalf("CreateAdGroup: %v", err)
 	}
 	gRepo.EXPECT().ListByCampaignID(gomock.Any(), 1).Return([]*models.AdGroup{}, nil)

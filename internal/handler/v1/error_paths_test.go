@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 )
 
 func TestHandlers_BadRequests(t *testing.T) {
@@ -54,7 +55,7 @@ func TestHandlers_BadRequests(t *testing.T) {
 	}
 
 	// service error in create campaign -> 400
-	svc.createAdCampaignFn = func(_ context.Context, _ *models.AdCampaign) (*models.AdCampaign, error) {
+	svc.createAdCampaignFn = func(_ context.Context, _ *serviceinput.CreateAdCampaign) (*models.AdCampaign, error) {
 		return nil, errs.BadRequestError
 	}
 	req4 := httptest.NewRequest(http.MethodPost, "/ad_campaigns", bytes.NewBufferString(`{"name":"camp","daily_budget":10}`))

@@ -2,6 +2,7 @@ package dto
 
 import (
 	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 	"time"
 )
 
@@ -27,6 +28,21 @@ type LoginResponse struct {
 	ID    int    `json:"id"`
 	Email string `json:"email"`
 	Phone string `json:"phone"`
+}
+
+type UpdateAdvertiserProfileRequest struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Phone string `json:"phone"`
+}
+
+func (u *UpdateAdvertiserProfileRequest) ToInput(advertiserID int) *serviceinput.UpdateAdvertiserProfile {
+	return &serviceinput.UpdateAdvertiserProfile{
+		AdvertiserID: advertiserID,
+		Name:         u.Name,
+		Email:        u.Email,
+		Phone:        u.Phone,
+	}
 }
 
 // AdvertiserProfileResponse — публичные поля рекламодателя (без пароля).

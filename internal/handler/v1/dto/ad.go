@@ -2,6 +2,7 @@ package dto
 
 import (
 	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 )
 
 type CreateAdRequest struct {
@@ -11,15 +12,14 @@ type CreateAdRequest struct {
 	TargetURL string `json:"target_url" validate:"required"`
 }
 
-func (c *CreateAdRequest) ToModel() (*models.Ad, error) {
-	ad := &models.Ad{
+func (c *CreateAdRequest) ToInput(groupID int) *serviceinput.CreateAd {
+	return &serviceinput.CreateAd{
+		AdGroupID: groupID,
 		Title:     c.Title,
 		ShortDesc: c.ShortDesc,
 		ImageURL:  c.ImageURL,
 		TargetURL: c.TargetURL,
 	}
-
-	return ad, nil
 }
 
 type CreateAdResponse struct {
@@ -35,17 +35,16 @@ type UpdateAdRequest struct {
 	TargetURL *string          `json:"target_url" validate:"omitempty"`
 }
 
-//func (u *UpdateAdRequest) ToModel(adID int) (*models.UpdateAd, error) {
-//	ad := &models.UpdateAd{
-//		ID:        adID,
-//		Title:     u.Title,
-//		Status:    u.Status,
-//		ShortDesc: u.ShortDesc,
-//		ImageURL:  u.ImageURL,
-//		TargetURL: u.TargetURL,
-//	}
-//	return ad, nil
-//}
+func (u *UpdateAdRequest) ToInput(adID int) *serviceinput.UpdateAd {
+	return &serviceinput.UpdateAd{
+		ID:        adID,
+		Title:     u.Title,
+		Status:    u.Status,
+		ShortDesc: u.ShortDesc,
+		ImageURL:  u.ImageURL,
+		TargetURL: u.TargetURL,
+	}
+}
 
 type AdResponse struct {
 	ID        int             `json:"id"`
@@ -68,7 +67,22 @@ func ToAdResponse(ad *models.Ad) *AdResponse {
 	return adResponse
 }
 
+func ToAdResponses(ads []*models.Ad) []*AdResponse {
+	out := make([]*AdResponse, 0, len(ads))
+	for _, ad := range ads {
+		out = append(out, ToAdResponse(ad))
+	}
+	return out
+}
+
 type ListAdsResponse struct {
 	GroupID int           `json:"group_id"`
 	Ads     []*AdResponse `json:"ads"`
+}
+
+func ToListAdsResponse(groupID int, ads []*models.Ad) ListAdsResponse {
+	return ListAdsResponse{
+		GroupID: groupID,
+		Ads:     ToAdResponses(ads),
+	}
 }

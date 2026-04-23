@@ -4,33 +4,38 @@ import (
 	"context"
 	"database/sql"
 	errs "eshkere/internal/errors"
+	serviceinput "eshkere/internal/service/input"
 	"fmt"
 	"strings"
 
 	"eshkere/internal/models"
 )
 
-func (s *Service) UpdateAdvertiserProfile(ctx context.Context, advertiserID int, name, email, phone string) (*models.Advertiser, error) {
-	if advertiserID <= 0 {
+func (s *Service) UpdateAdvertiserProfile(ctx context.Context, in *serviceinput.UpdateAdvertiserProfile) (*models.Advertiser, error) {
+	if in == nil {
+		return nil, fmt.Errorf("%w: nil update profile input", errs.ErrInvalidAdvertiserArg)
+	}
+
+	if in.AdvertiserID <= 0 {
 		return nil, fmt.Errorf("%w: invalid advertiser id", errs.ErrInvalidAdvertiserArg)
 	}
 
-	adv, err := s.advertiserRepo.GetByID(ctx, advertiserID)
+	adv, err := s.advertiserRepo.GetByID(ctx, in.AdvertiserID)
 	if err != nil {
 		return nil, err
 	}
 
-	name = strings.TrimSpace(name)
+	name := strings.TrimSpace(in.Name)
 	if name != "" {
 		adv.Name = name
 	}
 
-	email = strings.TrimSpace(strings.ToLower(email))
+	email := strings.TrimSpace(strings.ToLower(in.Email))
 	if email != "" {
 		adv.Email = email
 	}
 
-	phone = strings.TrimSpace(phone)
+	phone := strings.TrimSpace(in.Phone)
 	if phone != "" {
 		normalizedPhone, normalizeErr := normalizeAdvertiserPhone(phone)
 		if normalizeErr != nil {

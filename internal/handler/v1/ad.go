@@ -44,20 +44,13 @@ func (a *API) CreateAd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ad, err := req.ToModel()
-	if err != nil {
-		handler.HandleError(w, r, "mapping ad model", err)
-		return
-	}
-
 	groupID, err := strconv.Atoi(mux.Vars(r)["ad_group_id"])
 	if err != nil {
 		handler.HandleError(w, r, "parsing group id", err)
 		return
 	}
-	ad.AdGroupID = groupID
 
-	createdAd, err := a.service.CreateAd(ctx, ad)
+	createdAd, err := a.service.CreateAd(ctx, req.ToInput(groupID))
 	if err != nil {
 		handler.HandleError(w, r, "creating ad", err)
 		return
@@ -98,7 +91,7 @@ func (a *API) UpdateAd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = a.service.UpdateAd(ctx, adID, req)
+	err = a.service.UpdateAd(ctx, req.ToInput(adID))
 	if err != nil {
 		handler.HandleError(w, r, "updating id", err)
 		return
@@ -134,15 +127,7 @@ func (a *API) ListAds(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	adsResponse := make([]*dto.AdResponse, 0, len(ads))
-	for _, ad := range ads {
-		adsResponse = append(adsResponse, dto.ToAdResponse(ad))
-	}
-
-	httpx.JSON(w, http.StatusOK, dto.ListAdsResponse{
-		GroupID: groupID,
-		Ads:     adsResponse,
-	})
+	httpx.JSON(w, http.StatusOK, dto.ToListAdsResponse(groupID, ads))
 }
 
 // DeleteAd удаляет объявление.

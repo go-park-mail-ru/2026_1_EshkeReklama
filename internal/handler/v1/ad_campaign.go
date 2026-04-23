@@ -50,8 +50,7 @@ func (a *API) CreateAdCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	campaign := req.ToModel(advertiserID)
-	created, err := a.service.CreateAdCampaign(ctx, campaign)
+	created, err := a.service.CreateAdCampaign(ctx, req.ToInput(advertiserID))
 	if err != nil {
 		handler.HandleError(w, r, "creating campaign", err)
 		return
@@ -91,7 +90,7 @@ func (a *API) UpdateAdCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = a.service.UpdateAdCampaign(ctx, campaignID, req); err != nil {
+	if err = a.service.UpdateAdCampaign(ctx, req.ToInput(campaignID)); err != nil {
 		handler.HandleError(w, r, "updating campaign", err)
 		return
 	}
@@ -124,15 +123,7 @@ func (a *API) ListAdCampaigns(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out := make([]*dto.AdCampaignResponse, 0, len(campaigns))
-	for _, c := range campaigns {
-		out = append(out, dto.ToAdCampaignResponse(c))
-	}
-
-	httpx.JSON(w, http.StatusOK, dto.ListAdCampaignsResponse{
-		AdvertiserID: advertiserID,
-		Campaigns:    out,
-	})
+	httpx.JSON(w, http.StatusOK, dto.ToListAdCampaignsResponse(advertiserID, campaigns))
 }
 
 // DeleteAdCampaign удаляет рекламную кампанию.

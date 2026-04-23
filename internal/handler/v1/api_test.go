@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	errs "eshkere/internal/errors"
 	handlers "eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
-	errs "eshkere/internal/errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,6 +14,7 @@ import (
 
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 	"eshkere/internal/session"
 
 	"github.com/gorilla/mux"
@@ -29,21 +30,21 @@ type stubService struct {
 	registerAdvertiserFn      func(ctx context.Context, name, email, phone, password string) (*models.Advertiser, error)
 	authenticateAdvertiserFn  func(ctx context.Context, identifier, password string) (*models.Advertiser, error)
 	getAdvertiserByIDFn       func(ctx context.Context, id int) (*models.Advertiser, error)
-	updateAdvertiserProfileFn func(ctx context.Context, advertiserID int, name, email, phone string) (*models.Advertiser, error)
+	updateAdvertiserProfileFn func(ctx context.Context, in *serviceinput.UpdateAdvertiserProfile) (*models.Advertiser, error)
 	updateAdvertiserAvatarFn  func(ctx context.Context, advertiserID int, avatar []byte, avatarExt, avatarContentType string) (*models.Advertiser, error)
 	topUpAdvertiserBalanceFn  func(ctx context.Context, advertiserID int, amount int64) (int64, error)
 	generateFeedLinkFn        func(ctx context.Context, campaignID int) (string, error)
 	getAdsByFeedTokenFn       func(ctx context.Context, token string) ([]*models.Ad, error)
-	createAdCampaignFn        func(ctx context.Context, c *models.AdCampaign) (*models.AdCampaign, error)
-	updateAdCampaignFn        func(ctx context.Context, campaignID int, req *dto.UpdateAdCampaignRequest) error
+	createAdCampaignFn        func(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error)
+	updateAdCampaignFn        func(ctx context.Context, in *serviceinput.UpdateAdCampaign) error
 	listAdCampaignsFn         func(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
 	deleteAdCampaignFn        func(ctx context.Context, campaignID int) error
-	createAdGroupFn           func(ctx context.Context, g *models.AdGroup) (*models.AdGroup, error)
-	updateAdGroupFn           func(ctx context.Context, groupID int, req *dto.UpdateAdGroupRequest) error
+	createAdGroupFn           func(ctx context.Context, in *serviceinput.CreateAdGroup) (*models.AdGroup, error)
+	updateAdGroupFn           func(ctx context.Context, in *serviceinput.UpdateAdGroup) error
 	listAdGroupsFn            func(ctx context.Context, campaignID int) ([]*models.AdGroup, error)
 	deleteAdGroupFn           func(ctx context.Context, groupID int) error
-	createAdFn                func(ctx context.Context, ad *models.Ad) (*models.Ad, error)
-	updateAdFn                func(ctx context.Context, adID int, req *dto.UpdateAdRequest) error
+	createAdFn                func(ctx context.Context, in *serviceinput.CreateAd) (*models.Ad, error)
+	updateAdFn                func(ctx context.Context, in *serviceinput.UpdateAd) error
 	listAdsFn                 func(ctx context.Context, groupID int) ([]*models.Ad, error)
 	deleteAdFn                func(ctx context.Context, adID int) error
 }
@@ -69,9 +70,9 @@ func (s *stubService) GetAdvertiserByID(ctx context.Context, id int) (*models.Ad
 	return nil, nil
 }
 
-func (s *stubService) UpdateAdvertiserProfile(ctx context.Context, advertiserID int, name, email, phone string) (*models.Advertiser, error) {
+func (s *stubService) UpdateAdvertiserProfile(ctx context.Context, in *serviceinput.UpdateAdvertiserProfile) (*models.Advertiser, error) {
 	if s.updateAdvertiserProfileFn != nil {
-		return s.updateAdvertiserProfileFn(ctx, advertiserID, name, email, phone)
+		return s.updateAdvertiserProfileFn(ctx, in)
 	}
 	return nil, nil
 }
@@ -104,16 +105,16 @@ func (s *stubService) GetAdsByFeedToken(ctx context.Context, token string) ([]*m
 	return nil, nil
 }
 
-func (s *stubService) CreateAdCampaign(ctx context.Context, c *models.AdCampaign) (*models.AdCampaign, error) {
+func (s *stubService) CreateAdCampaign(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error) {
 	if s.createAdCampaignFn != nil {
-		return s.createAdCampaignFn(ctx, c)
+		return s.createAdCampaignFn(ctx, in)
 	}
 	return nil, nil
 }
 
-func (s *stubService) UpdateAdCampaign(ctx context.Context, campaignID int, req *dto.UpdateAdCampaignRequest) error {
+func (s *stubService) UpdateAdCampaign(ctx context.Context, in *serviceinput.UpdateAdCampaign) error {
 	if s.updateAdCampaignFn != nil {
-		return s.updateAdCampaignFn(ctx, campaignID, req)
+		return s.updateAdCampaignFn(ctx, in)
 	}
 	return nil
 }
@@ -132,16 +133,16 @@ func (s *stubService) DeleteAdCampaign(ctx context.Context, campaignID int) erro
 	return nil
 }
 
-func (s *stubService) CreateAdGroup(ctx context.Context, g *models.AdGroup) (*models.AdGroup, error) {
+func (s *stubService) CreateAdGroup(ctx context.Context, in *serviceinput.CreateAdGroup) (*models.AdGroup, error) {
 	if s.createAdGroupFn != nil {
-		return s.createAdGroupFn(ctx, g)
+		return s.createAdGroupFn(ctx, in)
 	}
 	return nil, nil
 }
 
-func (s *stubService) UpdateAdGroup(ctx context.Context, groupID int, req *dto.UpdateAdGroupRequest) error {
+func (s *stubService) UpdateAdGroup(ctx context.Context, in *serviceinput.UpdateAdGroup) error {
 	if s.updateAdGroupFn != nil {
-		return s.updateAdGroupFn(ctx, groupID, req)
+		return s.updateAdGroupFn(ctx, in)
 	}
 	return nil
 }
@@ -160,16 +161,16 @@ func (s *stubService) DeleteAdGroup(ctx context.Context, groupID int) error {
 	return nil
 }
 
-func (s *stubService) CreateAd(ctx context.Context, ad *models.Ad) (*models.Ad, error) {
+func (s *stubService) CreateAd(ctx context.Context, in *serviceinput.CreateAd) (*models.Ad, error) {
 	if s.createAdFn != nil {
-		return s.createAdFn(ctx, ad)
+		return s.createAdFn(ctx, in)
 	}
 	return nil, nil
 }
 
-func (s *stubService) UpdateAd(ctx context.Context, adID int, req *dto.UpdateAdRequest) error {
+func (s *stubService) UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error {
 	if s.updateAdFn != nil {
-		return s.updateAdFn(ctx, adID, req)
+		return s.updateAdFn(ctx, in)
 	}
 	return nil
 }

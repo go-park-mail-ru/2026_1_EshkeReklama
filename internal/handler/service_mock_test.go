@@ -11,8 +11,8 @@ package handler
 
 import (
 	context "context"
-	dto "eshkere/internal/handler/v1/dto"
 	models "eshkere/internal/models"
+	input "eshkere/internal/service/input"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -58,48 +58,48 @@ func (mr *MockServiceMockRecorder) AuthenticateAdvertiser(ctx, identifier, passw
 }
 
 // CreateAd mocks base method.
-func (m *MockService) CreateAd(ctx context.Context, ad *models.Ad) (*models.Ad, error) {
+func (m *MockService) CreateAd(ctx context.Context, in *input.CreateAd) (*models.Ad, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateAd", ctx, ad)
+	ret := m.ctrl.Call(m, "CreateAd", ctx, in)
 	ret0, _ := ret[0].(*models.Ad)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateAd indicates an expected call of CreateAd.
-func (mr *MockServiceMockRecorder) CreateAd(ctx, ad any) *gomock.Call {
+func (mr *MockServiceMockRecorder) CreateAd(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAd", reflect.TypeOf((*MockService)(nil).CreateAd), ctx, ad)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAd", reflect.TypeOf((*MockService)(nil).CreateAd), ctx, in)
 }
 
 // CreateAdCampaign mocks base method.
-func (m *MockService) CreateAdCampaign(ctx context.Context, c *models.AdCampaign) (*models.AdCampaign, error) {
+func (m *MockService) CreateAdCampaign(ctx context.Context, in *input.CreateAdCampaign) (*models.AdCampaign, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateAdCampaign", ctx, c)
+	ret := m.ctrl.Call(m, "CreateAdCampaign", ctx, in)
 	ret0, _ := ret[0].(*models.AdCampaign)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateAdCampaign indicates an expected call of CreateAdCampaign.
-func (mr *MockServiceMockRecorder) CreateAdCampaign(ctx, c any) *gomock.Call {
+func (mr *MockServiceMockRecorder) CreateAdCampaign(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAdCampaign", reflect.TypeOf((*MockService)(nil).CreateAdCampaign), ctx, c)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAdCampaign", reflect.TypeOf((*MockService)(nil).CreateAdCampaign), ctx, in)
 }
 
 // CreateAdGroup mocks base method.
-func (m *MockService) CreateAdGroup(ctx context.Context, g *models.AdGroup) (*models.AdGroup, error) {
+func (m *MockService) CreateAdGroup(ctx context.Context, in *input.CreateAdGroup) (*models.AdGroup, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateAdGroup", ctx, g)
+	ret := m.ctrl.Call(m, "CreateAdGroup", ctx, in)
 	ret0, _ := ret[0].(*models.AdGroup)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateAdGroup indicates an expected call of CreateAdGroup.
-func (mr *MockServiceMockRecorder) CreateAdGroup(ctx, g any) *gomock.Call {
+func (mr *MockServiceMockRecorder) CreateAdGroup(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAdGroup", reflect.TypeOf((*MockService)(nil).CreateAdGroup), ctx, g)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAdGroup", reflect.TypeOf((*MockService)(nil).CreateAdGroup), ctx, in)
 }
 
 // DeleteAd mocks base method.
@@ -265,60 +265,60 @@ func (mr *MockServiceMockRecorder) TopUpAdvertiserBalance(ctx, advertiserID, amo
 }
 
 // UpdateAd mocks base method.
-func (m *MockService) UpdateAd(ctx context.Context, adID int, req *dto.UpdateAdRequest) error {
+func (m *MockService) UpdateAd(ctx context.Context, in *input.UpdateAd) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateAd", ctx, adID, req)
+	ret := m.ctrl.Call(m, "UpdateAd", ctx, in)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateAd indicates an expected call of UpdateAd.
-func (mr *MockServiceMockRecorder) UpdateAd(ctx, adID, req any) *gomock.Call {
+func (mr *MockServiceMockRecorder) UpdateAd(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAd", reflect.TypeOf((*MockService)(nil).UpdateAd), ctx, adID, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAd", reflect.TypeOf((*MockService)(nil).UpdateAd), ctx, in)
 }
 
 // UpdateAdCampaign mocks base method.
-func (m *MockService) UpdateAdCampaign(ctx context.Context, campaignID int, req *dto.UpdateAdCampaignRequest) error {
+func (m *MockService) UpdateAdCampaign(ctx context.Context, in *input.UpdateAdCampaign) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateAdCampaign", ctx, campaignID, req)
+	ret := m.ctrl.Call(m, "UpdateAdCampaign", ctx, in)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateAdCampaign indicates an expected call of UpdateAdCampaign.
-func (mr *MockServiceMockRecorder) UpdateAdCampaign(ctx, campaignID, req any) *gomock.Call {
+func (mr *MockServiceMockRecorder) UpdateAdCampaign(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAdCampaign", reflect.TypeOf((*MockService)(nil).UpdateAdCampaign), ctx, campaignID, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAdCampaign", reflect.TypeOf((*MockService)(nil).UpdateAdCampaign), ctx, in)
 }
 
 // UpdateAdGroup mocks base method.
-func (m *MockService) UpdateAdGroup(ctx context.Context, groupID int, req *dto.UpdateAdGroupRequest) error {
+func (m *MockService) UpdateAdGroup(ctx context.Context, in *input.UpdateAdGroup) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateAdGroup", ctx, groupID, req)
+	ret := m.ctrl.Call(m, "UpdateAdGroup", ctx, in)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateAdGroup indicates an expected call of UpdateAdGroup.
-func (mr *MockServiceMockRecorder) UpdateAdGroup(ctx, groupID, req any) *gomock.Call {
+func (mr *MockServiceMockRecorder) UpdateAdGroup(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAdGroup", reflect.TypeOf((*MockService)(nil).UpdateAdGroup), ctx, groupID, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAdGroup", reflect.TypeOf((*MockService)(nil).UpdateAdGroup), ctx, in)
 }
 
 // UpdateAdvertiserProfile mocks base method.
-func (m *MockService) UpdateAdvertiserProfile(ctx context.Context, advertiserID int, name, email, phone string) (*models.Advertiser, error) {
+func (m *MockService) UpdateAdvertiserProfile(ctx context.Context, in *input.UpdateAdvertiserProfile) (*models.Advertiser, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateAdvertiserProfile", ctx, advertiserID, name, email, phone)
+	ret := m.ctrl.Call(m, "UpdateAdvertiserProfile", ctx, in)
 	ret0, _ := ret[0].(*models.Advertiser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateAdvertiserProfile indicates an expected call of UpdateAdvertiserProfile.
-func (mr *MockServiceMockRecorder) UpdateAdvertiserProfile(ctx, advertiserID, name, email, phone any) *gomock.Call {
+func (mr *MockServiceMockRecorder) UpdateAdvertiserProfile(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAdvertiserProfile", reflect.TypeOf((*MockService)(nil).UpdateAdvertiserProfile), ctx, advertiserID, name, email, phone)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAdvertiserProfile", reflect.TypeOf((*MockService)(nil).UpdateAdvertiserProfile), ctx, in)
 }
 
 // UpdateAdvertiserAvatar mocks base method.

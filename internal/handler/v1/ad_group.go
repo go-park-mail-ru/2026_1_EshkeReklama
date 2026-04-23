@@ -49,8 +49,7 @@ func (a *API) CreateAdGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	group := req.ToModel(campaignID)
-	created, err := a.service.CreateAdGroup(ctx, group)
+	created, err := a.service.CreateAdGroup(ctx, req.ToInput(campaignID))
 	if err != nil {
 		handler.HandleError(w, r, "creating group", err)
 		return
@@ -90,7 +89,7 @@ func (a *API) UpdateAdGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = a.service.UpdateAdGroup(ctx, groupID, req); err != nil {
+	if err = a.service.UpdateAdGroup(ctx, req.ToInput(groupID)); err != nil {
 		handler.HandleError(w, r, "updating group", err)
 		return
 	}
@@ -124,15 +123,7 @@ func (a *API) ListAdGroups(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out := make([]*dto.AdGroupResponse, 0, len(groups))
-	for _, g := range groups {
-		out = append(out, dto.ToAdGroupResponse(g))
-	}
-
-	httpx.JSON(w, http.StatusOK, dto.ListAdGroupsResponse{
-		AdCampaignID: campaignID,
-		Groups:       out,
-	})
+	httpx.JSON(w, http.StatusOK, dto.ToListAdGroupsResponse(campaignID, groups))
 }
 
 // DeleteAdGroup удаляет группу объявлений.

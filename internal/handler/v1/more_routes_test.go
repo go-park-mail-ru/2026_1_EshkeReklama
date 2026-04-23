@@ -15,6 +15,7 @@ import (
 
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 )
 
 func TestAdCampaign_UpdateListDelete(t *testing.T) {
@@ -25,9 +26,9 @@ func TestAdCampaign_UpdateListDelete(t *testing.T) {
 	csrf := getCSRF(t, r)
 	sess := createSessionCookie(t, sm, 1)
 
-	svc.updateAdCampaignFn = func(_ context.Context, campaignID int, req *dto.UpdateAdCampaignRequest) error {
-		if campaignID != 5 || req == nil || req.Name == nil || *req.Name != "new" {
-			t.Fatalf("unexpected update args: campaignID=%d req=%+v", campaignID, req)
+	svc.updateAdCampaignFn = func(_ context.Context, in *serviceinput.UpdateAdCampaign) error {
+		if in.ID != 5 || in.Name == nil || *in.Name != "new" {
+			t.Fatalf("unexpected update input: %+v", in)
 		}
 		return nil
 	}
@@ -91,9 +92,9 @@ func TestAdGroup_UpdateListDelete(t *testing.T) {
 	csrf := getCSRF(t, r)
 	sess := createSessionCookie(t, sm, 1)
 
-	svc.updateAdGroupFn = func(_ context.Context, groupID int, req *dto.UpdateAdGroupRequest) error {
-		if groupID != 3 || req == nil || req.Name == nil || *req.Name != "new-group" {
-			t.Fatalf("unexpected update args: groupID=%d req=%+v", groupID, req)
+	svc.updateAdGroupFn = func(_ context.Context, in *serviceinput.UpdateAdGroup) error {
+		if in.ID != 3 || in.Name == nil || *in.Name != "new-group" {
+			t.Fatalf("unexpected update input: %+v", in)
 		}
 		return nil
 	}
@@ -148,9 +149,9 @@ func TestAd_UpdateDelete(t *testing.T) {
 	csrf := getCSRF(t, r)
 	sess := createSessionCookie(t, sm, 1)
 
-	svc.updateAdFn = func(_ context.Context, adID int, req *dto.UpdateAdRequest) error {
-		if adID != 8 || req == nil || req.Title == nil || *req.Title != "renamed" {
-			t.Fatalf("unexpected update args: adID=%d req=%+v", adID, req)
+	svc.updateAdFn = func(_ context.Context, in *serviceinput.UpdateAd) error {
+		if in.ID != 8 || in.Title == nil || *in.Title != "renamed" {
+			t.Fatalf("unexpected update input: %+v", in)
 		}
 		return nil
 	}

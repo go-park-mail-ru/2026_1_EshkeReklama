@@ -2,8 +2,8 @@ package v1
 
 import (
 	"context"
-	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 	"eshkere/internal/session"
 
 	"github.com/gorilla/mux"
@@ -13,25 +13,25 @@ type Service interface {
 	RegisterAdvertiser(ctx context.Context, name, email, phone, password string) (*models.Advertiser, error)
 	AuthenticateAdvertiser(ctx context.Context, identifier, password string) (*models.Advertiser, error)
 	GetAdvertiserByID(ctx context.Context, id int) (*models.Advertiser, error)
-	UpdateAdvertiserProfile(ctx context.Context, advertiserID int, name, email, phone string) (*models.Advertiser, error)
+	UpdateAdvertiserProfile(ctx context.Context, in *serviceinput.UpdateAdvertiserProfile) (*models.Advertiser, error)
 	UpdateAdvertiserAvatar(ctx context.Context, advertiserID int, avatar []byte, avatarExt, avatarContentType string) (*models.Advertiser, error)
 	TopUpAdvertiserBalance(ctx context.Context, advertiserID int, amount int64) (int64, error)
 
 	GenerateFeedLink(ctx context.Context, campaignID int) (string, error)
 	GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error)
 
-	CreateAdCampaign(ctx context.Context, c *models.AdCampaign) (*models.AdCampaign, error)
-	UpdateAdCampaign(ctx context.Context, campaignID int, req *dto.UpdateAdCampaignRequest) error
+	CreateAdCampaign(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error)
+	UpdateAdCampaign(ctx context.Context, in *serviceinput.UpdateAdCampaign) error
 	ListAdCampaigns(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
 	DeleteAdCampaign(ctx context.Context, campaignID int) error
 
-	CreateAdGroup(ctx context.Context, g *models.AdGroup) (*models.AdGroup, error)
-	UpdateAdGroup(ctx context.Context, groupID int, req *dto.UpdateAdGroupRequest) error
+	CreateAdGroup(ctx context.Context, in *serviceinput.CreateAdGroup) (*models.AdGroup, error)
+	UpdateAdGroup(ctx context.Context, in *serviceinput.UpdateAdGroup) error
 	ListAdGroups(ctx context.Context, campaignID int) ([]*models.AdGroup, error)
 	DeleteAdGroup(ctx context.Context, groupID int) error
 
-	CreateAd(ctx context.Context, ad *models.Ad) (*models.Ad, error)
-	UpdateAd(ctx context.Context, adID int, req *dto.UpdateAdRequest) error
+	CreateAd(ctx context.Context, in *serviceinput.CreateAd) (*models.Ad, error)
+	UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error
 	ListAds(ctx context.Context, groupID int) ([]*models.Ad, error)
 	DeleteAd(ctx context.Context, adID int) error
 }

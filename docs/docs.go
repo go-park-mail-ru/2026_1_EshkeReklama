@@ -1000,7 +1000,7 @@ const docTemplate = `{
                 ],
                 "description": "Обновляет данные текущего рекламодателя по сессии",
                 "consumes": [
-                    "multipart/form-data"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -1011,22 +1011,13 @@ const docTemplate = `{
                 "summary": "Обновление профиля рекламодателя",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Имя рекламодателя",
-                        "name": "name",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Email рекламодателя",
-                        "name": "email",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Телефон рекламодателя",
-                        "name": "phone",
-                        "in": "formData"
+                        "description": "Поля для обновления профиля",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateAdvertiserProfileRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -1158,6 +1149,145 @@ const docTemplate = `{
                 }
             }
         },
+        "/appeal": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Возвращает обращения, привязанные к рекламодателю из текущей сессии",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "appeal"
+                ],
+                "summary": "Список обращений",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ListAppealsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создаёт обращение в поддержку; ручка доступна как анонимным, так и авторизованным пользователям",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "appeal"
+                ],
+                "summary": "Создание обращения",
+                "parameters": [
+                    {
+                        "description": "Данные обращения",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateAppealRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateAppealResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/appeal/{appeal_id}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Возвращает обращение по идентификатору, если оно принадлежит рекламодателю из текущей сессии",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "appeal"
+                ],
+                "summary": "Получить обращение по ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID обращения",
+                        "name": "appeal_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AppealResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/feed/{token}": {
             "get": {
                 "description": "Возвращает объявления по публичному feed-токену; при отсутствии объявлений возвращает пустой список",
@@ -1210,6 +1340,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "main_action": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -1294,6 +1427,26 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.AppealResponse": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.BalanceResponse": {
             "type": "object",
             "properties": {
@@ -1311,6 +1464,9 @@ const docTemplate = `{
             "properties": {
                 "daily_budget": {
                     "type": "integer"
+                },
+                "main_action": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -1395,6 +1551,48 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateAppealRequest": {
+            "type": "object",
+            "required": [
+                "category",
+                "description",
+                "email",
+                "name",
+                "title"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "enum": [
+                        "bug",
+                        "suggestion",
+                        "complaint",
+                        "question"
+                    ]
+                },
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100
+                }
+            }
+        },
+        "dto.CreateAppealResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.ListAdCampaignsResponse": {
             "type": "object",
             "properties": {
@@ -1434,6 +1632,20 @@ const docTemplate = `{
                 },
                 "group_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.ListAppealsResponse": {
+            "type": "object",
+            "properties": {
+                "advertiser_id": {
+                    "type": "integer"
+                },
+                "appeals": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.AppealResponse"
+                    }
                 }
             }
         },
@@ -1505,13 +1717,24 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "daily_budget": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "main_action": {
+                    "type": "string",
+                    "minLength": 1
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                 },
                 "status": {
-                    "$ref": "#/definitions/models.AdStatus"
+                    "minLength": 1,
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.AdStatus"
+                        }
+                    ]
                 }
             }
         },
@@ -1519,22 +1742,32 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "age_from": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "age_to": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "gender": {
-                    "$ref": "#/definitions/models.GenderType"
+                    "minLength": 1,
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.GenderType"
+                        }
+                    ]
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                 },
                 "region_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "topic_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         },
@@ -1545,12 +1778,15 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "image_url": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                 },
                 "short_desc": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                 },
                 "status": {
+                    "minLength": 1,
                     "enum": [
                         "turned_off",
                         "moderation",
@@ -1565,9 +1801,25 @@ const docTemplate = `{
                     ]
                 },
                 "target_url": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                 },
                 "title": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "dto.UpdateAdvertiserProfileRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
                     "type": "string"
                 }
             }

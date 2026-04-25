@@ -6,6 +6,8 @@ definitions:
         type: integer
       id:
         type: integer
+      main_action:
+        type: string
       name:
         type: string
       status:
@@ -60,6 +62,19 @@ definitions:
       phone:
         type: string
     type: object
+  dto.AppealResponse:
+    properties:
+      category:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      status:
+        type: string
+      title:
+        type: string
+    type: object
   dto.BalanceResponse:
     properties:
       balance:
@@ -69,6 +84,8 @@ definitions:
     properties:
       daily_budget:
         type: integer
+      main_action:
+        type: string
       name:
         type: string
     required:
@@ -128,6 +145,36 @@ definitions:
       id:
         type: integer
     type: object
+  dto.CreateAppealRequest:
+    properties:
+      category:
+        enum:
+        - bug
+        - suggestion
+        - complaint
+        - question
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      title:
+        maxLength: 100
+        type: string
+    required:
+    - category
+    - description
+    - email
+    - name
+    - title
+    type: object
+  dto.CreateAppealResponse:
+    properties:
+      id:
+        type: integer
+    type: object
   dto.ListAdCampaignsResponse:
     properties:
       advertiser_id:
@@ -154,6 +201,15 @@ definitions:
         type: array
       group_id:
         type: integer
+    type: object
+  dto.ListAppealsResponse:
+    properties:
+      advertiser_id:
+        type: integer
+      appeals:
+        items:
+          $ref: '#/definitions/dto.AppealResponse'
+        type: array
     type: object
   dto.LoginRequest:
     properties:
@@ -199,25 +255,39 @@ definitions:
   dto.UpdateAdCampaignRequest:
     properties:
       daily_budget:
+        minimum: 1
         type: integer
+      main_action:
+        minLength: 1
+        type: string
       name:
+        minLength: 1
         type: string
       status:
-        $ref: '#/definitions/models.AdStatus'
+        allOf:
+        - $ref: '#/definitions/models.AdStatus'
+        minLength: 1
     type: object
   dto.UpdateAdGroupRequest:
     properties:
       age_from:
+        minimum: 1
         type: integer
       age_to:
+        minimum: 1
         type: integer
       gender:
-        $ref: '#/definitions/models.GenderType'
+        allOf:
+        - $ref: '#/definitions/models.GenderType'
+        minLength: 1
       name:
+        minLength: 1
         type: string
       region_id:
+        minimum: 1
         type: integer
       topic_id:
+        minimum: 1
         type: integer
     type: object
   dto.UpdateAdRequest:
@@ -225,8 +295,10 @@ definitions:
       id:
         type: integer
       image_url:
+        minLength: 1
         type: string
       short_desc:
+        minLength: 1
         type: string
       status:
         allOf:
@@ -237,9 +309,21 @@ definitions:
         - working
         - rejected
         - not_enough_money
+        minLength: 1
       target_url:
+        minLength: 1
         type: string
       title:
+        minLength: 1
+        type: string
+    type: object
+  dto.UpdateAdvertiserProfileRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      phone:
         type: string
     type: object
   httpx.Error:
@@ -911,21 +995,15 @@ paths:
       - advertiser
     put:
       consumes:
-      - multipart/form-data
+      - application/json
       description: Обновляет данные текущего рекламодателя по сессии
       parameters:
-      - description: Имя рекламодателя
-        in: formData
-        name: name
-        type: string
-      - description: Email рекламодателя
-        in: formData
-        name: email
-        type: string
-      - description: Телефон рекламодателя
-        in: formData
-        name: phone
-        type: string
+      - description: Поля для обновления профиля
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAdvertiserProfileRequest'
       produces:
       - application/json
       responses:
@@ -1015,6 +1093,97 @@ paths:
       summary: Регистрация рекламодателя
       tags:
       - advertiser
+  /appeal:
+    get:
+      description: Возвращает обращения, привязанные к рекламодателю из текущей сессии
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListAppealsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Список обращений
+      tags:
+      - appeal
+    post:
+      consumes:
+      - application/json
+      description: Создаёт обращение в поддержку; ручка доступна как анонимным, так
+        и авторизованным пользователям
+      parameters:
+      - description: Данные обращения
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAppealRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateAppealResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Создание обращения
+      tags:
+      - appeal
+  /appeal/{appeal_id}:
+    get:
+      description: Возвращает обращение по идентификатору, если оно принадлежит рекламодателю
+        из текущей сессии
+      parameters:
+      - description: ID обращения
+        in: path
+        name: appeal_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AppealResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Получить обращение по ID
+      tags:
+      - appeal
   /feed/{token}:
     get:
       description: Возвращает объявления по публичному feed-токену; при отсутствии

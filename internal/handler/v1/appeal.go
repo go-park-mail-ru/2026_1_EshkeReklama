@@ -1,10 +1,12 @@
 package v1
 
 import (
+	"errors"
 	errs "eshkere/internal/errors"
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
+	"eshkere/internal/session"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
 	"net/http"
@@ -21,6 +23,17 @@ func (a *API) RegisterAppealHandlers(r *mux.Router) {
 	appealGroup.Handle("/{appeal_id}", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.GetAppealByID))).Methods(http.MethodGet)
 }
 
+// CreateAppeal создаёт обращение; для авторизованного пользователя appeal привязывается к advertiser_id, для анонимного создаётся без привязки.
+// @Summary      Создание обращения
+// @Description  Создаёт обращение в поддержку; ручка доступна как анонимным, так и авторизованным пользователям
+// @Tags         appeal
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.CreateAppealRequest  true  "Данные обращения"
+// @Success      201   {object}  dto.CreateAppealResponse
+// @Failure      400   {object}  httpx.Error
+// @Failure      500   {object}  httpx.Error
+// @Router       /appeal [post]
 func (a *API) CreateAppeal(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -32,9 +45,14 @@ func (a *API) CreateAppeal(w http.ResponseWriter, r *http.Request) {
 
 	in := req.ToInput()
 
-	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
-	if err == nil {
-		in.AdvertiserID = &advertiserID
+	sess, err := a.sessionManager.Get(w, r)
+	switch {
+	case err == nil:
+		in.AdvertiserID = &sess.AdvertiserID
+	case errors.Is(err, session.ErrSessionNotFound):
+	default:
+		handler.HandleError(w, r, "getting optional session", err)
+		return
 	}
 
 	createdAppeal, err := a.service.CreateAppeal(ctx, in)
@@ -48,6 +66,16 @@ func (a *API) CreateAppeal(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// ListAppeals возвращает список обращений текущего рекламодателя.
+// @Summary      Список обращений
+// @Description  Возвращает обращения, привязанные к рекламодателю из текущей сессии
+// @Tags         appeal
+// @Produce      json
+// @Success      200   {object}  dto.ListAppealsResponse
+// @Failure      401   {object}  httpx.Error
+// @Failure      500   {object}  httpx.Error
+// @Router       /appeal [get]
+// @Security     CookieAuth
 func (a *API) ListAppeals(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -66,6 +94,19 @@ func (a *API) ListAppeals(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusOK, dto.ToListAppealsResponse(advertiserID, appeals))
 }
 
+// GetAppealByID возвращает одно обращение текущего рекламодателя по ID.
+// @Summary      Получить обращение по ID
+// @Description  Возвращает обращение по идентификатору, если оно принадлежит рекламодателю из текущей сессии
+// @Tags         appeal
+// @Produce      json
+// @Param        appeal_id  path      int  true  "ID обращения"
+// @Success      200        {object}  dto.AppealResponse
+// @Failure      400        {object}  httpx.Error
+// @Failure      401        {object}  httpx.Error
+// @Failure      404        {object}  httpx.Error
+// @Failure      500        {object}  httpx.Error
+// @Router       /appeal/{appeal_id} [get]
+// @Security     CookieAuth
 func (a *API) GetAppealByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

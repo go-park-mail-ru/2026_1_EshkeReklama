@@ -5,8 +5,8 @@ import "time"
 type AppealMessageAuthor string
 
 const (
-	AppealMessageAuthorAdmin AppealMessageAuthor = "admin"
-	AppealMessageAuthorUser  AppealMessageAuthor = "user"
+	AppealMessageAuthorAdmin      AppealMessageAuthor = "admin"
+	AppealMessageAuthorAdvertiser AppealMessageAuthor = "advertiser"
 )
 
 type AppealMessage struct {

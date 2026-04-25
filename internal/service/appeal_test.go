@@ -190,7 +190,7 @@ func TestPostAppealMessage_OwnedAppeal(t *testing.T) {
 			return &models.Appeal{ID: appealID, AdvertiserID: models.NullInt64FromPtr(ptrInt(7))}, nil
 		},
 		addMessageFn: func(_ context.Context, msg *models.AppealMessage) error {
-			if msg.AppealID != 11 || msg.Author != models.AppealMessageAuthorUser || msg.Text != "hello" {
+			if msg.AppealID != 11 || msg.Author != models.AppealMessageAuthorAdvertiser || msg.Text != "hello" {
 				t.Fatalf("unexpected message: %+v", msg)
 			}
 			msg.ID = 3

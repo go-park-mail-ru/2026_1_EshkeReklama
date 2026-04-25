@@ -47,6 +47,9 @@ type stubService struct {
 	updateAdFn                func(ctx context.Context, in *serviceinput.UpdateAd) error
 	listAdsFn                 func(ctx context.Context, groupID int) ([]*models.Ad, error)
 	deleteAdFn                func(ctx context.Context, adID int) error
+	createAppealFn            func(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
+	listAppealsFn             func(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
+	getAppealByIDFn           func(ctx context.Context, appealID int) (*models.Appeal, error)
 }
 
 func (s *stubService) RegisterAdvertiser(ctx context.Context, name, email, phone, password string) (*models.Advertiser, error) {
@@ -187,6 +190,27 @@ func (s *stubService) DeleteAd(ctx context.Context, adID int) error {
 		return s.deleteAdFn(ctx, adID)
 	}
 	return nil
+}
+
+func (s *stubService) CreateAppeal(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error) {
+	if s.createAppealFn != nil {
+		return s.createAppealFn(ctx, in)
+	}
+	return nil, nil
+}
+
+func (s *stubService) ListAppeals(ctx context.Context, advertiserID int) ([]*models.Appeal, error) {
+	if s.listAppealsFn != nil {
+		return s.listAppealsFn(ctx, advertiserID)
+	}
+	return nil, nil
+}
+
+func (s *stubService) GetAppealByID(ctx context.Context, appealID int) (*models.Appeal, error) {
+	if s.getAppealByIDFn != nil {
+		return s.getAppealByIDFn(ctx, appealID)
+	}
+	return nil, nil
 }
 
 func newMemoryStore() *memoryStore {

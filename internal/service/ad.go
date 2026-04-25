@@ -11,12 +11,12 @@ import (
 func (s *Service) CreateAd(ctx context.Context, in *serviceinput.CreateAd) (*models.Ad, error) {
 	ad := &models.Ad{
 		AdGroupID: in.AdGroupID,
+		Status:    models.AdStatusModeration,
 		Title:     in.Title,
 		ShortDesc: in.ShortDesc,
 		ImageURL:  in.ImageURL,
 		TargetURL: in.TargetURL,
 	}
-	ad.Status = models.AdStatusModeration
 
 	if err := s.adRepo.Create(ctx, ad); err != nil {
 		return nil, err
@@ -48,20 +48,13 @@ func (s *Service) UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error
 	}
 	currentAd.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
-	err = s.adRepo.Update(ctx, currentAd)
-	return err
+	return s.adRepo.Update(ctx, currentAd)
 }
 
 func (s *Service) ListAds(ctx context.Context, groupID int) ([]*models.Ad, error) {
-	ads, err := s.adRepo.ListByAdGroupID(ctx, groupID)
-	if err != nil {
-		return nil, err
-	}
-
-	return ads, nil
+	return s.adRepo.ListByAdGroupID(ctx, groupID)
 }
 
 func (s *Service) DeleteAd(ctx context.Context, adID int) error {
-	err := s.adRepo.Delete(ctx, adID)
-	return err
+	return s.adRepo.Delete(ctx, adID)
 }

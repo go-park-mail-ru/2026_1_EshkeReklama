@@ -144,7 +144,7 @@ func TestGenerateFeedLink_And_GetAdsByFeedToken_OK(t *testing.T) {
 	}
 
 	feedRepo.EXPECT().GetCampaignIDByToken(gomock.Any(), "t").Return(1, nil)
-	adRepo.EXPECT().ListByCampaignID(gomock.Any(), 1).Return([]*models.Ad{}, nil)
+	adRepo.EXPECT().ListByAdCampaignID(gomock.Any(), 1).Return([]*models.Ad{}, nil)
 
 	ads, err := svc.GetAdsByFeedToken(context.Background(), "t")
 	if err != nil {

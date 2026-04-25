@@ -437,19 +437,19 @@ func (mr *MockAdRepositoryMockRecorder) ListByAdGroupID(ctx, adGroupID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAdGroupID", reflect.TypeOf((*MockAdRepository)(nil).ListByAdGroupID), ctx, adGroupID)
 }
 
-// ListByCampaignID mocks base method.
-func (m *MockAdRepository) ListByCampaignID(ctx context.Context, campaignID int) ([]*models.Ad, error) {
+// ListByAdCampaignID mocks base method.
+func (m *MockAdRepository) ListByAdCampaignID(ctx context.Context, campaignID int) ([]*models.Ad, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListByCampaignID", ctx, campaignID)
+	ret := m.ctrl.Call(m, "ListByAdCampaignID", ctx, campaignID)
 	ret0, _ := ret[0].([]*models.Ad)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListByCampaignID indicates an expected call of ListByCampaignID.
-func (mr *MockAdRepositoryMockRecorder) ListByCampaignID(ctx, campaignID any) *gomock.Call {
+// ListByAdCampaignID indicates an expected call of ListByAdCampaignID.
+func (mr *MockAdRepositoryMockRecorder) ListByAdCampaignID(ctx, campaignID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByCampaignID", reflect.TypeOf((*MockAdRepository)(nil).ListByCampaignID), ctx, campaignID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAdCampaignID", reflect.TypeOf((*MockAdRepository)(nil).ListByAdCampaignID), ctx, campaignID)
 }
 
 // Update mocks base method.

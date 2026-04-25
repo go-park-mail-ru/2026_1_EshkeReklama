@@ -34,6 +34,10 @@ type Service interface {
 	UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error
 	ListAds(ctx context.Context, groupID int) ([]*models.Ad, error)
 	DeleteAd(ctx context.Context, adID int) error
+
+	CreateAppeal(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
+	ListAppeals(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
+	GetAppealByID(ctx context.Context, appealID int) (*models.Appeal, error)
 }
 
 type APIConfig struct {
@@ -59,4 +63,5 @@ func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterAdGroupHandlers(r)
 	a.RegisterAdsHandlers(r)
 	a.RegisterFeedHandlers(r)
+	a.RegisterAppealHandlers(r)
 }

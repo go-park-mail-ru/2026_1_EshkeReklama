@@ -52,6 +52,7 @@ func New(configPath string) *App {
 	adRepo := postgres.NewAdRepository(db)
 	adCampaignRepo := postgres.NewAdCampaignRepository(db)
 	feedLinkRepo := postgres.NewFeedLinkRepository(db)
+	appealRepo := postgres.NewAppealRepository(db)
 
 	s3Client, err := s3.NewClient(context.Background(), s3.Config{
 		Region:          cfg.S3.Region,
@@ -76,6 +77,7 @@ func New(configPath string) *App {
 		AdGroupRepo:     adGroupRepo,
 		AdRepo:          adRepo,
 		FeedLinkRepo:    feedLinkRepo,
+		AppealRepo:      appealRepo,
 		AvatarStorage:   avatarStorage,
 		AdActionRepo:    nil,
 		TopicRepo:       nil,

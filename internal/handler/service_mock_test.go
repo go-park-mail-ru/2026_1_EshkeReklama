@@ -335,3 +335,48 @@ func (mr *MockServiceMockRecorder) UpdateAdvertiserAvatar(ctx, advertiserID, ava
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAdvertiserAvatar", reflect.TypeOf((*MockService)(nil).UpdateAdvertiserAvatar), ctx, advertiserID, avatar, avatarExt, avatarContentType)
 }
+
+// CreateAppeal mocks base method.
+func (m *MockService) CreateAppeal(ctx context.Context, in *input.CreateAppeal) (*models.Appeal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateAppeal", ctx, in)
+	ret0, _ := ret[0].(*models.Appeal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateAppeal indicates an expected call of CreateAppeal.
+func (mr *MockServiceMockRecorder) CreateAppeal(ctx, in any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAppeal", reflect.TypeOf((*MockService)(nil).CreateAppeal), ctx, in)
+}
+
+// ListAppeals mocks base method.
+func (m *MockService) ListAppeals(ctx context.Context, advertiserID int) ([]*models.Appeal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAppeals", ctx, advertiserID)
+	ret0, _ := ret[0].([]*models.Appeal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListAppeals indicates an expected call of ListAppeals.
+func (mr *MockServiceMockRecorder) ListAppeals(ctx, advertiserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAppeals", reflect.TypeOf((*MockService)(nil).ListAppeals), ctx, advertiserID)
+}
+
+// GetAppealByID mocks base method.
+func (m *MockService) GetAppealByID(ctx context.Context, appealID int) (*models.Appeal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAppealByID", ctx, appealID)
+	ret0, _ := ret[0].(*models.Appeal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAppealByID indicates an expected call of GetAppealByID.
+func (mr *MockServiceMockRecorder) GetAppealByID(ctx, appealID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAppealByID", reflect.TypeOf((*MockService)(nil).GetAppealByID), ctx, appealID)
+}

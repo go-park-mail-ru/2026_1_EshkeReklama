@@ -60,6 +60,12 @@ type TopicRepository interface{}
 
 type RegionRepository interface{}
 
+type AppealRepository interface {
+	Create(ctx context.Context, appeal *models.Appeal) error
+	GetByID(ctx context.Context, appealID int) (*models.Appeal, error)
+	ListByAdvertiserID(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
+}
+
 type Config struct {
 	AdvertiserRepo  AdvertiserRepository
 	PartnerRepo     PartnerRepository
@@ -72,6 +78,7 @@ type Config struct {
 	AdActionRepo    AdActionRepository
 	TopicRepo       TopicRepository
 	RegionRepo      RegionRepository
+	AppealRepo      AppealRepository
 }
 
 type Service struct {
@@ -86,6 +93,7 @@ type Service struct {
 	adActionRepo    AdActionRepository
 	topicRepo       TopicRepository
 	regionRepo      RegionRepository
+	appealRepo      AppealRepository
 }
 
 func NewService(cfg *Config) (*Service, error) {
@@ -105,5 +113,6 @@ func NewService(cfg *Config) (*Service, error) {
 		adActionRepo:    cfg.AdActionRepo,
 		topicRepo:       cfg.TopicRepo,
 		regionRepo:      cfg.RegionRepo,
+		appealRepo:      cfg.AppealRepo,
 	}, nil
 }

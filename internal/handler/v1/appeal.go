@@ -16,7 +16,7 @@ import (
 )
 
 func (a *API) RegisterAppealHandlers(r *mux.Router) {
-	appealGroup := r.PathPrefix("/appeal").Subrouter()
+	appealGroup := r.PathPrefix("/appeals").Subrouter()
 
 	appealGroup.HandleFunc("", a.CreateAppeal).Methods(http.MethodPost)
 	appealGroup.Handle("", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.ListAppeals))).Methods(http.MethodGet)
@@ -37,7 +37,7 @@ func (a *API) RegisterAppealHandlers(r *mux.Router) {
 // @Success      201          {object}  dto.CreateAppealResponse
 // @Failure      400          {object}  httpx.Error
 // @Failure      500          {object}  httpx.Error
-// @Router       /appeal [post]
+// @Router       /appeals [post]
 func (a *API) CreateAppeal(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -75,7 +75,7 @@ func (a *API) CreateAppeal(w http.ResponseWriter, r *http.Request) {
 // @Success      200  {object}  dto.ListAppealsResponse
 // @Failure      401  {object}  httpx.Error
 // @Failure      500  {object}  httpx.Error
-// @Router       /appeal [get]
+// @Router       /appeals [get]
 // @Security     CookieAuth
 func (a *API) ListAppeals(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -104,7 +104,7 @@ func (a *API) ListAppeals(w http.ResponseWriter, r *http.Request) {
 // @Failure      401        {object}  httpx.Error
 // @Failure      404        {object}  httpx.Error
 // @Failure      500        {object}  httpx.Error
-// @Router       /appeal/{appeal_id} [get]
+// @Router       /appeals/{appeal_id} [get]
 // @Security     CookieAuth
 func (a *API) GetAppealByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

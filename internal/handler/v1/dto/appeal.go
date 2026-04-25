@@ -4,6 +4,7 @@ import (
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
 	"net/url"
+	"time"
 )
 
 type CreateAppealRequest struct {
@@ -53,12 +54,13 @@ func (c *CreateAppealRequest) ToInput(uploaded *UploadedImage) *serviceinput.Cre
 }
 
 type AppealResponse struct {
-	ID          int    `json:"id"`
-	Status      string `json:"status"`
-	Category    string `json:"category"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	ImageURL    string `json:"image_url,omitempty"`
+	ID          int       `json:"id"`
+	Status      string    `json:"status"`
+	Category    string    `json:"category"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	ImageURL    string    `json:"image_url,omitempty"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 func ToAppealResponse(c *models.Appeal) *AppealResponse {
@@ -69,6 +71,7 @@ func ToAppealResponse(c *models.Appeal) *AppealResponse {
 		Title:       c.Title,
 		Description: c.Description,
 		ImageURL:    c.ImageURL,
+		CreatedAt:   c.CreatedAt,
 	}
 }
 

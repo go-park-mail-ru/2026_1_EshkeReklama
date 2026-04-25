@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	redis "github.com/gomodule/redigo/redis"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
@@ -21,9 +22,11 @@ const (
 	appealEventTypeMessageCreated = "message_created"
 	appealEventTypeStatusChanged  = "status_changed"
 
-	appealWSPingPeriod = 30 * time.Second
-	appealWSWriteWait  = 10 * time.Second
-	appealWSReadWait   = 60 * time.Second
+	appealRedisChannel        = "appeal:events"
+	appealRedisReconnectDelay = time.Second
+	appealWSPingPeriod        = 30 * time.Second
+	appealWSWriteWait         = 10 * time.Second
+	appealWSReadWait          = 60 * time.Second
 )
 
 type AppealEvent struct {
@@ -41,12 +44,55 @@ type AppealStatusEvent struct {
 type AppealHub struct {
 	mu          sync.RWMutex
 	subscribers map[int]map[chan []byte]struct{}
+
+	redisPool *redis.Pool
+
+	pubsubMu   sync.Mutex
+	pubsubConn redis.Conn
+
+	closeOnce sync.Once
+	done      chan struct{}
 }
 
 func NewAppealHub() *AppealHub {
+	return newAppealHub(nil)
+}
+
+func NewRedisAppealHub(pool *redis.Pool) (*AppealHub, error) {
+	hub := newAppealHub(pool)
+	if pool == nil {
+		return hub, nil
+	}
+
+	pubsub, err := hub.openPubSub()
+	if err != nil {
+		return nil, err
+	}
+
+	go hub.runRedisSubscriber(pubsub)
+
+	return hub, nil
+}
+
+func newAppealHub(pool *redis.Pool) *AppealHub {
 	return &AppealHub{
 		subscribers: make(map[int]map[chan []byte]struct{}),
+		redisPool:   pool,
+		done:        make(chan struct{}),
 	}
+}
+
+func (h *AppealHub) Close() error {
+	if h == nil {
+		return nil
+	}
+
+	h.closeOnce.Do(func() {
+		close(h.done)
+		h.closePubSubConn()
+	})
+
+	return nil
 }
 
 func (h *AppealHub) Subscribe(appealID int) (<-chan []byte, func()) {
@@ -110,8 +156,26 @@ func (h *AppealHub) broadcast(event *AppealEvent) {
 		return
 	}
 
+	if h.redisPool != nil {
+		if err := h.publish(payload); err == nil {
+			return
+		}
+	}
+
+	h.broadcastLocal(event.AppealID, payload)
+}
+
+func (h *AppealHub) publish(payload []byte) error {
+	conn := h.redisPool.Get()
+	defer conn.Close()
+
+	_, err := conn.Do("PUBLISH", appealRedisChannel, payload)
+	return err
+}
+
+func (h *AppealHub) broadcastLocal(appealID int, payload []byte) {
 	h.mu.RLock()
-	subs := h.subscribers[event.AppealID]
+	subs := h.subscribers[appealID]
 	channels := make([]chan []byte, 0, len(subs))
 	for ch := range subs {
 		channels = append(channels, ch)
@@ -123,6 +187,102 @@ func (h *AppealHub) broadcast(event *AppealEvent) {
 		case ch <- payload:
 		default:
 		}
+	}
+}
+
+func (h *AppealHub) runRedisSubscriber(pubsub redis.PubSubConn) {
+	for {
+		err := h.consumePubSub(pubsub)
+		if h.isClosed() {
+			return
+		}
+
+		timer := time.NewTimer(appealRedisReconnectDelay)
+		select {
+		case <-h.done:
+			timer.Stop()
+			return
+		case <-timer.C:
+		}
+
+		nextPubSub, openErr := h.openPubSub()
+		if openErr != nil {
+			continue
+		}
+
+		pubsub = nextPubSub
+		if err == nil {
+			continue
+		}
+	}
+}
+
+func (h *AppealHub) consumePubSub(pubsub redis.PubSubConn) error {
+	defer h.releasePubSubConn(pubsub.Conn)
+
+	for {
+		switch msg := pubsub.Receive().(type) {
+		case redis.Message:
+			var event AppealEvent
+			if err := json.Unmarshal(msg.Data, &event); err != nil {
+				continue
+			}
+
+			h.broadcastLocal(event.AppealID, msg.Data)
+		case redis.Subscription:
+		case error:
+			if h.isClosed() {
+				return nil
+			}
+			return msg
+		}
+	}
+}
+
+func (h *AppealHub) openPubSub() (redis.PubSubConn, error) {
+	conn := h.redisPool.Get()
+	pubsub := redis.PubSubConn{Conn: conn}
+	if err := pubsub.Subscribe(appealRedisChannel); err != nil {
+		_ = conn.Close()
+		return redis.PubSubConn{}, err
+	}
+
+	h.pubsubMu.Lock()
+	h.pubsubConn = conn
+	h.pubsubMu.Unlock()
+
+	return pubsub, nil
+}
+
+func (h *AppealHub) releasePubSubConn(conn redis.Conn) {
+	h.pubsubMu.Lock()
+	if h.pubsubConn == conn {
+		h.pubsubConn = nil
+	}
+	h.pubsubMu.Unlock()
+
+	if conn != nil {
+		_ = conn.Close()
+	}
+}
+
+func (h *AppealHub) closePubSubConn() {
+	h.pubsubMu.Lock()
+	conn := h.pubsubConn
+	h.pubsubConn = nil
+	h.pubsubMu.Unlock()
+
+	if conn != nil {
+		_ = conn.Close()
+	}
+}
+
+func (h *AppealHub) isClosed() bool {
+	select {
+	case <-h.done:
+		return true
+	default:
+		return false
 	}
 }
 

@@ -7,7 +7,6 @@ import (
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
 	"fmt"
-	"strings"
 )
 
 func (s *Service) CreateAppeal(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error) {
@@ -76,40 +75,6 @@ func (s *Service) GetAppealByID(ctx context.Context, appealID int) (*models.Appe
 	return appeal, nil
 }
 
-func (s *Service) GetAppealMessages(ctx context.Context, advertiserID, appealID int) ([]*models.AppealMessage, error) {
-	if _, err := s.getOwnedChatAppeal(ctx, advertiserID, appealID); err != nil {
-		return nil, err
-	}
-
-	return s.appealRepo.ListMessages(ctx, appealID)
-}
-
-func (s *Service) PostAppealMessage(ctx context.Context, in *serviceinput.PostAppealMessage) (*models.AppealMessage, error) {
-	if in == nil {
-		return nil, errors.New("post appeal message input is nil")
-	}
-
-	if _, err := s.getOwnedChatAppeal(ctx, in.AdvertiserID, in.AppealID); err != nil {
-		return nil, err
-	}
-
-	text := strings.TrimSpace(in.Text)
-	if text == "" {
-		return nil, errs.BadRequestError
-	}
-
-	msg := &models.AppealMessage{
-		AppealID: in.AppealID,
-		Author:   models.AppealMessageAuthorUser,
-		Text:     text,
-	}
-	if err := s.appealRepo.AddMessage(ctx, msg); err != nil {
-		return nil, err
-	}
-
-	return msg, nil
-}
-
 func (s *Service) decorateAppealImageURL(appeal *models.Appeal) {
 	if s == nil || s.appealStorage == nil || appeal == nil {
 		return
@@ -121,17 +86,4 @@ func (s *Service) decorateAppealImageURL(appeal *models.Appeal) {
 	}
 
 	appeal.ImageURL = imageURL
-}
-
-func (s *Service) getOwnedChatAppeal(ctx context.Context, advertiserID, appealID int) (*models.Appeal, error) {
-	appeal, err := s.appealRepo.GetByID(ctx, appealID)
-	if err != nil {
-		return nil, err
-	}
-
-	if !appeal.AdvertiserID.Valid || appeal.AdvertiserID.Int64 != int64(advertiserID) {
-		return nil, errs.NotFoundError
-	}
-
-	return appeal, nil
 }

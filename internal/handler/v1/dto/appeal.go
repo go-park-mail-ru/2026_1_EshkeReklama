@@ -4,7 +4,6 @@ import (
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
 	"net/url"
-	"time"
 )
 
 type CreateAppealRequest struct {
@@ -70,43 +69,6 @@ func ToAppealResponse(c *models.Appeal) *AppealResponse {
 		Title:       c.Title,
 		Description: c.Description,
 		ImageURL:    c.ImageURL,
-	}
-}
-
-type PostAppealMessageRequest struct {
-	Text string `json:"text" validate:"required"`
-}
-
-type AppealMessageResponse struct {
-	ID        int    `json:"id"`
-	Author    string `json:"author"`
-	Text      string `json:"text"`
-	CreatedAt string `json:"created_at"`
-}
-
-func ToAppealMessageResponse(m *models.AppealMessage) *AppealMessageResponse {
-	return &AppealMessageResponse{
-		ID:        m.ID,
-		Author:    string(m.Author),
-		Text:      m.Text,
-		CreatedAt: m.CreatedAt.Format(time.RFC3339),
-	}
-}
-
-type ListAppealMessagesResponse struct {
-	AppealID int                      `json:"appeal_id"`
-	Messages []*AppealMessageResponse `json:"messages"`
-}
-
-func ToListAppealMessagesResponse(appealID int, msgs []*models.AppealMessage) ListAppealMessagesResponse {
-	out := make([]*AppealMessageResponse, 0, len(msgs))
-	for _, msg := range msgs {
-		out = append(out, ToAppealMessageResponse(msg))
-	}
-
-	return ListAppealMessagesResponse{
-		AppealID: appealID,
-		Messages: out,
 	}
 }
 

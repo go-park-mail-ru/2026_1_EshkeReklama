@@ -50,8 +50,6 @@ type stubService struct {
 	createAppealFn            func(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
 	listAppealsFn             func(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
 	getAppealByIDFn           func(ctx context.Context, appealID int) (*models.Appeal, error)
-	getAppealMessagesFn       func(ctx context.Context, advertiserID, appealID int) ([]*models.AppealMessage, error)
-	postAppealMessageFn       func(ctx context.Context, in *serviceinput.PostAppealMessage) (*models.AppealMessage, error)
 }
 
 func (s *stubService) RegisterAdvertiser(ctx context.Context, name, email, phone, password string) (*models.Advertiser, error) {
@@ -211,20 +209,6 @@ func (s *stubService) ListAppeals(ctx context.Context, advertiserID int) ([]*mod
 func (s *stubService) GetAppealByID(ctx context.Context, appealID int) (*models.Appeal, error) {
 	if s.getAppealByIDFn != nil {
 		return s.getAppealByIDFn(ctx, appealID)
-	}
-	return nil, nil
-}
-
-func (s *stubService) GetAppealMessages(ctx context.Context, advertiserID, appealID int) ([]*models.AppealMessage, error) {
-	if s.getAppealMessagesFn != nil {
-		return s.getAppealMessagesFn(ctx, advertiserID, appealID)
-	}
-	return nil, nil
-}
-
-func (s *stubService) PostAppealMessage(ctx context.Context, in *serviceinput.PostAppealMessage) (*models.AppealMessage, error) {
-	if s.postAppealMessageFn != nil {
-		return s.postAppealMessageFn(ctx, in)
 	}
 	return nil, nil
 }

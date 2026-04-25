@@ -6,7 +6,6 @@ import (
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
-	serviceinput "eshkere/internal/service/input"
 	"eshkere/internal/session"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
@@ -22,9 +21,6 @@ func (a *API) RegisterAppealHandlers(r *mux.Router) {
 	appealGroup.HandleFunc("", a.CreateAppeal).Methods(http.MethodPost)
 	appealGroup.Handle("", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.ListAppeals))).Methods(http.MethodGet)
 	appealGroup.Handle("/{appeal_id}", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.GetAppealByID))).Methods(http.MethodGet)
-	appealGroup.Handle("/{appeal_id}/messages", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.ListAppealMessages))).Methods(http.MethodGet)
-	appealGroup.Handle("/{appeal_id}/messages", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.PostAppealMessage))).Methods(http.MethodPost)
-	appealGroup.Handle("/{appeal_id}/ws", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.AppealWS))).Methods(http.MethodGet)
 }
 
 // @Summary      Создание обращения
@@ -137,64 +133,4 @@ func (a *API) GetAppealByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.JSON(w, http.StatusOK, dto.ToAppealResponse(appeal))
-}
-
-func (a *API) ListAppealMessages(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
-	if err != nil {
-		handler.HandleError(w, r, "unauthorized", err)
-		return
-	}
-
-	appealID, err := strconv.Atoi(mux.Vars(r)["appeal_id"])
-	if err != nil {
-		handler.HandleError(w, r, "parsing appeal id", err)
-		return
-	}
-
-	msgs, err := a.service.GetAppealMessages(ctx, advertiserID, appealID)
-	if err != nil {
-		handler.HandleError(w, r, "listing appeal messages", err)
-		return
-	}
-
-	httpx.JSON(w, http.StatusOK, dto.ToListAppealMessagesResponse(appealID, msgs))
-}
-
-func (a *API) PostAppealMessage(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
-	if err != nil {
-		handler.HandleError(w, r, "unauthorized", err)
-		return
-	}
-
-	appealID, err := strconv.Atoi(mux.Vars(r)["appeal_id"])
-	if err != nil {
-		handler.HandleError(w, r, "parsing appeal id", err)
-		return
-	}
-
-	req, err := newJSONRequest[dto.PostAppealMessageRequest](r)
-	if err != nil {
-		httpx.BadRequest(w, "invalid request")
-		return
-	}
-
-	msg, err := a.service.PostAppealMessage(ctx, &serviceinput.PostAppealMessage{
-		AppealID:     appealID,
-		AdvertiserID: advertiserID,
-		Text:         req.Text,
-	})
-	if err != nil {
-		handler.HandleError(w, r, "posting appeal message", err)
-		return
-	}
-
-	a.appealHub.BroadcastMessage(msg)
-
-	httpx.JSON(w, http.StatusCreated, dto.ToAppealMessageResponse(msg))
 }

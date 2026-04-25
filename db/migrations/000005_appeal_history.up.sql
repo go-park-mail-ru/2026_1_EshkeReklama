@@ -1,7 +1,7 @@
 BEGIN;
 
 CREATE TYPE eshkere.appeal_message_author AS ENUM (
-    'admin', 'user'
+    'admin'
 );
 
 CREATE TABLE eshkere.appeal_message (

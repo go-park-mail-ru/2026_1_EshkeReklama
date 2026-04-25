@@ -381,36 +381,6 @@ func (mr *MockServiceMockRecorder) GetAppealByID(ctx, appealID any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAppealByID", reflect.TypeOf((*MockService)(nil).GetAppealByID), ctx, appealID)
 }
 
-// GetAppealMessages mocks base method.
-func (m *MockService) GetAppealMessages(ctx context.Context, advertiserID, appealID int) ([]*models.AppealMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAppealMessages", ctx, advertiserID, appealID)
-	ret0, _ := ret[0].([]*models.AppealMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAppealMessages indicates an expected call of GetAppealMessages.
-func (mr *MockServiceMockRecorder) GetAppealMessages(ctx, advertiserID, appealID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAppealMessages", reflect.TypeOf((*MockService)(nil).GetAppealMessages), ctx, advertiserID, appealID)
-}
-
-// PostAppealMessage mocks base method.
-func (m *MockService) PostAppealMessage(ctx context.Context, in *input.PostAppealMessage) (*models.AppealMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PostAppealMessage", ctx, in)
-	ret0, _ := ret[0].(*models.AppealMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// PostAppealMessage indicates an expected call of PostAppealMessage.
-func (mr *MockServiceMockRecorder) PostAppealMessage(ctx, in any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostAppealMessage", reflect.TypeOf((*MockService)(nil).PostAppealMessage), ctx, in)
-}
-
 // AdminListAppeals mocks base method.
 func (m *MockService) AdminListAppeals(ctx context.Context, filter *input.AdminListAppealsFilter) ([]*models.Appeal, error) {
 	m.ctrl.T.Helper()

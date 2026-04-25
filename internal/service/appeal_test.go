@@ -12,8 +12,6 @@ type testAppealRepo struct {
 	createFn           func(ctx context.Context, appeal *models.Appeal) error
 	getByIDFn          func(ctx context.Context, appealID int) (*models.Appeal, error)
 	listByAdvertiserFn func(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
-	listMessagesFn     func(ctx context.Context, appealID int) ([]*models.AppealMessage, error)
-	addMessageFn       func(ctx context.Context, msg *models.AppealMessage) error
 	updateImageFn      func(ctx context.Context, appealID int, imageKey string) error
 
 	adminListFn         func(ctx context.Context, filter *serviceinput.AdminListAppealsFilter) ([]*models.Appeal, error)
@@ -39,20 +37,6 @@ func (r *testAppealRepo) UpdateImage(ctx context.Context, appealID int, imageKey
 	return r.updateImageFn(ctx, appealID, imageKey)
 }
 
-func (r *testAppealRepo) ListMessages(ctx context.Context, appealID int) ([]*models.AppealMessage, error) {
-	if r.listMessagesFn == nil {
-		return nil, nil
-	}
-	return r.listMessagesFn(ctx, appealID)
-}
-
-func (r *testAppealRepo) AddMessage(ctx context.Context, msg *models.AppealMessage) error {
-	if r.addMessageFn == nil {
-		return nil
-	}
-	return r.addMessageFn(ctx, msg)
-}
-
 func (r *testAppealRepo) AdminList(ctx context.Context, filter *serviceinput.AdminListAppealsFilter) ([]*models.Appeal, error) {
 	if r.adminListFn == nil {
 		return nil, nil
@@ -60,11 +44,25 @@ func (r *testAppealRepo) AdminList(ctx context.Context, filter *serviceinput.Adm
 	return r.adminListFn(ctx, filter)
 }
 
+func (r *testAppealRepo) AdminListMessages(ctx context.Context, appealID int) ([]*models.AppealMessage, error) {
+	if r.adminListMessagesFn == nil {
+		return nil, nil
+	}
+	return r.adminListMessagesFn(ctx, appealID)
+}
+
 func (r *testAppealRepo) AdminListStatusHistory(ctx context.Context, appealID int) ([]*models.AppealStatusHistory, error) {
 	if r.adminListHistoryFn == nil {
 		return nil, nil
 	}
 	return r.adminListHistoryFn(ctx, appealID)
+}
+
+func (r *testAppealRepo) AdminAddMessage(ctx context.Context, msg *models.AppealMessage) error {
+	if r.adminAddMessageFn == nil {
+		return nil
+	}
+	return r.adminAddMessageFn(ctx, msg)
 }
 
 func (r *testAppealRepo) AdminUpdateStatus(ctx context.Context, appealID int, status models.AppealStatus) error {
@@ -182,61 +180,4 @@ func TestListAppeals_DecoratesImageURLs(t *testing.T) {
 	if len(appeals) != 1 || appeals[0].ImageURL != "https://cdn.example.com/appeals/1/attachments/file.png" {
 		t.Fatalf("unexpected appeals: %+v", appeals)
 	}
-}
-
-func TestPostAppealMessage_OwnedAppeal(t *testing.T) {
-	repo := &testAppealRepo{
-		getByIDFn: func(_ context.Context, appealID int) (*models.Appeal, error) {
-			return &models.Appeal{ID: appealID, AdvertiserID: models.NullInt64FromPtr(ptrInt(7))}, nil
-		},
-		addMessageFn: func(_ context.Context, msg *models.AppealMessage) error {
-			if msg.AppealID != 11 || msg.Author != models.AppealMessageAuthorUser || msg.Text != "hello" {
-				t.Fatalf("unexpected message: %+v", msg)
-			}
-			msg.ID = 3
-			return nil
-		},
-	}
-
-	svc, err := NewService(&Config{AppealRepo: repo})
-	if err != nil {
-		t.Fatalf("NewService: %v", err)
-	}
-
-	msg, err := svc.PostAppealMessage(context.Background(), &serviceinput.PostAppealMessage{
-		AppealID:     11,
-		AdvertiserID: 7,
-		Text:         " hello ",
-	})
-	if err != nil {
-		t.Fatalf("PostAppealMessage: %v", err)
-	}
-	if msg.ID != 3 {
-		t.Fatalf("expected message id 3, got %d", msg.ID)
-	}
-}
-
-func TestAdminPostAppealMessage_GuestAppealRejected(t *testing.T) {
-	repo := &testAppealRepo{
-		getByIDFn: func(_ context.Context, appealID int) (*models.Appeal, error) {
-			return &models.Appeal{ID: appealID}, nil
-		},
-	}
-
-	svc, err := NewService(&Config{AppealRepo: repo})
-	if err != nil {
-		t.Fatalf("NewService: %v", err)
-	}
-
-	_, err = svc.AdminPostAppealMessage(context.Background(), &serviceinput.AdminPostAppealMessage{
-		AppealID: 5,
-		Text:     "reply",
-	})
-	if err == nil {
-		t.Fatalf("expected error")
-	}
-}
-
-func ptrInt(v int) *int {
-	return &v
 }

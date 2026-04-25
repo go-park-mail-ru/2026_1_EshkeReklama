@@ -6,8 +6,6 @@ import (
 	errs "eshkere/internal/errors"
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
-	"fmt"
-	"strings"
 )
 
 func (s *Service) AdminListAppeals(ctx context.Context, filter *serviceinput.AdminListAppealsFilter) ([]*models.Appeal, error) {
@@ -43,7 +41,7 @@ func (s *Service) AdminGetAppealWithHistory(ctx context.Context, appealID int) (
 	}
 	s.decorateAppealImageURL(appeal)
 
-	msgs, err := s.appealRepo.ListMessages(ctx, appealID)
+	msgs, err := s.appealRepo.AdminListMessages(ctx, appealID)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -75,25 +73,16 @@ func (s *Service) AdminPostAppealMessage(ctx context.Context, in *serviceinput.A
 	if in == nil {
 		return nil, errors.New("input is nil")
 	}
-	appeal, err := s.appealRepo.GetByID(ctx, in.AppealID)
-	if err != nil {
-		return nil, err
-	}
-	if !appeal.AdvertiserID.Valid {
-		return nil, fmt.Errorf("%w: guest appeals do not support chat", errs.BusinessLogicError)
-	}
-
-	text := strings.TrimSpace(in.Text)
-	if text == "" {
+	if in.Text == "" {
 		return nil, errs.BadRequestError
 	}
 
 	msg := &models.AppealMessage{
 		AppealID: in.AppealID,
 		Author:   models.AppealMessageAuthorAdmin,
-		Text:     text,
+		Text:     in.Text,
 	}
-	if err := s.appealRepo.AddMessage(ctx, msg); err != nil {
+	if err := s.appealRepo.AdminAddMessage(ctx, msg); err != nil {
 		return nil, err
 	}
 	return msg, nil

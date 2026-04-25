@@ -31,12 +31,12 @@ type CreateAdGroupResponse struct {
 }
 
 type UpdateAdGroupRequest struct {
-	TopicID  *int               `json:"topic_id" validate:"omitempty"`
-	RegionID *int               `json:"region_id" validate:"omitempty"`
-	Name     *string            `json:"name" validate:"omitempty"`
-	AgeFrom  *int               `json:"age_from" validate:"omitempty"`
-	AgeTo    *int               `json:"age_to" validate:"omitempty"`
-	Gender   *models.GenderType `json:"gender" validate:"omitempty"`
+	TopicID  *int               `json:"topic_id" validate:"omitempty,min=1"`
+	RegionID *int               `json:"region_id" validate:"omitempty,min=1"`
+	Name     *string            `json:"name" validate:"omitempty,min=1"`
+	AgeFrom  *int               `json:"age_from" validate:"omitempty,min=1"`
+	AgeTo    *int               `json:"age_to" validate:"omitempty,min=1"`
+	Gender   *models.GenderType `json:"gender" validate:"omitempty,min=1"`
 }
 
 func (u *UpdateAdGroupRequest) ToInput(groupID int) *serviceinput.UpdateAdGroup {

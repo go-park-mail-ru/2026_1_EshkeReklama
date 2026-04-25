@@ -8,6 +8,7 @@ import (
 type CreateAdCampaignRequest struct {
 	Name        string `json:"name" validate:"required"`
 	DailyBudget int64  `json:"daily_budget" validate:"required"`
+	MainAction  string `json:"main_action" validate:"omitempty"`
 }
 
 func (c *CreateAdCampaignRequest) ToInput(advertiserID int) *serviceinput.CreateAdCampaign {
@@ -23,9 +24,10 @@ type CreateAdCampaignResponse struct {
 }
 
 type UpdateAdCampaignRequest struct {
-	Name        *string          `json:"name" validate:"omitempty"`
-	Status      *models.AdStatus `json:"status" validate:"omitempty"`
-	DailyBudget *int64           `json:"daily_budget" validate:"omitempty"`
+	Name        *string          `json:"name" validate:"omitempty,min=1"`
+	Status      *models.AdStatus `json:"status" validate:"omitempty,min=1"`
+	DailyBudget *int64           `json:"daily_budget" validate:"omitempty,min=1"`
+	MainAction  *string          `json:"main_action" validate:"omitempty,min=1"`
 }
 
 func (u *UpdateAdCampaignRequest) ToInput(campaignID int) *serviceinput.UpdateAdCampaign {
@@ -42,6 +44,7 @@ type AdCampaignResponse struct {
 	Status      models.AdStatus `json:"status"`
 	Name        string          `json:"name"`
 	DailyBudget int64           `json:"daily_budget"`
+	MainAction  string          `json:"main_action"`
 }
 
 func ToAdCampaignResponse(c *models.AdCampaign) *AdCampaignResponse {

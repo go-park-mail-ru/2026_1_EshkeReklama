@@ -28,11 +28,11 @@ type CreateAdResponse struct {
 
 type UpdateAdRequest struct {
 	ID        int
-	Title     *string          `json:"title" validate:"omitempty"`
-	Status    *models.AdStatus `json:"status" validate:"omitempty,oneof=turned_off moderation working rejected not_enough_money"`
-	ShortDesc *string          `json:"short_desc" validate:"omitempty"`
-	ImageURL  *string          `json:"image_url" validate:"omitempty"`
-	TargetURL *string          `json:"target_url" validate:"omitempty"`
+	Title     *string          `json:"title" validate:"omitempty,min=1"`
+	Status    *models.AdStatus `json:"status" validate:"omitempty,min=1,oneof=turned_off moderation working rejected not_enough_money"`
+	ShortDesc *string          `json:"short_desc" validate:"omitempty,min=1"`
+	ImageURL  *string          `json:"image_url" validate:"omitempty,min=1"`
+	TargetURL *string          `json:"target_url" validate:"omitempty,min=1"`
 }
 
 func (u *UpdateAdRequest) ToInput(adID int) *serviceinput.UpdateAd {

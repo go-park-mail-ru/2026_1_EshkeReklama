@@ -18,7 +18,6 @@ import (
 
 	s3 "eshkere/internal/storage/s3"
 
-	redis "github.com/gomodule/redigo/redis"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 )
@@ -28,7 +27,6 @@ type App struct {
 	logger         *zap.SugaredLogger
 	closers        []io.Closer
 	service        *service.Service
-	redisPool      *redis.Pool
 	sessionManager *session.Manager
 }
 
@@ -116,7 +114,6 @@ func New(configPath string) *App {
 		logger:         logger,
 		closers:        closers,
 		service:        svc,
-		redisPool:      redisPool,
 		sessionManager: sessionManager,
 	}
 }
@@ -131,11 +128,7 @@ func (a *App) Run() error {
 		Secure:     a.cfg.Session.CookieSecure,
 	}))
 
-	appealHub, err := v1.NewRedisAppealHub(a.redisPool)
-	if err != nil {
-		return fmt.Errorf("init appeal hub: %w", err)
-	}
-	a.closers = append(a.closers, appealHub)
+	appealHub := v1.NewAppealHub()
 
 	handler.Register(router, v1.NewAPI(v1.APIConfig{
 		Service:        a.service,
@@ -186,9 +179,9 @@ func (a *App) shutdown(server *http.Server) error {
 		return fmt.Errorf("shutdown server: %w", err)
 	}
 
-	for i := len(a.closers) - 1; i >= 0; i-- {
-		if err := a.closers[i].Close(); err != nil {
-			fmt.Println("failed to close:", a.closers[i])
+	for _, c := range a.closers {
+		if err := c.Close(); err != nil {
+			fmt.Println("failed to close:", c)
 		}
 	}
 

@@ -38,30 +38,22 @@ type Service interface {
 	CreateAppeal(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
 	ListAppeals(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
 	GetAppealByID(ctx context.Context, appealID int) (*models.Appeal, error)
-
-	AdminListAppeals(ctx context.Context, filter *serviceinput.AdminListAppealsFilter) ([]*models.Appeal, error)
-	AdminGetAppealWithHistory(ctx context.Context, appealID int) (*models.Appeal, []*models.AppealMessage, []*models.AppealStatusHistory, error)
-	AdminPatchAppealStatus(ctx context.Context, in *serviceinput.AdminPatchAppealStatus) error
-	AdminPostAppealMessage(ctx context.Context, in *serviceinput.AdminPostAppealMessage) (*models.AppealMessage, error)
 }
 
 type APIConfig struct {
 	SessionManager *session.Manager
 	Service        Service
-	AdminToken     string
 }
 
 type API struct {
 	sessionManager *session.Manager
 	service        Service
-	adminToken     string
 }
 
 func NewAPI(config APIConfig) *API {
 	return &API{
 		sessionManager: config.SessionManager,
 		service:        config.Service,
-		adminToken:     config.AdminToken,
 	}
 }
 
@@ -72,5 +64,4 @@ func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterAdsHandlers(r)
 	a.RegisterFeedHandlers(r)
 	a.RegisterAppealHandlers(r)
-	a.RegisterAdminAppealHandlers(r)
 }

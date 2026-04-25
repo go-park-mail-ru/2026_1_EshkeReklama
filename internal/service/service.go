@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"eshkere/internal/models"
-	serviceinput "eshkere/internal/service/input"
 )
 
 type AdvertiserRepository interface {
@@ -72,12 +71,6 @@ type AppealRepository interface {
 	GetByID(ctx context.Context, appealID int) (*models.Appeal, error)
 	ListByAdvertiserID(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
 	UpdateImage(ctx context.Context, appealID int, imageKey string) error
-
-	AdminList(ctx context.Context, filter *serviceinput.AdminListAppealsFilter) ([]*models.Appeal, error)
-	AdminListMessages(ctx context.Context, appealID int) ([]*models.AppealMessage, error)
-	AdminListStatusHistory(ctx context.Context, appealID int) ([]*models.AppealStatusHistory, error)
-	AdminAddMessage(ctx context.Context, msg *models.AppealMessage) error
-	AdminUpdateStatus(ctx context.Context, appealID int, status models.AppealStatus) error
 }
 
 type Config struct {

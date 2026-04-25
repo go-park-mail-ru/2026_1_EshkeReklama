@@ -131,7 +131,6 @@ func (a *App) Run() error {
 	handler.Register(router, v1.NewAPI(v1.APIConfig{
 		Service:        a.service,
 		SessionManager: a.sessionManager,
-		AdminToken:     a.cfg.Admin.Token,
 	}))
 
 	server := &http.Server{

@@ -13,12 +13,6 @@ type testAppealRepo struct {
 	getByIDFn          func(ctx context.Context, appealID int) (*models.Appeal, error)
 	listByAdvertiserFn func(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
 	updateImageFn      func(ctx context.Context, appealID int, imageKey string) error
-
-	adminListFn         func(ctx context.Context, filter *serviceinput.AdminListAppealsFilter) ([]*models.Appeal, error)
-	adminListMessagesFn func(ctx context.Context, appealID int) ([]*models.AppealMessage, error)
-	adminListHistoryFn  func(ctx context.Context, appealID int) ([]*models.AppealStatusHistory, error)
-	adminAddMessageFn   func(ctx context.Context, msg *models.AppealMessage) error
-	adminUpdateStatusFn func(ctx context.Context, appealID int, status models.AppealStatus) error
 }
 
 func (r *testAppealRepo) Create(ctx context.Context, appeal *models.Appeal) error {
@@ -35,41 +29,6 @@ func (r *testAppealRepo) ListByAdvertiserID(ctx context.Context, advertiserID in
 
 func (r *testAppealRepo) UpdateImage(ctx context.Context, appealID int, imageKey string) error {
 	return r.updateImageFn(ctx, appealID, imageKey)
-}
-
-func (r *testAppealRepo) AdminList(ctx context.Context, filter *serviceinput.AdminListAppealsFilter) ([]*models.Appeal, error) {
-	if r.adminListFn == nil {
-		return nil, nil
-	}
-	return r.adminListFn(ctx, filter)
-}
-
-func (r *testAppealRepo) AdminListMessages(ctx context.Context, appealID int) ([]*models.AppealMessage, error) {
-	if r.adminListMessagesFn == nil {
-		return nil, nil
-	}
-	return r.adminListMessagesFn(ctx, appealID)
-}
-
-func (r *testAppealRepo) AdminListStatusHistory(ctx context.Context, appealID int) ([]*models.AppealStatusHistory, error) {
-	if r.adminListHistoryFn == nil {
-		return nil, nil
-	}
-	return r.adminListHistoryFn(ctx, appealID)
-}
-
-func (r *testAppealRepo) AdminAddMessage(ctx context.Context, msg *models.AppealMessage) error {
-	if r.adminAddMessageFn == nil {
-		return nil
-	}
-	return r.adminAddMessageFn(ctx, msg)
-}
-
-func (r *testAppealRepo) AdminUpdateStatus(ctx context.Context, appealID int, status models.AppealStatus) error {
-	if r.adminUpdateStatusFn == nil {
-		return nil
-	}
-	return r.adminUpdateStatusFn(ctx, appealID, status)
 }
 
 type testAppealStorage struct {

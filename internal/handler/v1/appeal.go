@@ -16,7 +16,7 @@ import (
 )
 
 func (a *API) RegisterAppealHandlers(r *mux.Router) {
-	appealGroup := r.PathPrefix("/appeal").Subrouter() // TODO: /appeals (not /appeal)
+	appealGroup := r.PathPrefix("/appeal").Subrouter()
 
 	appealGroup.HandleFunc("", a.CreateAppeal).Methods(http.MethodPost)
 	appealGroup.Handle("", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.ListAppeals))).Methods(http.MethodGet)

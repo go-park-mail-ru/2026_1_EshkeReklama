@@ -9,4 +9,7 @@ type CreateAppeal struct {
 	Description  string
 	Name         string
 	Email        string
+	Image        []byte
+	ImageExt     string
+	ImageType    string
 }

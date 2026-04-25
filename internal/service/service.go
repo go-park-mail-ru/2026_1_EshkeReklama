@@ -54,6 +54,12 @@ type AvatarStorage interface {
 	GetAvatarURL(avatarKey string) string
 }
 
+type AppealStorage interface {
+	UploadAppealImage(ctx context.Context, appealID int, data []byte, ext string, contentType string) (string, error)
+	DeleteAppealImage(ctx context.Context, appealID int, imageKey string) error
+	GetAppealImageURL(imageKey string) string
+}
+
 type AdActionRepository interface{}
 
 type TopicRepository interface{}
@@ -64,6 +70,7 @@ type AppealRepository interface {
 	Create(ctx context.Context, appeal *models.Appeal) error
 	GetByID(ctx context.Context, appealID int) (*models.Appeal, error)
 	ListByAdvertiserID(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
+	UpdateImage(ctx context.Context, appealID int, imageKey string) error
 }
 
 type Config struct {
@@ -75,6 +82,7 @@ type Config struct {
 	AdRepo          AdRepository
 	FeedLinkRepo    FeedLinkRepository
 	AvatarStorage   AvatarStorage
+	AppealStorage   AppealStorage
 	AdActionRepo    AdActionRepository
 	TopicRepo       TopicRepository
 	RegionRepo      RegionRepository
@@ -90,6 +98,7 @@ type Service struct {
 	adRepo          AdRepository
 	feedLinkRepo    FeedLinkRepository
 	avatarStorage   AvatarStorage
+	appealStorage   AppealStorage
 	adActionRepo    AdActionRepository
 	topicRepo       TopicRepository
 	regionRepo      RegionRepository
@@ -110,6 +119,7 @@ func NewService(cfg *Config) (*Service, error) {
 		adRepo:          cfg.AdRepo,
 		feedLinkRepo:    cfg.FeedLinkRepo,
 		avatarStorage:   cfg.AvatarStorage,
+		appealStorage:   cfg.AppealStorage,
 		adActionRepo:    cfg.AdActionRepo,
 		topicRepo:       cfg.TopicRepo,
 		regionRepo:      cfg.RegionRepo,

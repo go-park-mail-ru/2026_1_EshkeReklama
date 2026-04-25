@@ -22,6 +22,10 @@ const (
 		advertiser_id, status, category, title, description, image_url, name, email)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
 
+	updateAppealImage = `UPDATE eshkere.appeal
+	SET image_url = $1
+	WHERE id = $2`
+
 	selectAppealByID = `SELECT
 		id, advertiser_id, status, category, title, description, image_url, name, email, created_at, updated_at
 	FROM eshkere.appeal
@@ -46,6 +50,16 @@ func (r *AppealRepository) Create(ctx context.Context, appeal *models.Appeal) er
 	).Scan(&appeal.ID)
 	if err != nil {
 		return fmt.Errorf("insert appeal: %w", err)
+	}
+
+	return nil
+}
+
+func (r *AppealRepository) UpdateImage(ctx context.Context, appealID int, imageKey string) error {
+	logger.GetLoggerFromCtx(ctx).Debugf("db: update appeal image by id: %d", appealID)
+
+	if _, err := r.db.ExecContext(ctx, updateAppealImage, imageKey, appealID); err != nil {
+		return fmt.Errorf("update appeal image: %w", err)
 	}
 
 	return nil

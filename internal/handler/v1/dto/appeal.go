@@ -3,6 +3,7 @@ package dto
 import (
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
+	"net/url"
 )
 
 type CreateAppealRequest struct {
@@ -13,18 +14,42 @@ type CreateAppealRequest struct {
 	Email       string `json:"email" validate:"required,email"`
 }
 
+type UploadedImage struct {
+	Data        []byte
+	ContentType string
+	Ext         string
+}
+
 type CreateAppealResponse struct {
 	ID int `json:"id"`
 }
 
-func (c *CreateAppealRequest) ToInput() *serviceinput.CreateAppeal {
-	return &serviceinput.CreateAppeal{
+func NewCreateAppealRequestFromForm(values url.Values) *CreateAppealRequest {
+	return &CreateAppealRequest{
+		Category:    values.Get("category"),
+		Title:       values.Get("title"),
+		Description: values.Get("description"),
+		Name:        values.Get("name"),
+		Email:       values.Get("email"),
+	}
+}
+
+func (c *CreateAppealRequest) ToInput(uploaded *UploadedImage) *serviceinput.CreateAppeal {
+	in := &serviceinput.CreateAppeal{
 		Title:       c.Title,
 		Description: c.Description,
 		Category:    models.AppealCategory(c.Category),
 		Name:        c.Name,
 		Email:       c.Email,
 	}
+
+	if uploaded != nil {
+		in.Image = uploaded.Data
+		in.ImageExt = uploaded.Ext
+		in.ImageType = uploaded.ContentType
+	}
+
+	return in
 }
 
 type AppealResponse struct {
@@ -33,6 +58,7 @@ type AppealResponse struct {
 	Category    string `json:"category"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	ImageURL    string `json:"image_url,omitempty"`
 }
 
 func ToAppealResponse(c *models.Appeal) *AppealResponse {
@@ -42,6 +68,7 @@ func ToAppealResponse(c *models.Appeal) *AppealResponse {
 		Category:    string(c.Category),
 		Title:       c.Title,
 		Description: c.Description,
+		ImageURL:    c.ImageURL,
 	}
 }
 

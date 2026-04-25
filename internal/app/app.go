@@ -68,6 +68,7 @@ func New(configPath string) *App {
 	}
 
 	avatarStorage := s3.NewAvatarStorage(s3Client, "")
+	appealStorage := s3.NewAppealStorage(s3Client)
 
 	svc, err := service.NewService(&service.Config{
 		AdvertiserRepo:  advertiserRepo,
@@ -79,6 +80,7 @@ func New(configPath string) *App {
 		FeedLinkRepo:    feedLinkRepo,
 		AppealRepo:      appealRepo,
 		AvatarStorage:   avatarStorage,
+		AppealStorage:   appealStorage,
 		AdActionRepo:    nil,
 		TopicRepo:       nil,
 		RegionRepo:      nil,

@@ -235,3 +235,162 @@ func TestAdvertiser_UpdateAvatar_OK(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", rr.Code, rr.Body.String())
 	}
 }
+
+func TestAppeal_CreateMultipartWithoutScreenshot_OK(t *testing.T) {
+	sm := newTestSessionManager()
+	svc := &stubService{}
+	r := newTestRouter(sm, svc)
+
+	csrf := getCSRF(t, r)
+
+	svc.createAppealFn = func(_ context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error) {
+		if in.AdvertiserID != nil {
+			t.Fatalf("expected guest appeal, got advertiser id %#v", in.AdvertiserID)
+		}
+		if in.Category != models.AppealCategoryQuestion || in.Title != "How to top up?" || in.Description != "Need help" {
+			t.Fatalf("unexpected appeal payload: %+v", in)
+		}
+		if in.Name != "Ivan" || in.Email != "ivan@example.com" {
+			t.Fatalf("unexpected contact payload: %+v", in)
+		}
+		if len(in.Image) != 0 {
+			t.Fatalf("expected no image, got %d bytes", len(in.Image))
+		}
+		return &models.Appeal{ID: 21}, nil
+	}
+
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+	if err := writer.WriteField("category", "question"); err != nil {
+		t.Fatalf("WriteField category: %v", err)
+	}
+	if err := writer.WriteField("title", "How to top up?"); err != nil {
+		t.Fatalf("WriteField title: %v", err)
+	}
+	if err := writer.WriteField("description", "Need help"); err != nil {
+		t.Fatalf("WriteField description: %v", err)
+	}
+	if err := writer.WriteField("name", "Ivan"); err != nil {
+		t.Fatalf("WriteField name: %v", err)
+	}
+	if err := writer.WriteField("email", "ivan@example.com"); err != nil {
+		t.Fatalf("WriteField email: %v", err)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatalf("Close writer: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/appeal", &body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.AddCookie(csrf)
+	req.Header.Set("X-CSRF-Token", csrf.Value)
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusCreated {
+		t.Fatalf("expected 201 got %d body=%s", rr.Code, rr.Body.String())
+	}
+
+	var envelope struct {
+		Data dto.CreateAppealResponse `json:"data"`
+	}
+	if err := json.Unmarshal(rr.Body.Bytes(), &envelope); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if envelope.Data.ID != 21 {
+		t.Fatalf("expected appeal id 21 got %d", envelope.Data.ID)
+	}
+}
+
+func TestAppeal_CreateMultipartWithScreenshot_OK(t *testing.T) {
+	sm := newTestSessionManager()
+	svc := &stubService{}
+	r := newTestRouter(sm, svc)
+
+	csrf := getCSRF(t, r)
+
+	svc.createAppealFn = func(_ context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error) {
+		if in.Category != models.AppealCategoryBug || in.Title != "Crash" || in.Description != "Steps to reproduce" {
+			t.Fatalf("unexpected appeal payload: %+v", in)
+		}
+		if in.Name != "Ivan" || in.Email != "ivan@example.com" {
+			t.Fatalf("unexpected contact payload: %+v", in)
+		}
+		if string(in.Image) != "png-bytes" || in.ImageExt != ".png" || in.ImageType != "image/png" {
+			t.Fatalf("unexpected image payload: data=%q ext=%s type=%s", string(in.Image), in.ImageExt, in.ImageType)
+		}
+		return &models.Appeal{ID: 22}, nil
+	}
+
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+	if err := writer.WriteField("category", "bug"); err != nil {
+		t.Fatalf("WriteField category: %v", err)
+	}
+	if err := writer.WriteField("title", "Crash"); err != nil {
+		t.Fatalf("WriteField title: %v", err)
+	}
+	if err := writer.WriteField("description", "Steps to reproduce"); err != nil {
+		t.Fatalf("WriteField description: %v", err)
+	}
+	if err := writer.WriteField("name", "Ivan"); err != nil {
+		t.Fatalf("WriteField name: %v", err)
+	}
+	if err := writer.WriteField("email", "ivan@example.com"); err != nil {
+		t.Fatalf("WriteField email: %v", err)
+	}
+
+	header := make(textproto.MIMEHeader)
+	header.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "screenshot", "screen.png"))
+	header.Set("Content-Type", "image/png")
+	part, err := writer.CreatePart(header)
+	if err != nil {
+		t.Fatalf("CreatePart: %v", err)
+	}
+	if _, err = part.Write([]byte("png-bytes")); err != nil {
+		t.Fatalf("Write screenshot: %v", err)
+	}
+	if err = writer.Close(); err != nil {
+		t.Fatalf("Close writer: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/appeal", &body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.AddCookie(csrf)
+	req.Header.Set("X-CSRF-Token", csrf.Value)
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusCreated {
+		t.Fatalf("expected 201 got %d body=%s", rr.Code, rr.Body.String())
+	}
+
+	var envelope struct {
+		Data dto.CreateAppealResponse `json:"data"`
+	}
+	if err = json.Unmarshal(rr.Body.Bytes(), &envelope); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if envelope.Data.ID != 22 {
+		t.Fatalf("expected appeal id 22 got %d", envelope.Data.ID)
+	}
+}
+
+func TestAppeal_CreateJSONRejected(t *testing.T) {
+	sm := newTestSessionManager()
+	svc := &stubService{}
+	r := newTestRouter(sm, svc)
+
+	csrf := getCSRF(t, r)
+
+	req := httptest.NewRequest(http.MethodPost, "/appeal", bytes.NewBufferString(`{"category":"question","title":"How to top up?","description":"Need help","name":"Ivan","email":"ivan@example.com"}`))
+	req.Header.Set("Content-Type", "application/json")
+	req.AddCookie(csrf)
+	req.Header.Set("X-CSRF-Token", csrf.Value)
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 got %d body=%s", rr.Code, rr.Body.String())
+	}
+}

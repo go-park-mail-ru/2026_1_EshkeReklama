@@ -95,3 +95,25 @@ func TestAdRepository_CreateListDelete(t *testing.T) {
 		t.Fatalf("expectations: %v", err)
 	}
 }
+
+func TestAppealRepository_UpdateImage(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("sqlmock.New: %v", err)
+	}
+	defer db.Close()
+
+	repo := NewAppealRepository(db)
+
+	mock.ExpectExec(regexp.QuoteMeta(updateAppealImage)).
+		WithArgs("appeals/7/attachments/file.png", 7).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+
+	if err := repo.UpdateImage(context.Background(), 7, "appeals/7/attachments/file.png"); err != nil {
+		t.Fatalf("UpdateImage: %v", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatalf("expectations: %v", err)
+	}
+}

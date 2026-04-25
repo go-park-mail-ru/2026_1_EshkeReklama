@@ -108,3 +108,33 @@ func TestToFeedResponse(t *testing.T) {
 		t.Fatalf("unexpected feed response: %+v", resp)
 	}
 }
+
+func TestToAppealResponse_WithImageURL(t *testing.T) {
+	appeal := &models.Appeal{ID: 3, Status: models.AppealStatusOpen, Category: models.AppealCategoryBug, Title: "Crash", Description: "Steps", ImageURL: "https://cdn.example.com/file.png"}
+	resp := ToAppealResponse(appeal)
+	if resp.ID != 3 || resp.ImageURL != "https://cdn.example.com/file.png" {
+		t.Fatalf("unexpected appeal response: %+v", resp)
+	}
+}
+
+func TestCreateAppealRequest_ToInput_WithImage(t *testing.T) {
+	req := CreateAppealRequest{
+		Category:    "bug",
+		Title:       "Crash",
+		Description: "Steps",
+		Name:        "Ivan",
+		Email:       "ivan@example.com",
+	}
+
+	in := req.ToInput(&UploadedImage{
+		Data:        []byte("png"),
+		Ext:         ".png",
+		ContentType: "image/png",
+	})
+	if in.Category != models.AppealCategoryBug || in.Title != "Crash" || in.Email != "ivan@example.com" {
+		t.Fatalf("unexpected appeal input: %+v", in)
+	}
+	if string(in.Image) != "png" || in.ImageExt != ".png" || in.ImageType != "image/png" {
+		t.Fatalf("unexpected image input: %+v", in)
+	}
+}

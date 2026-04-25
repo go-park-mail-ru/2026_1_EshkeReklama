@@ -2,28 +2,26 @@ package v1
 
 import (
 	"errors"
+	"eshkere/internal/handler/v1/dto"
+	serviceinput "eshkere/internal/service/input"
 	"fmt"
 	"io"
 	"mime/multipart"
+	"net/http"
 	"path/filepath"
 	"strings"
 )
 
 const maxAvatarSize = 5 << 20 // 5 MB
+const maxAppealImageSize = maxAvatarSize
 
-type UploadedImage struct {
-	Data        []byte
-	ContentType string
-	Ext         string
-}
-
-func ParseAndValidateImage(file *multipart.FileHeader) (*UploadedImage, error) {
+func ParseAndValidateImage(file *multipart.FileHeader) (*dto.UploadedImage, error) {
 	if file == nil {
-		return nil, errors.New("avatar file is required")
+		return nil, errors.New("image file is required")
 	}
 
 	if file.Size > maxAvatarSize {
-		return nil, errors.New("avatar file is too large")
+		return nil, errors.New("image file is too large")
 	}
 
 	contentType := strings.TrimSpace(file.Header.Get("Content-Type"))
@@ -43,27 +41,58 @@ func ParseAndValidateImage(file *multipart.FileHeader) (*UploadedImage, error) {
 			ext = ".webp"
 		}
 	default:
-		return nil, fmt.Errorf("unsupported avatar content type: %s", contentType)
+		return nil, fmt.Errorf("unsupported image content type: %s", contentType)
 	}
 
 	src, err := file.Open()
 	if err != nil {
-		return nil, fmt.Errorf("open avatar file: %w", err)
+		return nil, fmt.Errorf("open image file: %w", err)
 	}
 	defer src.Close()
 
 	data, err := io.ReadAll(io.LimitReader(src, maxAvatarSize+1))
 	if err != nil {
-		return nil, fmt.Errorf("read avatar file: %w", err)
+		return nil, fmt.Errorf("read image file: %w", err)
 	}
 
 	if len(data) > maxAvatarSize {
-		return nil, errors.New("avatar file is too large")
+		return nil, errors.New("image file is too large")
 	}
 
-	return &UploadedImage{
+	return &dto.UploadedImage{
 		Data:        data,
 		ContentType: contentType,
 		Ext:         ext,
 	}, nil
+}
+
+func newCreateAppealInput(r *http.Request) (*serviceinput.CreateAppeal, error) {
+	if err := r.ParseMultipartForm(maxAppealImageSize); err != nil {
+		return nil, err
+	}
+
+	req := dto.NewCreateAppealRequestFromForm(r.Form)
+	if err := requestValidator.Struct(req); err != nil {
+		return nil, err
+	}
+
+	uploaded, err := parseOptionalUploadedImage(r.MultipartForm, "screenshot")
+	if err != nil {
+		return nil, err
+	}
+
+	return req.ToInput(uploaded), nil
+}
+
+func parseOptionalUploadedImage(form *multipart.Form, fieldName string) (*dto.UploadedImage, error) {
+	if form == nil {
+		return nil, nil
+	}
+
+	files := form.File[fieldName]
+	if len(files) == 0 {
+		return nil, nil
+	}
+
+	return ParseAndValidateImage(files[0])
 }

@@ -443,7 +443,7 @@ func TestAppeal_PostMessage_OK(t *testing.T) {
 		if in.AdvertiserID != 1 || in.AppealID != 7 || in.Text != "hello" {
 			t.Fatalf("unexpected input: %+v", in)
 		}
-		return &models.AppealMessage{ID: 3, AppealID: 7, Author: models.AppealMessageAuthorAdvertiser, Text: "hello", CreatedAt: time.Unix(0, 0)}, nil
+		return &models.AppealMessage{ID: 3, AppealID: 7, Author: models.AppealMessageAuthorUser, Text: "hello", CreatedAt: time.Unix(0, 0)}, nil
 	}
 
 	req := httptest.NewRequest(http.MethodPost, "/appeal/7/messages", bytes.NewBufferString(`{"text":"hello"}`))
@@ -463,7 +463,7 @@ func TestAppeal_PostMessage_OK(t *testing.T) {
 	if err := json.Unmarshal(rr.Body.Bytes(), &envelope); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
-	if envelope.Data.ID != 3 || envelope.Data.Author != "advertiser" {
+	if envelope.Data.ID != 3 || envelope.Data.Author != "user" {
 		t.Fatalf("unexpected response: %+v", envelope.Data)
 	}
 }

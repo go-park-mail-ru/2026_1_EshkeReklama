@@ -100,7 +100,7 @@ func (s *Service) PostAppealMessage(ctx context.Context, in *serviceinput.PostAp
 
 	msg := &models.AppealMessage{
 		AppealID: in.AppealID,
-		Author:   models.AppealMessageAuthorAdvertiser,
+		Author:   models.AppealMessageAuthorUser,
 		Text:     text,
 	}
 	if err := s.appealRepo.AddMessage(ctx, msg); err != nil {

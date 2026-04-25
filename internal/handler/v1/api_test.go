@@ -213,6 +213,22 @@ func (s *stubService) GetAppealByID(ctx context.Context, appealID int) (*models.
 	return nil, nil
 }
 
+func (s *stubService) AdminListAppeals(ctx context.Context, filter *serviceinput.AdminListAppealsFilter) ([]*models.Appeal, error) {
+	return nil, nil
+}
+
+func (s *stubService) AdminGetAppealWithHistory(ctx context.Context, appealID int) (*models.Appeal, []*models.AppealMessage, []*models.AppealStatusHistory, error) {
+	return nil, nil, nil, nil
+}
+
+func (s *stubService) AdminPatchAppealStatus(ctx context.Context, in *serviceinput.AdminPatchAppealStatus) error {
+	return nil
+}
+
+func (s *stubService) AdminPostAppealMessage(ctx context.Context, in *serviceinput.AdminPostAppealMessage) (*models.AppealMessage, error) {
+	return nil, nil
+}
+
 func newMemoryStore() *memoryStore {
 	return &memoryStore{
 		sessions: make(map[string]session.Session),

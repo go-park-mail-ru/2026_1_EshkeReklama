@@ -57,12 +57,17 @@ type S3Config struct {
 	ForcePathStyle bool   `yaml:"force_path_style"`
 }
 
+type AdminConfig struct {
+	Token string `yaml:"token"`
+}
+
 type Config struct {
 	HTTPServer      HTTPServerConfig `yaml:"http_server"`
 	Postgres        PostgresConfig   `yaml:"postgres"`
 	Redis           RedisConfig      `yaml:"redis"`
 	Session         SessionConfig    `yaml:"session"`
 	S3              S3Config         `yaml:"s3"`
+	Admin           AdminConfig      `yaml:"admin"`
 	CORS            CORSConfig       `yaml:"cors"`
 	GracefulTimeout time.Duration    `yaml:"graceful_timeout"`
 }

@@ -380,3 +380,64 @@ func (mr *MockServiceMockRecorder) GetAppealByID(ctx, appealID any) *gomock.Call
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAppealByID", reflect.TypeOf((*MockService)(nil).GetAppealByID), ctx, appealID)
 }
+
+// AdminListAppeals mocks base method.
+func (m *MockService) AdminListAppeals(ctx context.Context, filter *input.AdminListAppealsFilter) ([]*models.Appeal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AdminListAppeals", ctx, filter)
+	ret0, _ := ret[0].([]*models.Appeal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AdminListAppeals indicates an expected call of AdminListAppeals.
+func (mr *MockServiceMockRecorder) AdminListAppeals(ctx, filter any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AdminListAppeals", reflect.TypeOf((*MockService)(nil).AdminListAppeals), ctx, filter)
+}
+
+// AdminGetAppealWithHistory mocks base method.
+func (m *MockService) AdminGetAppealWithHistory(ctx context.Context, appealID int) (*models.Appeal, []*models.AppealMessage, []*models.AppealStatusHistory, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AdminGetAppealWithHistory", ctx, appealID)
+	ret0, _ := ret[0].(*models.Appeal)
+	ret1, _ := ret[1].([]*models.AppealMessage)
+	ret2, _ := ret[2].([]*models.AppealStatusHistory)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// AdminGetAppealWithHistory indicates an expected call of AdminGetAppealWithHistory.
+func (mr *MockServiceMockRecorder) AdminGetAppealWithHistory(ctx, appealID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AdminGetAppealWithHistory", reflect.TypeOf((*MockService)(nil).AdminGetAppealWithHistory), ctx, appealID)
+}
+
+// AdminPatchAppealStatus mocks base method.
+func (m *MockService) AdminPatchAppealStatus(ctx context.Context, in *input.AdminPatchAppealStatus) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AdminPatchAppealStatus", ctx, in)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AdminPatchAppealStatus indicates an expected call of AdminPatchAppealStatus.
+func (mr *MockServiceMockRecorder) AdminPatchAppealStatus(ctx, in any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AdminPatchAppealStatus", reflect.TypeOf((*MockService)(nil).AdminPatchAppealStatus), ctx, in)
+}
+
+// AdminPostAppealMessage mocks base method.
+func (m *MockService) AdminPostAppealMessage(ctx context.Context, in *input.AdminPostAppealMessage) (*models.AppealMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AdminPostAppealMessage", ctx, in)
+	ret0, _ := ret[0].(*models.AppealMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AdminPostAppealMessage indicates an expected call of AdminPostAppealMessage.
+func (mr *MockServiceMockRecorder) AdminPostAppealMessage(ctx, in any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AdminPostAppealMessage", reflect.TypeOf((*MockService)(nil).AdminPostAppealMessage), ctx, in)
+}

@@ -20,7 +20,8 @@ type GenericSettingsRequest interface {
 		dto.CreateAdCampaignRequest | dto.UpdateAdCampaignRequest |
 		dto.CreateAdGroupRequest | dto.UpdateAdGroupRequest |
 		dto.RegisterRequest | dto.LoginRequest | dto.TopUpBalanceRequest |
-		dto.UpdateAdRequest | dto.CreateAppealRequest
+		dto.UpdateAdRequest | dto.CreateAppealRequest |
+		dto.AdminPatchAppealStatusRequest | dto.AdminPostAppealMessageRequest
 }
 
 func newJSONRequest[T GenericSettingsRequest](r *http.Request) (*T, error) {

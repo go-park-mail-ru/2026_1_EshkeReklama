@@ -1156,7 +1156,7 @@ const docTemplate = `{
                         "CookieAuth": []
                     }
                 ],
-                "description": "Возвращает обращения, привязанные к рекламодателю из текущей сессии",
+                "description": "Возвращает список обращений текущего рекламодателя",
                 "produces": [
                     "application/json"
                 ],
@@ -1186,9 +1186,9 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Создаёт обращение в поддержку; ручка доступна как анонимным, так и авторизованным пользователям",
+                "description": "Создает обращение в техподдержку. Можно передать optional скриншот",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1199,13 +1199,51 @@ const docTemplate = `{
                 "summary": "Создание обращения",
                 "parameters": [
                     {
-                        "description": "Данные обращения",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateAppealRequest"
-                        }
+                        "enum": [
+                            "bug",
+                            "suggestion",
+                            "complaint",
+                            "question"
+                        ],
+                        "type": "string",
+                        "description": "Категория обращения",
+                        "name": "category",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Заголовок обращения",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Описание проблемы или вопроса",
+                        "name": "description",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Имя пользователя",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Email для обратной связи",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Скриншот проблемы",
+                        "name": "screenshot",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -1237,14 +1275,14 @@ const docTemplate = `{
                         "CookieAuth": []
                     }
                 ],
-                "description": "Возвращает обращение по идентификатору, если оно принадлежит рекламодателю из текущей сессии",
+                "description": "Возвращает одно обращение текущего рекламодателя по id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "appeal"
                 ],
-                "summary": "Получить обращение по ID",
+                "summary": "Получить обращение",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1259,12 +1297,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/dto.AppealResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.Error"
                         }
                     },
                     "401": {
@@ -1439,6 +1471,9 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "image_url": {
+                    "type": "string"
+                },
                 "status": {
                     "type": "string"
                 },
@@ -1548,40 +1583,6 @@ const docTemplate = `{
             "properties": {
                 "id": {
                     "type": "integer"
-                }
-            }
-        },
-        "dto.CreateAppealRequest": {
-            "type": "object",
-            "required": [
-                "category",
-                "description",
-                "email",
-                "name",
-                "title"
-            ],
-            "properties": {
-                "category": {
-                    "type": "string",
-                    "enum": [
-                        "bug",
-                        "suggestion",
-                        "complaint",
-                        "question"
-                    ]
-                },
-                "description": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string",
-                    "maxLength": 100
                 }
             }
         },

@@ -70,6 +70,8 @@ definitions:
         type: string
       id:
         type: integer
+      image_url:
+        type: string
       status:
         type: string
       title:
@@ -144,31 +146,6 @@ definitions:
     properties:
       id:
         type: integer
-    type: object
-  dto.CreateAppealRequest:
-    properties:
-      category:
-        enum:
-        - bug
-        - suggestion
-        - complaint
-        - question
-        type: string
-      description:
-        type: string
-      email:
-        type: string
-      name:
-        type: string
-      title:
-        maxLength: 100
-        type: string
-    required:
-    - category
-    - description
-    - email
-    - name
-    - title
     type: object
   dto.CreateAppealResponse:
     properties:
@@ -1095,7 +1072,7 @@ paths:
       - advertiser
   /appeal:
     get:
-      description: Возвращает обращения, привязанные к рекламодателю из текущей сессии
+      description: Возвращает список обращений текущего рекламодателя
       produces:
       - application/json
       responses:
@@ -1118,16 +1095,43 @@ paths:
       - appeal
     post:
       consumes:
-      - application/json
-      description: Создаёт обращение в поддержку; ручка доступна как анонимным, так
-        и авторизованным пользователям
+      - multipart/form-data
+      description: Создает обращение в техподдержку. Можно передать optional скриншот
       parameters:
-      - description: Данные обращения
-        in: body
-        name: body
+      - description: Категория обращения
+        enum:
+        - bug
+        - suggestion
+        - complaint
+        - question
+        in: formData
+        name: category
         required: true
-        schema:
-          $ref: '#/definitions/dto.CreateAppealRequest'
+        type: string
+      - description: Заголовок обращения
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Описание проблемы или вопроса
+        in: formData
+        name: description
+        required: true
+        type: string
+      - description: Имя пользователя
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Email для обратной связи
+        in: formData
+        name: email
+        required: true
+        type: string
+      - description: Скриншот проблемы
+        in: formData
+        name: screenshot
+        type: file
       produces:
       - application/json
       responses:
@@ -1148,8 +1152,7 @@ paths:
       - appeal
   /appeal/{appeal_id}:
     get:
-      description: Возвращает обращение по идентификатору, если оно принадлежит рекламодателю
-        из текущей сессии
+      description: Возвращает одно обращение текущего рекламодателя по id
       parameters:
       - description: ID обращения
         in: path
@@ -1163,10 +1166,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.AppealResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/httpx.Error'
         "401":
           description: Unauthorized
           schema:
@@ -1181,7 +1180,7 @@ paths:
             $ref: '#/definitions/httpx.Error'
       security:
       - CookieAuth: []
-      summary: Получить обращение по ID
+      summary: Получить обращение
       tags:
       - appeal
   /feed/{token}:

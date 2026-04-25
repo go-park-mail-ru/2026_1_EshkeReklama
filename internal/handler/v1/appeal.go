@@ -23,6 +23,21 @@ func (a *API) RegisterAppealHandlers(r *mux.Router) {
 	appealGroup.Handle("/{appeal_id}", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.GetAppealByID))).Methods(http.MethodGet)
 }
 
+// @Summary      Создание обращения
+// @Description  Создает обращение в техподдержку. Можно передать optional скриншот
+// @Tags         appeal
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        category     formData  string  true   "Категория обращения"  Enums(bug, suggestion, complaint, question)
+// @Param        title        formData  string  true   "Заголовок обращения"
+// @Param        description  formData  string  true   "Описание проблемы или вопроса"
+// @Param        name         formData  string  true   "Имя пользователя"
+// @Param        email        formData  string  true   "Email для обратной связи"
+// @Param        screenshot   formData  file    false  "Скриншот проблемы"
+// @Success      201          {object}  dto.CreateAppealResponse
+// @Failure      400          {object}  httpx.Error
+// @Failure      500          {object}  httpx.Error
+// @Router       /appeal [post]
 func (a *API) CreateAppeal(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -53,6 +68,15 @@ func (a *API) CreateAppeal(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summary      Список обращений
+// @Description  Возвращает список обращений текущего рекламодателя
+// @Tags         appeal
+// @Produce      json
+// @Success      200  {object}  dto.ListAppealsResponse
+// @Failure      401  {object}  httpx.Error
+// @Failure      500  {object}  httpx.Error
+// @Router       /appeal [get]
+// @Security     CookieAuth
 func (a *API) ListAppeals(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -71,6 +95,17 @@ func (a *API) ListAppeals(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusOK, dto.ToListAppealsResponse(advertiserID, appeals))
 }
 
+// @Summary      Получить обращение
+// @Description  Возвращает одно обращение текущего рекламодателя по id
+// @Tags         appeal
+// @Produce      json
+// @Param        appeal_id  path      int  true  "ID обращения"
+// @Success      200        {object}  dto.AppealResponse
+// @Failure      401        {object}  httpx.Error
+// @Failure      404        {object}  httpx.Error
+// @Failure      500        {object}  httpx.Error
+// @Router       /appeal/{appeal_id} [get]
+// @Security     CookieAuth
 func (a *API) GetAppealByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

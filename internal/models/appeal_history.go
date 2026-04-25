@@ -6,6 +6,7 @@ type AppealMessageAuthor string
 
 const (
 	AppealMessageAuthorAdmin AppealMessageAuthor = "admin"
+	AppealMessageAuthorUser  AppealMessageAuthor = "user"
 )
 
 type AppealMessage struct {

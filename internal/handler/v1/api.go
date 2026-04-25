@@ -38,6 +38,8 @@ type Service interface {
 	CreateAppeal(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
 	ListAppeals(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
 	GetAppealByID(ctx context.Context, appealID int) (*models.Appeal, error)
+	GetAppealMessages(ctx context.Context, advertiserID, appealID int) ([]*models.AppealMessage, error)
+	PostAppealMessage(ctx context.Context, in *serviceinput.PostAppealMessage) (*models.AppealMessage, error)
 
 	AdminListAppeals(ctx context.Context, filter *serviceinput.AdminListAppealsFilter) ([]*models.Appeal, error)
 	AdminGetAppealWithHistory(ctx context.Context, appealID int) (*models.Appeal, []*models.AppealMessage, []*models.AppealStatusHistory, error)
@@ -49,19 +51,27 @@ type APIConfig struct {
 	SessionManager *session.Manager
 	Service        Service
 	AdminToken     string
+	AppealHub      *AppealHub
 }
 
 type API struct {
 	sessionManager *session.Manager
 	service        Service
 	adminToken     string
+	appealHub      *AppealHub
 }
 
 func NewAPI(config APIConfig) *API {
+	hub := config.AppealHub
+	if hub == nil {
+		hub = NewAppealHub()
+	}
+
 	return &API{
 		sessionManager: config.SessionManager,
 		service:        config.Service,
 		adminToken:     config.AdminToken,
+		appealHub:      hub,
 	}
 }
 

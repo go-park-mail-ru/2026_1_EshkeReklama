@@ -128,10 +128,13 @@ func (a *App) Run() error {
 		Secure:     a.cfg.Session.CookieSecure,
 	}))
 
+	appealHub := v1.NewAppealHub()
+
 	handler.Register(router, v1.NewAPI(v1.APIConfig{
 		Service:        a.service,
 		SessionManager: a.sessionManager,
 		AdminToken:     a.cfg.Admin.Token,
+		AppealHub:      appealHub,
 	}))
 
 	server := &http.Server{

@@ -155,6 +155,41 @@ func (r *AppealRepository) ListByAdvertiserID(ctx context.Context, advertiserID 
 	return appeals, nil
 }
 
+func (r *AppealRepository) ListMessages(ctx context.Context, appealID int) ([]*models.AppealMessage, error) {
+	logger.GetLoggerFromCtx(ctx).Debugf("db: list appeal messages: %d", appealID)
+
+	rows, err := r.db.QueryContext(ctx, selectAppealMessagesByAppealID, appealID)
+	if err != nil {
+		return nil, fmt.Errorf("list appeal messages: %w", err)
+	}
+	defer rows.Close()
+
+	out := make([]*models.AppealMessage, 0)
+	for rows.Next() {
+		var msg models.AppealMessage
+		if err := rows.Scan(&msg.ID, &msg.AppealID, &msg.Author, &msg.Text, &msg.CreatedAt); err != nil {
+			return nil, fmt.Errorf("scan appeal message: %w", err)
+		}
+		out = append(out, &msg)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate appeal messages: %w", err)
+	}
+	return out, nil
+}
+
+func (r *AppealRepository) AddMessage(ctx context.Context, msg *models.AppealMessage) error {
+	if msg == nil {
+		return fmt.Errorf("message cannot be nil")
+	}
+	logger.GetLoggerFromCtx(ctx).Debugf("db: add appeal message: %d", msg.AppealID)
+
+	if err := r.db.QueryRowContext(ctx, insertAppealMessage, msg.AppealID, msg.Author, msg.Text).Scan(&msg.ID, &msg.CreatedAt); err != nil {
+		return fmt.Errorf("insert appeal message: %w", err)
+	}
+	return nil
+}
+
 func (r *AppealRepository) AdminList(ctx context.Context, filter *serviceinput.AdminListAppealsFilter) ([]*models.Appeal, error) {
 	if filter == nil {
 		return nil, fmt.Errorf("filter cannot be nil")
@@ -224,26 +259,7 @@ FROM eshkere.appeal`
 }
 
 func (r *AppealRepository) AdminListMessages(ctx context.Context, appealID int) ([]*models.AppealMessage, error) {
-	logger.GetLoggerFromCtx(ctx).Debugf("db: admin list appeal messages: %d", appealID)
-
-	rows, err := r.db.QueryContext(ctx, selectAppealMessagesByAppealID, appealID)
-	if err != nil {
-		return nil, fmt.Errorf("list appeal messages: %w", err)
-	}
-	defer rows.Close()
-
-	out := make([]*models.AppealMessage, 0)
-	for rows.Next() {
-		var msg models.AppealMessage
-		if err := rows.Scan(&msg.ID, &msg.AppealID, &msg.Author, &msg.Text, &msg.CreatedAt); err != nil {
-			return nil, fmt.Errorf("scan appeal message: %w", err)
-		}
-		out = append(out, &msg)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("iterate appeal messages: %w", err)
-	}
-	return out, nil
+	return r.ListMessages(ctx, appealID)
 }
 
 func (r *AppealRepository) AdminListStatusHistory(ctx context.Context, appealID int) ([]*models.AppealStatusHistory, error) {
@@ -270,15 +286,7 @@ func (r *AppealRepository) AdminListStatusHistory(ctx context.Context, appealID 
 }
 
 func (r *AppealRepository) AdminAddMessage(ctx context.Context, msg *models.AppealMessage) error {
-	if msg == nil {
-		return fmt.Errorf("message cannot be nil")
-	}
-	logger.GetLoggerFromCtx(ctx).Debugf("db: admin add appeal message: %d", msg.AppealID)
-
-	if err := r.db.QueryRowContext(ctx, insertAppealMessage, msg.AppealID, msg.Author, msg.Text).Scan(&msg.ID, &msg.CreatedAt); err != nil {
-		return fmt.Errorf("insert appeal message: %w", err)
-	}
-	return nil
+	return r.AddMessage(ctx, msg)
 }
 
 func (r *AppealRepository) AdminUpdateStatus(ctx context.Context, appealID int, status models.AppealStatus) error {

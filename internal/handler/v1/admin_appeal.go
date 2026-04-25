@@ -22,6 +22,7 @@ func (a *API) RegisterAdminAppealHandlers(r *mux.Router) {
 	appeals.HandleFunc("/{appeal_id}", a.AdminGetAppealByID).Methods(http.MethodGet)
 	appeals.HandleFunc("/{appeal_id}/status", a.AdminPatchAppealStatus).Methods(http.MethodPatch)
 	appeals.HandleFunc("/{appeal_id}/messages", a.AdminPostAppealMessage).Methods(http.MethodPost)
+	appeals.HandleFunc("/{appeal_id}/ws", a.AdminAppealWS).Methods(http.MethodGet)
 }
 
 func (a *API) AdminListAppeals(w http.ResponseWriter, r *http.Request) {
@@ -113,6 +114,8 @@ func (a *API) AdminPatchAppealStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	a.appealHub.BroadcastStatusChange(appealID, models.AppealStatus(req.Status))
+
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -139,6 +142,8 @@ func (a *API) AdminPostAppealMessage(w http.ResponseWriter, r *http.Request) {
 		handler.HandleError(w, r, "admin post appeal message", err)
 		return
 	}
+
+	a.appealHub.BroadcastMessage(msg)
 
 	httpx.JSON(w, http.StatusCreated, dto.ToAdminAppealMessageResponse(msg))
 }

@@ -21,6 +21,7 @@ type GenericSettingsRequest interface {
 		dto.CreateAdGroupRequest | dto.UpdateAdGroupRequest |
 		dto.RegisterRequest | dto.LoginRequest | dto.TopUpBalanceRequest |
 		dto.UpdateAdRequest | dto.CreateAppealRequest |
+		dto.PostAppealMessageRequest |
 		dto.AdminPatchAppealStatusRequest | dto.AdminPostAppealMessageRequest
 }
 

@@ -75,7 +75,7 @@ CREATE TABLE eshkere.ad (
     status      eshkere.status_type         NOT NULL DEFAULT 'turned_off',
     title       TEXT                        NOT NULL,
     short_desc  TEXT                        NOT NULL,
-    image_url   TEXT                        NOT NULL,
+    image_url   TEXT                        ,
     target_url  TEXT                        NOT NULL,
     created_at  TIMESTAMP WITH TIME ZONE    DEFAULT NOW(),
     updated_at  TIMESTAMP WITH TIME ZONE,

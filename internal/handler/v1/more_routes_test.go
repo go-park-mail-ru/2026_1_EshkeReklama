@@ -162,7 +162,17 @@ func TestAd_UpdateDelete(t *testing.T) {
 		return nil
 	}
 
-	updateReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/1/ad_groups/2/ads/8", bytes.NewBufferString(`{"title":"renamed"}`))
+	var updateBody bytes.Buffer
+	updateWriter := multipart.NewWriter(&updateBody)
+	if err := updateWriter.WriteField("title", "renamed"); err != nil {
+		t.Fatalf("WriteField title: %v", err)
+	}
+	if err := updateWriter.Close(); err != nil {
+		t.Fatalf("Close writer: %v", err)
+	}
+
+	updateReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/1/ad_groups/2/ads/8", &updateBody)
+	updateReq.Header.Set("Content-Type", updateWriter.FormDataContentType())
 	updateReq.AddCookie(sess)
 	updateReq.AddCookie(csrf)
 	updateReq.Header.Set("X-CSRF-Token", csrf.Value)

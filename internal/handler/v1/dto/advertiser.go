@@ -19,6 +19,15 @@ type RegisterResponse struct {
 	Phone string `json:"phone"`
 }
 
+func (r *RegisterRequest) ToInput() *serviceinput.RegisterAdvertiser {
+	return &serviceinput.RegisterAdvertiser{
+		Name:     r.Name,
+		Email:    r.Email,
+		Phone:    r.Phone,
+		Password: r.Password,
+	}
+}
+
 type LoginRequest struct {
 	Identifier string `json:"identifier"`
 	Password   string `json:"password"`
@@ -31,17 +40,25 @@ type LoginResponse struct {
 }
 
 type UpdateAdvertiserProfileRequest struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Phone string `json:"phone"`
+	Name    *string `json:"name"`
+	Surname *string `json:"surname"`
+	Email   *string `json:"email"`
+	Phone   *string `json:"phone"`
+	Company *string `json:"company"`
+	City    *string `json:"city"`
+	Tariff  *string `json:"tariff"`
 }
 
 func (u *UpdateAdvertiserProfileRequest) ToInput(advertiserID int) *serviceinput.UpdateAdvertiserProfile {
 	return &serviceinput.UpdateAdvertiserProfile{
 		AdvertiserID: advertiserID,
 		Name:         u.Name,
+		Surname:      u.Surname,
 		Email:        u.Email,
 		Phone:        u.Phone,
+		Company:      u.Company,
+		City:         u.City,
+		Tariff:       u.Tariff,
 	}
 }
 
@@ -49,10 +66,14 @@ func (u *UpdateAdvertiserProfileRequest) ToInput(advertiserID int) *serviceinput
 type AdvertiserProfileResponse struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`
+	Surname   string `json:"surname"`
 	Email     string `json:"email"`
 	Phone     string `json:"phone"`
 	AvatarURL string `json:"avatar_url,omitempty"`
 	Balance   int64  `json:"balance"`
+	Company   string `json:"company"`
+	City      string `json:"city"`
+	Tariff    string `json:"tariff"`
 	CreatedAt string `json:"created_at"`
 }
 

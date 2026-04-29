@@ -44,6 +44,10 @@ const (
 		ad_group_id = $1, status = $2, title = $3, short_desc = $4, image_url = $5, target_url = $6, updated_at = $7
 	WHERE id = $8`
 
+	updateAdImage = `UPDATE eshkere.ad SET
+		image_url = $1
+	WHERE id = $2`
+
 	deleteAd = `DELETE FROM eshkere.ad WHERE id = $1`
 )
 
@@ -171,6 +175,17 @@ func (r *AdRepository) Update(ctx context.Context, ad *models.Ad) error {
 	)
 	if err != nil {
 		return fmt.Errorf("update ad: %w", err)
+	}
+
+	return nil
+}
+
+func (r *AdRepository) UpdateImage(ctx context.Context, adID int, imageKey string) error {
+	logger.GetLoggerFromCtx(ctx).Debugf("db: update ad image by id: %d", adID)
+
+	_, err := r.db.ExecContext(ctx, updateAdImage, imageKey, adID)
+	if err != nil {
+		return fmt.Errorf("update ad image: %w", err)
 	}
 
 	return nil

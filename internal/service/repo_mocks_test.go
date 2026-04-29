@@ -452,6 +452,20 @@ func (mr *MockAdRepositoryMockRecorder) ListByAdCampaignID(ctx, campaignID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAdCampaignID", reflect.TypeOf((*MockAdRepository)(nil).ListByAdCampaignID), ctx, campaignID)
 }
 
+// UpdateImage mocks base method.
+func (m *MockAdRepository) UpdateImage(ctx context.Context, adID int, imageKey string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateImage", ctx, adID, imageKey)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateImage indicates an expected call of UpdateImage.
+func (mr *MockAdRepositoryMockRecorder) UpdateImage(ctx, adID, imageKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateImage", reflect.TypeOf((*MockAdRepository)(nil).UpdateImage), ctx, adID, imageKey)
+}
+
 // Update mocks base method.
 func (m *MockAdRepository) Update(ctx context.Context, ad *models.Ad) error {
 	m.ctrl.T.Helper()

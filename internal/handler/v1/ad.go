@@ -4,6 +4,7 @@ import (
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
+	serviceinput "eshkere/internal/service/input"
 	"eshkere/pkg/httpx"
 	"net/http"
 	"strconv"
@@ -24,11 +25,14 @@ func (a *API) RegisterAdsHandlers(r *mux.Router) {
 // CreateAd создаёт объявление в группе.
 // @Summary      Создание объявления
 // @Tags         ads
-// @Accept       json
+// @Accept       multipart/form-data
 // @Produce      json
 // @Param        ad_campaign_id  path      int                 true  "ID рекламной кампании"
 // @Param        ad_group_id     path      int                 true  "ID группы объявлений"
-// @Param        body            body      dto.CreateAdRequest true  "Параметры объявления"
+// @Param        title           formData  string              true  "Заголовок объявления"
+// @Param        short_desc      formData  string              true  "Короткое описание объявления"
+// @Param        target_url      formData  string              true  "Целевой URL"
+// @Param        image           formData  file                false "Изображение объявления"
 // @Success      200             {object}  dto.CreateAdResponse
 // @Failure      400             {object}  httpx.Error
 // @Failure      401             {object}  httpx.Error
@@ -38,19 +42,19 @@ func (a *API) RegisterAdsHandlers(r *mux.Router) {
 func (a *API) CreateAd(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	req, err := newJSONRequest[dto.CreateAdRequest](r)
-	if err != nil {
-		httpx.BadRequest(w, "invalid request")
-		return
-	}
-
 	groupID, err := strconv.Atoi(mux.Vars(r)["ad_group_id"])
 	if err != nil {
 		handler.HandleError(w, r, "parsing group id", err)
 		return
 	}
 
-	createdAd, err := a.service.CreateAd(ctx, req.ToInput(groupID))
+	in, err := newCreateAdInput(r, groupID)
+	if err != nil {
+		httpx.BadRequest(w, "invalid request")
+		return
+	}
+
+	createdAd, err := a.service.CreateAd(ctx, in)
 	if err != nil {
 		handler.HandleError(w, r, "creating ad", err)
 		return
@@ -64,12 +68,16 @@ func (a *API) CreateAd(w http.ResponseWriter, r *http.Request) {
 // UpdateAd обновляет объявление.
 // @Summary      Обновление объявления
 // @Tags         ads
-// @Accept       json
+// @Accept       multipart/form-data
 // @Produce      json
 // @Param        ad_campaign_id  path      int                    true  "ID рекламной кампании"
 // @Param        ad_group_id     path      int                    true  "ID группы объявлений"
 // @Param        ad_id           path      int                    true  "ID объявления"
-// @Param        body            body      dto.UpdateAdRequest    true  "Поля для обновления"
+// @Param        title           formData  string                 false "Новый заголовок объявления"
+// @Param        status          formData  string                 false "Новый статус объявления"  Enums(turned_off, moderation, working, rejected, not_enough_money)
+// @Param        short_desc      formData  string                 false "Новое короткое описание объявления"
+// @Param        target_url      formData  string                 false "Новый целевой URL"
+// @Param        image           formData  file                   false "Новое изображение объявления"
 // @Success      200             {object}  httpx.Success
 // @Failure      400             {object}  httpx.Error
 // @Failure      401             {object}  httpx.Error
@@ -85,19 +93,44 @@ func (a *API) UpdateAd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req, err := newJSONRequest[dto.UpdateAdRequest](r)
+	in, err := newUpdateAdInput(r, adID)
 	if err != nil {
 		httpx.BadRequest(w, "invalid request")
 		return
 	}
 
-	err = a.service.UpdateAd(ctx, req.ToInput(adID))
+	err = a.service.UpdateAd(ctx, in)
 	if err != nil {
 		handler.HandleError(w, r, "updating id", err)
 		return
 	}
 
 	httpx.JSON(w, http.StatusOK, nil)
+}
+
+func newCreateAdInput(r *http.Request, groupID int) (*serviceinput.CreateAd, error) {
+	if err := r.ParseMultipartForm(maxAvatarSize); err != nil {
+		return nil, err
+	}
+
+	req := dto.NewCreateAdRequestFromForm(r.Form)
+	if err := requestValidator.Struct(req); err != nil {
+		return nil, err
+	}
+
+	uploaded, err := parseOptionalUploadedImage(r.MultipartForm, "image")
+	if err != nil {
+		return nil, err
+	}
+
+	in := req.ToInput(groupID)
+	if uploaded != nil {
+		in.Image = uploaded.Data
+		in.ImageExt = uploaded.Ext
+		in.ImageType = uploaded.ContentType
+	}
+
+	return in, nil
 }
 
 // ListAds возвращает объявления группы.
@@ -159,4 +192,29 @@ func (a *API) DeleteAd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.JSON(w, http.StatusOK, nil)
+}
+
+func newUpdateAdInput(r *http.Request, adID int) (*serviceinput.UpdateAd, error) {
+	if err := r.ParseMultipartForm(maxAvatarSize); err != nil {
+		return nil, err
+	}
+
+	req := dto.NewUpdateAdRequestFromForm(r.Form)
+	if err := requestValidator.Struct(req); err != nil {
+		return nil, err
+	}
+
+	uploaded, err := parseOptionalUploadedImage(r.MultipartForm, "image")
+	if err != nil {
+		return nil, err
+	}
+
+	in := req.ToInput(adID)
+	if uploaded != nil {
+		in.Image = &uploaded.Data
+		in.ImageExt = &uploaded.Ext
+		in.ImageType = &uploaded.ContentType
+	}
+
+	return in, nil
 }

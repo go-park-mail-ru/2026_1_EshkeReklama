@@ -3,13 +3,21 @@ package dto
 import (
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
+	"net/url"
 )
 
 type CreateAdRequest struct {
 	Title     string `json:"title" validate:"required"`
 	ShortDesc string `json:"short_desc" validate:"required"`
-	ImageURL  string `json:"image_url" validate:"required"`
 	TargetURL string `json:"target_url" validate:"required"`
+}
+
+func NewCreateAdRequestFromForm(values url.Values) *CreateAdRequest {
+	return &CreateAdRequest{
+		Title:     values.Get("title"),
+		ShortDesc: values.Get("short_desc"),
+		TargetURL: values.Get("target_url"),
+	}
 }
 
 func (c *CreateAdRequest) ToInput(groupID int) *serviceinput.CreateAd {
@@ -17,7 +25,6 @@ func (c *CreateAdRequest) ToInput(groupID int) *serviceinput.CreateAd {
 		AdGroupID: groupID,
 		Title:     c.Title,
 		ShortDesc: c.ShortDesc,
-		ImageURL:  c.ImageURL,
 		TargetURL: c.TargetURL,
 	}
 }
@@ -28,37 +35,54 @@ type CreateAdResponse struct {
 
 type UpdateAdRequest struct {
 	ID        int
-	Title     *string          `json:"title" validate:"omitempty,min=1"`
-	Status    *models.AdStatus `json:"status" validate:"omitempty,min=1,oneof=turned_off moderation working rejected not_enough_money"`
-	ShortDesc *string          `json:"short_desc" validate:"omitempty,min=1"`
-	ImageURL  *string          `json:"image_url" validate:"omitempty,min=1"`
-	TargetURL *string          `json:"target_url" validate:"omitempty,min=1"`
+	Title     *string `json:"title" validate:"omitempty,min=1"`
+	Status    *string `json:"status" validate:"omitempty,min=1,oneof=turned_off moderation working rejected not_enough_money"`
+	ShortDesc *string `json:"short_desc" validate:"omitempty,min=1"`
+	TargetURL *string `json:"target_url" validate:"omitempty,min=1"`
+}
+
+func NewUpdateAdRequestFromForm(values url.Values) *UpdateAdRequest {
+	return &UpdateAdRequest{
+		Title:     optionalStringFromForm(values, "title"),
+		Status:    optionalStringFromForm(values, "status"),
+		ShortDesc: optionalStringFromForm(values, "short_desc"),
+		TargetURL: optionalStringFromForm(values, "target_url"),
+	}
+}
+
+func optionalStringFromForm(values url.Values, key string) *string {
+	raw, ok := values[key]
+	if !ok || len(raw) == 0 {
+		return nil
+	}
+
+	value := raw[0]
+	return &value
 }
 
 func (u *UpdateAdRequest) ToInput(adID int) *serviceinput.UpdateAd {
 	return &serviceinput.UpdateAd{
 		ID:        adID,
 		Title:     u.Title,
-		Status:    u.Status,
+		Status:    (*models.AdStatus)(u.Status),
 		ShortDesc: u.ShortDesc,
-		ImageURL:  u.ImageURL,
 		TargetURL: u.TargetURL,
 	}
 }
 
 type AdResponse struct {
-	ID        int             `json:"id"`
-	Status    models.AdStatus `json:"status"`
-	Title     string          `json:"title"`
-	ShortDesc string          `json:"short_desc"`
-	ImageURL  string          `json:"image_url"`
-	TargetURL string          `json:"target_url"`
+	ID        int    `json:"id"`
+	Status    string `json:"status"`
+	Title     string `json:"title"`
+	ShortDesc string `json:"short_desc"`
+	ImageURL  string `json:"image_url"`
+	TargetURL string `json:"target_url"`
 }
 
 func ToAdResponse(ad *models.Ad) *AdResponse {
 	adResponse := &AdResponse{
 		ID:        ad.ID,
-		Status:    ad.Status,
+		Status:    string(ad.Status),
 		Title:     ad.Title,
 		ShortDesc: ad.ShortDesc,
 		ImageURL:  ad.ImageURL,

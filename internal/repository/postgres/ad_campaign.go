@@ -19,23 +19,23 @@ func NewAdCampaignRepository(db *sql.DB) *AdCampaignRepository {
 
 const (
 	insertAdCampaign = `INSERT INTO eshkere.ad_campaign (
-		advertiser_id, status, name, daily_budget)
-		VALUES ($1, $2, $3, $4) RETURNING id`
+		advertiser_id, status, name, daily_budget, main_action)
+		VALUES ($1, $2, $3, $4, $5) RETURNING id`
 
 	selectAdCampaignByID = `SELECT
-		id, advertiser_id, status, name, daily_budget, created_at, updated_at
+		id, advertiser_id, status, name, daily_budget, main_action, created_at, updated_at
 	FROM eshkere.ad_campaign
 	WHERE id = $1`
 
 	selectAdCampaignsByAdvertiserID = `SELECT
-		id, advertiser_id, status, name, daily_budget, created_at, updated_at
+		id, advertiser_id, status, name, daily_budget, main_action, created_at, updated_at
 	FROM eshkere.ad_campaign
 	WHERE advertiser_id = $1
 	ORDER BY created_at DESC, id DESC`
 
 	updateAdCampaign = `UPDATE eshkere.ad_campaign SET
-		advertiser_id = $1, status = $2, name = $3, daily_budget = $4, updated_at = $5
-	WHERE id = $6`
+		advertiser_id = $1, status = $2, name = $3, daily_budget = $4, main_action = $5, updated_at = $6
+	WHERE id = $7`
 
 	deleteAdCampaign = `DELETE FROM eshkere.ad_campaign WHERE id = $1`
 )
@@ -48,7 +48,7 @@ func (r *AdCampaignRepository) Create(ctx context.Context, c *models.AdCampaign)
 	logger.GetLoggerFromCtx(ctx).Debug("db: create ad_campaign")
 
 	err := r.db.QueryRowContext(ctx, insertAdCampaign,
-		c.AdvertiserID, c.Status, c.Name, c.DailyBudget,
+		c.AdvertiserID, c.Status, c.Name, c.DailyBudget, c.MainAction,
 	).Scan(&c.ID)
 	if err != nil {
 		return fmt.Errorf("insert ad campaign: %w", err)
@@ -68,6 +68,7 @@ func (r *AdCampaignRepository) GetByID(ctx context.Context, id int) (*models.AdC
 		&c.Status,
 		&c.Name,
 		&c.DailyBudget,
+		&c.MainAction,
 		&c.CreatedAt,
 		&c.UpdatedAt,
 	)
@@ -99,6 +100,7 @@ func (r *AdCampaignRepository) ListByAdvertiserID(ctx context.Context, advertise
 			&c.Status,
 			&c.Name,
 			&c.DailyBudget,
+			&c.MainAction,
 			&c.CreatedAt,
 			&c.UpdatedAt,
 		); err != nil {
@@ -122,7 +124,7 @@ func (r *AdCampaignRepository) Update(ctx context.Context, c *models.AdCampaign)
 	logger.GetLoggerFromCtx(ctx).Debugf("db: update ad_campaign by id: %d", c.ID)
 
 	_, err := r.db.ExecContext(ctx, updateAdCampaign,
-		c.AdvertiserID, c.Status, c.Name, c.DailyBudget, c.UpdatedAt, c.ID,
+		c.AdvertiserID, c.Status, c.Name, c.DailyBudget, c.MainAction, c.UpdatedAt, c.ID,
 	)
 	if err != nil {
 		return fmt.Errorf("update ad campaign: %w", err)

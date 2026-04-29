@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	errs "eshkere/internal/errors"
@@ -22,7 +21,7 @@ func TestHandlers_BadRequests(t *testing.T) {
 	sess := createSessionCookie(t, sm, 1)
 
 	// invalid ad_group_id (route var not int)
-	req := httptest.NewRequest(http.MethodPost, "/ad_campaigns/1/ad_groups/zzz/ads", bytes.NewBufferString(`{"title":"t","short_desc":"s","image_url":"i","target_url":"u"}`))
+	req := httptest.NewRequest(http.MethodPost, "/ad_campaigns/1/ad_groups/zzz/ads", nil)
 	req.AddCookie(sess)
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)

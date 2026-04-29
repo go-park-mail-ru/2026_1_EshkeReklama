@@ -25,19 +25,16 @@ func (s *Service) UpdateAdvertiserProfile(ctx context.Context, in *serviceinput.
 		return nil, err
 	}
 
-	name := strings.TrimSpace(in.Name)
-	if name != "" {
-		adv.Name = name
+	if in.Name != nil {
+		adv.Name = *in.Name
 	}
 
-	email := strings.TrimSpace(strings.ToLower(in.Email))
-	if email != "" {
-		adv.Email = email
+	if in.Email != nil {
+		adv.Email = *in.Email
 	}
 
-	phone := strings.TrimSpace(in.Phone)
-	if phone != "" {
-		normalizedPhone, normalizeErr := normalizeAdvertiserPhone(phone)
+	if in.Phone != nil {
+		normalizedPhone, normalizeErr := normalizeAdvertiserPhone(*in.Phone)
 		if normalizeErr != nil {
 			return nil, fmt.Errorf("%w: %v", errs.ErrInvalidAdvertiserArg, normalizeErr)
 		}

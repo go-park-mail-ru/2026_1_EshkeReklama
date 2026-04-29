@@ -15,12 +15,6 @@ type CreateAppealRequest struct {
 	Email       string `json:"email" validate:"required,email"`
 }
 
-type UploadedImage struct {
-	Data        []byte
-	ContentType string
-	Ext         string
-}
-
 type CreateAppealResponse struct {
 	ID int `json:"id"`
 }

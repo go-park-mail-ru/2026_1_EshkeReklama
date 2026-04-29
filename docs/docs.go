@@ -522,7 +522,7 @@ const docTemplate = `{
                     }
                 ],
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -547,13 +547,31 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Параметры объявления",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateAdRequest"
-                        }
+                        "type": "string",
+                        "description": "Заголовок объявления",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Короткое описание объявления",
+                        "name": "short_desc",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Целевой URL",
+                        "name": "target_url",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Изображение объявления",
+                        "name": "image",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -592,7 +610,7 @@ const docTemplate = `{
                     }
                 ],
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -624,13 +642,41 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Поля для обновления",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateAdRequest"
-                        }
+                        "type": "string",
+                        "description": "Новый заголовок объявления",
+                        "name": "title",
+                        "in": "formData"
+                    },
+                    {
+                        "enum": [
+                            "turned_off",
+                            "moderation",
+                            "working",
+                            "rejected",
+                            "not_enough_money"
+                        ],
+                        "type": "string",
+                        "description": "Новый статус объявления",
+                        "name": "status",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Новое короткое описание объявления",
+                        "name": "short_desc",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Новый целевой URL",
+                        "name": "target_url",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Новое изображение объявления",
+                        "name": "image",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -769,7 +815,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertiser/balance": {
+        "/advertisers/balance": {
             "get": {
                 "security": [
                     {
@@ -812,7 +858,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertiser/balance/topup": {
+        "/advertisers/balance/topup": {
             "post": {
                 "security": [
                     {
@@ -869,7 +915,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertiser/login": {
+        "/advertisers/login": {
             "post": {
                 "description": "Аутентифицирует рекламодателя по email или телефону и паролю",
                 "consumes": [
@@ -921,7 +967,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertiser/logout": {
+        "/advertisers/logout": {
             "post": {
                 "description": "Завершает сессию текущего рекламодателя",
                 "produces": [
@@ -950,7 +996,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertiser/me": {
+        "/advertisers/me": {
             "get": {
                 "security": [
                     {
@@ -1048,7 +1094,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertiser/me/avatar": {
+        "/advertisers/me/avatar": {
             "put": {
                 "security": [
                     {
@@ -1103,7 +1149,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertiser/register": {
+        "/advertisers/register": {
             "post": {
                 "description": "Создает новый аккаунт и открывает сессию",
                 "consumes": [
@@ -1149,7 +1195,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/appeal": {
+        "/appeals": {
             "get": {
                 "security": [
                     {
@@ -1268,7 +1314,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/appeal/{appeal_id}": {
+        "/appeals/{appeal_id}": {
             "get": {
                 "security": [
                     {
@@ -1380,7 +1426,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/models.AdStatus"
+                    "type": "string"
                 }
             }
         },
@@ -1394,7 +1440,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "gender": {
-                    "$ref": "#/definitions/models.GenderType"
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
@@ -1423,7 +1469,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/models.AdStatus"
+                    "type": "string"
                 },
                 "target_url": {
                     "type": "string"
@@ -1442,6 +1488,12 @@ const docTemplate = `{
                 "balance": {
                     "type": "integer"
                 },
+                "city": {
+                    "type": "string"
+                },
+                "company": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -1456,6 +1508,12 @@ const docTemplate = `{
                 },
                 "phone": {
                     "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                },
+                "tariff": {
+                    "type": "string"
                 }
             }
         },
@@ -1463,6 +1521,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "category": {
+                    "type": "string"
+                },
+                "created_at": {
                     "type": "string"
                 },
                 "description": {
@@ -1493,13 +1554,9 @@ const docTemplate = `{
         "dto.CreateAdCampaignRequest": {
             "type": "object",
             "required": [
-                "daily_budget",
                 "name"
             ],
             "properties": {
-                "daily_budget": {
-                    "type": "integer"
-                },
                 "main_action": {
                     "type": "string"
                 },
@@ -1534,7 +1591,12 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "gender": {
-                    "$ref": "#/definitions/models.GenderType"
+                    "type": "string",
+                    "enum": [
+                        "male",
+                        "female",
+                        "any"
+                    ]
                 },
                 "name": {
                     "type": "string"
@@ -1552,29 +1614,6 @@ const docTemplate = `{
             "properties": {
                 "id": {
                     "type": "integer"
-                }
-            }
-        },
-        "dto.CreateAdRequest": {
-            "type": "object",
-            "required": [
-                "image_url",
-                "short_desc",
-                "target_url",
-                "title"
-            ],
-            "properties": {
-                "image_url": {
-                    "type": "string"
-                },
-                "short_desc": {
-                    "type": "string"
-                },
-                "target_url": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
                 }
             }
         },
@@ -1717,10 +1756,6 @@ const docTemplate = `{
         "dto.UpdateAdCampaignRequest": {
             "type": "object",
             "properties": {
-                "daily_budget": {
-                    "type": "integer",
-                    "minimum": 1
-                },
                 "main_action": {
                     "type": "string",
                     "minLength": 1
@@ -1730,12 +1765,8 @@ const docTemplate = `{
                     "minLength": 1
                 },
                 "status": {
-                    "minLength": 1,
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.AdStatus"
-                        }
-                    ]
+                    "type": "string",
+                    "minLength": 1
                 }
             }
         },
@@ -1751,11 +1782,12 @@ const docTemplate = `{
                     "minimum": 1
                 },
                 "gender": {
+                    "type": "string",
                     "minLength": 1,
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.GenderType"
-                        }
+                    "enum": [
+                        "male",
+                        "female",
+                        "any"
                     ]
                 },
                 "name": {
@@ -1772,48 +1804,15 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateAdRequest": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "image_url": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "short_desc": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "status": {
-                    "minLength": 1,
-                    "enum": [
-                        "turned_off",
-                        "moderation",
-                        "working",
-                        "rejected",
-                        "not_enough_money"
-                    ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.AdStatus"
-                        }
-                    ]
-                },
-                "target_url": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "title": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            }
-        },
         "dto.UpdateAdvertiserProfileRequest": {
             "type": "object",
             "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "company": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -1821,6 +1820,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "phone": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                },
+                "tariff": {
                     "type": "string"
                 }
             }
@@ -1838,36 +1843,6 @@ const docTemplate = `{
             "properties": {
                 "data": {}
             }
-        },
-        "models.AdStatus": {
-            "type": "string",
-            "enum": [
-                "turned_off",
-                "moderation",
-                "working",
-                "rejected",
-                "not_enough_money"
-            ],
-            "x-enum-varnames": [
-                "AdStatusTurnedOff",
-                "AdStatusModeration",
-                "AdStatusWorking",
-                "AdStatusRejected",
-                "AdStatusNotEnoughMoney"
-            ]
-        },
-        "models.GenderType": {
-            "type": "string",
-            "enum": [
-                "man",
-                "woman",
-                "any"
-            ],
-            "x-enum-varnames": [
-                "GenderMan",
-                "GenderWoman",
-                "GenderAny"
-            ]
         }
     },
     "securityDefinitions": {

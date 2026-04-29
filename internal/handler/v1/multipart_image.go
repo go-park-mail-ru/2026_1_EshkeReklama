@@ -3,11 +3,9 @@ package v1
 import (
 	"errors"
 	"eshkere/internal/handler/v1/dto"
-	serviceinput "eshkere/internal/service/input"
 	"fmt"
 	"io"
 	"mime/multipart"
-	"net/http"
 	"path/filepath"
 	"strings"
 )
@@ -64,24 +62,6 @@ func ParseAndValidateImage(file *multipart.FileHeader) (*dto.UploadedImage, erro
 		ContentType: contentType,
 		Ext:         ext,
 	}, nil
-}
-
-func newCreateAppealInput(r *http.Request) (*serviceinput.CreateAppeal, error) {
-	if err := r.ParseMultipartForm(maxAppealImageSize); err != nil {
-		return nil, err
-	}
-
-	req := dto.NewCreateAppealRequestFromForm(r.Form)
-	if err := requestValidator.Struct(req); err != nil {
-		return nil, err
-	}
-
-	uploaded, err := parseOptionalUploadedImage(r.MultipartForm, "screenshot")
-	if err != nil {
-		return nil, err
-	}
-
-	return req.ToInput(uploaded), nil
 }
 
 func parseOptionalUploadedImage(form *multipart.Form, fieldName string) (*dto.UploadedImage, error) {

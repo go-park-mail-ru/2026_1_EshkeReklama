@@ -6,7 +6,9 @@ type CreateAd struct {
 	AdGroupID int
 	Title     string
 	ShortDesc string
-	ImageURL  string
+	Image     []byte
+	ImageExt  string
+	ImageType string
 	TargetURL string
 }
 
@@ -15,6 +17,8 @@ type UpdateAd struct {
 	Title     *string
 	Status    *models.AdStatus
 	ShortDesc *string
-	ImageURL  *string
+	Image     *[]byte
+	ImageExt  *string
+	ImageType *string
 	TargetURL *string
 }

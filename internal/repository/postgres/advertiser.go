@@ -19,27 +19,27 @@ func NewAdvertiserRepository(db *sql.DB) *AdvertiserRepository {
 
 const (
 	insertAdvertiser = `INSERT INTO eshkere.advertiser (
-		name, email, phone_number, password_hash, password_salt, balance) 
-		VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
+		name, surname, email, phone_number, password_hash, password_salt, balance, company, city, tariff, created_at) 
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`
 
 	selectAdvertiserByID = `SELECT
-        id, name, email, phone_number, avatar_url, password_hash, password_salt, balance, created_at, updated_at
+        id, name, surname, mail, phone_number, avatar_url, password_hash, password_salt, balance, company, city, tariff, created_at, updated_at
     FROM eshkere.advertiser
     WHERE id = $1`
 
 	selectAdvertiserByEmail = `SELECT
-	id, name, email, phone_number, avatar_url, password_hash, password_salt, balance, created_at, updated_at
+		id, name, surname, email, phone_number, avatar_url, password_hash, password_salt, balance, company, city, tariff, created_at, updated_at
 	FROM eshkere.advertiser
 	WHERE email = $1`
 
 	selectAdvertiserByPhone = `SELECT
-	id, name, email, phone_number, avatar_url, password_hash, password_salt, balance, created_at, updated_at
+		id, name, surname, email, phone_number, avatar_url, password_hash, password_salt, balance, company, city, tariff, created_at, updated_at
 	FROM eshkere.advertiser
 	WHERE phone_number = $1`
 
 	updateAdvertiser = `UPDATE eshkere.advertiser SET 
-    name = $1, email = $2, phone_number = $3, avatar_url = $4, password_hash = $5, password_salt = $6, balance = $7
-    WHERE id = $8`
+    name = $1, surname = $2, email = $3, phone_number = $4, avatar_url = $5, password_hash = $6, password_salt = $7, balance = $8, company = $9, city = $10, tariff = $11
+    WHERE id = $12`
 
 	deleteAdvertiser = `DELETE FROM eshkere.advertiser WHERE id = $1`
 )
@@ -52,7 +52,7 @@ func (r *AdvertiserRepository) Create(ctx context.Context, a *models.Advertiser)
 	logger.GetLoggerFromCtx(ctx).Debugf("db: create advertiser")
 
 	err := r.db.QueryRowContext(ctx, insertAdvertiser,
-		a.Name, a.Email, a.Phone, a.PasswordHash, a.PasswordSalt, a.Balance,
+		a.Name, a.Surname, a.Email, a.Phone, a.PasswordHash, a.PasswordSalt, a.Balance, a.Company, a.City, a.Tariff, a.CreatedAt,
 	).Scan(&a.ID)
 	if err != nil {
 		return 0, fmt.Errorf("insert advertiser: %w", err)
@@ -69,12 +69,16 @@ func (r *AdvertiserRepository) GetByID(ctx context.Context, id int) (*models.Adv
 	err := r.db.QueryRowContext(ctx, selectAdvertiserByID, id).Scan(
 		&a.ID,
 		&a.Name,
+		&a.Surname,
 		&a.Email,
 		&a.Phone,
 		&a.AvatarURL,
 		&a.PasswordHash,
 		&a.PasswordSalt,
 		&a.Balance,
+		&a.Company,
+		&a.City,
+		&a.Tariff,
 		&a.CreatedAt,
 		&a.UpdatedAt,
 	)
@@ -99,12 +103,16 @@ func (r *AdvertiserRepository) GetByEmail(ctx context.Context, email string) (*m
 	err := r.db.QueryRowContext(ctx, selectAdvertiserByEmail, email).Scan(
 		&a.ID,
 		&a.Name,
+		&a.Surname,
 		&a.Email,
 		&a.Phone,
 		&a.AvatarURL,
 		&a.PasswordHash,
 		&a.PasswordSalt,
 		&a.Balance,
+		&a.Company,
+		&a.City,
+		&a.Tariff,
 		&a.CreatedAt,
 		&a.UpdatedAt,
 	)
@@ -129,12 +137,16 @@ func (r *AdvertiserRepository) GetByPhone(ctx context.Context, phone string) (*m
 	err := r.db.QueryRowContext(ctx, selectAdvertiserByPhone, phone).Scan(
 		&a.ID,
 		&a.Name,
+		&a.Surname,
 		&a.Email,
 		&a.Phone,
 		&a.AvatarURL,
 		&a.PasswordHash,
 		&a.PasswordSalt,
 		&a.Balance,
+		&a.Company,
+		&a.City,
+		&a.Tariff,
 		&a.CreatedAt,
 		&a.UpdatedAt,
 	)
@@ -155,7 +167,7 @@ func (r *AdvertiserRepository) Update(ctx context.Context, a *models.Advertiser)
 
 	logger.GetLoggerFromCtx(ctx).Debugf("db: update advertiser by id: %d", a.ID)
 
-	_, err := r.db.ExecContext(ctx, updateAdvertiser, a.Name, a.Email, a.Phone, a.AvatarURL, a.PasswordHash, a.PasswordSalt, a.Balance, a.ID)
+	_, err := r.db.ExecContext(ctx, updateAdvertiser, a.Name, a.Surname, a.Email, a.Phone, a.AvatarURL, a.PasswordHash, a.PasswordSalt, a.Balance, a.Company, a.City, a.Tariff, a.ID)
 	if err != nil {
 		return fmt.Errorf("update advertiser: %w", err)
 	}

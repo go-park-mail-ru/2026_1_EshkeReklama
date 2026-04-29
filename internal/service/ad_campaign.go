@@ -13,7 +13,7 @@ func (s *Service) CreateAdCampaign(ctx context.Context, in *serviceinput.CreateA
 		AdvertiserID: in.AdvertiserID,
 		Status:       models.AdStatusModeration,
 		Name:         in.Name,
-		DailyBudget:  in.DailyBudget,
+		MainAction:   in.MainAction,
 	}
 
 	if err := s.adCampaignRepo.Create(ctx, c); err != nil {
@@ -34,8 +34,8 @@ func (s *Service) UpdateAdCampaign(ctx context.Context, in *serviceinput.UpdateA
 	if in.Status != nil {
 		current.Status = *in.Status
 	}
-	if in.DailyBudget != nil {
-		current.DailyBudget = *in.DailyBudget
+	if in.MainAction != nil {
+		current.MainAction = *in.MainAction
 	}
 	current.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 

@@ -11,7 +11,7 @@ definitions:
       name:
         type: string
       status:
-        $ref: '#/definitions/models.AdStatus'
+        type: string
     type: object
   dto.AdGroupResponse:
     properties:
@@ -20,7 +20,7 @@ definitions:
       age_to:
         type: integer
       gender:
-        $ref: '#/definitions/models.GenderType'
+        type: string
       id:
         type: integer
       name:
@@ -39,7 +39,7 @@ definitions:
       short_desc:
         type: string
       status:
-        $ref: '#/definitions/models.AdStatus'
+        type: string
       target_url:
         type: string
       title:
@@ -51,6 +51,10 @@ definitions:
         type: string
       balance:
         type: integer
+      city:
+        type: string
+      company:
+        type: string
       created_at:
         type: string
       email:
@@ -61,10 +65,16 @@ definitions:
         type: string
       phone:
         type: string
+      surname:
+        type: string
+      tariff:
+        type: string
     type: object
   dto.AppealResponse:
     properties:
       category:
+        type: string
+      created_at:
         type: string
       description:
         type: string
@@ -84,14 +94,11 @@ definitions:
     type: object
   dto.CreateAdCampaignRequest:
     properties:
-      daily_budget:
-        type: integer
       main_action:
         type: string
       name:
         type: string
     required:
-    - daily_budget
     - name
     type: object
   dto.CreateAdCampaignResponse:
@@ -106,7 +113,11 @@ definitions:
       age_to:
         type: integer
       gender:
-        $ref: '#/definitions/models.GenderType'
+        enum:
+        - male
+        - female
+        - any
+        type: string
       name:
         type: string
       region_id:
@@ -125,22 +136,6 @@ definitions:
     properties:
       id:
         type: integer
-    type: object
-  dto.CreateAdRequest:
-    properties:
-      image_url:
-        type: string
-      short_desc:
-        type: string
-      target_url:
-        type: string
-      title:
-        type: string
-    required:
-    - image_url
-    - short_desc
-    - target_url
-    - title
     type: object
   dto.CreateAdResponse:
     properties:
@@ -231,9 +226,6 @@ definitions:
     type: object
   dto.UpdateAdCampaignRequest:
     properties:
-      daily_budget:
-        minimum: 1
-        type: integer
       main_action:
         minLength: 1
         type: string
@@ -241,9 +233,8 @@ definitions:
         minLength: 1
         type: string
       status:
-        allOf:
-        - $ref: '#/definitions/models.AdStatus'
         minLength: 1
+        type: string
     type: object
   dto.UpdateAdGroupRequest:
     properties:
@@ -254,9 +245,12 @@ definitions:
         minimum: 1
         type: integer
       gender:
-        allOf:
-        - $ref: '#/definitions/models.GenderType'
+        enum:
+        - male
+        - female
+        - any
         minLength: 1
+        type: string
       name:
         minLength: 1
         type: string
@@ -267,40 +261,21 @@ definitions:
         minimum: 1
         type: integer
     type: object
-  dto.UpdateAdRequest:
-    properties:
-      id:
-        type: integer
-      image_url:
-        minLength: 1
-        type: string
-      short_desc:
-        minLength: 1
-        type: string
-      status:
-        allOf:
-        - $ref: '#/definitions/models.AdStatus'
-        enum:
-        - turned_off
-        - moderation
-        - working
-        - rejected
-        - not_enough_money
-        minLength: 1
-      target_url:
-        minLength: 1
-        type: string
-      title:
-        minLength: 1
-        type: string
-    type: object
   dto.UpdateAdvertiserProfileRequest:
     properties:
+      city:
+        type: string
+      company:
+        type: string
       email:
         type: string
       name:
         type: string
       phone:
+        type: string
+      surname:
+        type: string
+      tariff:
         type: string
     type: object
   httpx.Error:
@@ -312,30 +287,6 @@ definitions:
     properties:
       data: {}
     type: object
-  models.AdStatus:
-    enum:
-    - turned_off
-    - moderation
-    - working
-    - rejected
-    - not_enough_money
-    type: string
-    x-enum-varnames:
-    - AdStatusTurnedOff
-    - AdStatusModeration
-    - AdStatusWorking
-    - AdStatusRejected
-    - AdStatusNotEnoughMoney
-  models.GenderType:
-    enum:
-    - man
-    - woman
-    - any
-    type: string
-    x-enum-varnames:
-    - GenderMan
-    - GenderWoman
-    - GenderAny
 host: localhost:8000
 info:
   contact: {}
@@ -664,7 +615,7 @@ paths:
       - ads
     post:
       consumes:
-      - application/json
+      - multipart/form-data
       parameters:
       - description: ID рекламной кампании
         in: path
@@ -676,12 +627,25 @@ paths:
         name: ad_group_id
         required: true
         type: integer
-      - description: Параметры объявления
-        in: body
-        name: body
+      - description: Заголовок объявления
+        in: formData
+        name: title
         required: true
-        schema:
-          $ref: '#/definitions/dto.CreateAdRequest'
+        type: string
+      - description: Короткое описание объявления
+        in: formData
+        name: short_desc
+        required: true
+        type: string
+      - description: Целевой URL
+        in: formData
+        name: target_url
+        required: true
+        type: string
+      - description: Изображение объявления
+        in: formData
+        name: image
+        type: file
       produces:
       - application/json
       responses:
@@ -750,7 +714,7 @@ paths:
       - ads
     put:
       consumes:
-      - application/json
+      - multipart/form-data
       parameters:
       - description: ID рекламной кампании
         in: path
@@ -767,12 +731,32 @@ paths:
         name: ad_id
         required: true
         type: integer
-      - description: Поля для обновления
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateAdRequest'
+      - description: Новый заголовок объявления
+        in: formData
+        name: title
+        type: string
+      - description: Новый статус объявления
+        enum:
+        - turned_off
+        - moderation
+        - working
+        - rejected
+        - not_enough_money
+        in: formData
+        name: status
+        type: string
+      - description: Новое короткое описание объявления
+        in: formData
+        name: short_desc
+        type: string
+      - description: Новый целевой URL
+        in: formData
+        name: target_url
+        type: string
+      - description: Новое изображение объявления
+        in: formData
+        name: image
+        type: file
       produces:
       - application/json
       responses:
@@ -827,7 +811,7 @@ paths:
       summary: Создать feed-ссылку для кампании
       tags:
       - feed
-  /advertiser/balance:
+  /advertisers/balance:
     get:
       description: Возвращает текущий баланс рекламодателя по сессии
       produces:
@@ -854,7 +838,7 @@ paths:
       summary: Баланс рекламодателя
       tags:
       - advertiser
-  /advertiser/balance/topup:
+  /advertisers/balance/topup:
     post:
       consumes:
       - application/json
@@ -890,7 +874,7 @@ paths:
       summary: Пополнение баланса
       tags:
       - advertiser
-  /advertiser/login:
+  /advertisers/login:
     post:
       consumes:
       - application/json
@@ -924,7 +908,7 @@ paths:
       summary: Вход рекламодателя
       tags:
       - advertiser
-  /advertiser/logout:
+  /advertisers/logout:
     post:
       description: Завершает сессию текущего рекламодателя
       produces:
@@ -943,7 +927,7 @@ paths:
       summary: Выход рекламодателя
       tags:
       - advertiser
-  /advertiser/me:
+  /advertisers/me:
     get:
       description: Возвращает данные текущего пользователя по сессии
       produces:
@@ -1005,7 +989,7 @@ paths:
       summary: Обновление профиля рекламодателя
       tags:
       - advertiser
-  /advertiser/me/avatar:
+  /advertisers/me/avatar:
     put:
       consumes:
       - multipart/form-data
@@ -1040,7 +1024,7 @@ paths:
       summary: Обновление аватара рекламодателя
       tags:
       - advertiser
-  /advertiser/register:
+  /advertisers/register:
     post:
       consumes:
       - application/json
@@ -1070,7 +1054,7 @@ paths:
       summary: Регистрация рекламодателя
       tags:
       - advertiser
-  /appeal:
+  /appeals:
     get:
       description: Возвращает список обращений текущего рекламодателя
       produces:
@@ -1150,7 +1134,7 @@ paths:
       summary: Создание обращения
       tags:
       - appeal
-  /appeal/{appeal_id}:
+  /appeals/{appeal_id}:
     get:
       description: Возвращает одно обращение текущего рекламодателя по id
       parameters:

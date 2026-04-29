@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	errs "eshkere/internal/errors"
+	serviceinput "eshkere/internal/service/input"
 	"fmt"
 	"strings"
+	"time"
 
 	"eshkere/internal/models"
 
@@ -41,27 +43,23 @@ func displayNameFromEmail(email string) string {
 	return "Advertiser"
 }
 
-func (s *Service) RegisterAdvertiser(ctx context.Context, name, email, phone, password string) (*models.Advertiser, error) {
-	email = strings.TrimSpace(strings.ToLower(email))
-	phone = strings.TrimSpace(phone)
-	password = strings.TrimSpace(password)
-
-	if email == "" || !strings.Contains(email, "@") {
+func (s *Service) RegisterAdvertiser(ctx context.Context, in *serviceinput.RegisterAdvertiser) (*models.Advertiser, error) {
+	if in.Email == "" || !strings.Contains(in.Email, "@") {
 		return nil, fmt.Errorf("%w: invalid email", errs.ErrInvalidAdvertiserArg)
 	}
-	nphone, err := normalizeAdvertiserPhone(phone)
+	nphone, err := normalizeAdvertiserPhone(in.Phone)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", errs.ErrInvalidAdvertiserArg, err)
 	}
-	if len(password) < 6 {
+	if len(in.Password) < 6 {
 		return nil, fmt.Errorf("%w: password too short", errs.ErrInvalidAdvertiserArg)
 	}
 
-	if name == "" {
-		name = displayNameFromEmail(email)
+	if in.Name == "" {
+		in.Name = displayNameFromEmail(in.Email)
 	}
 
-	_, errEmail := s.advertiserRepo.GetByEmail(ctx, email)
+	_, errEmail := s.advertiserRepo.GetByEmail(ctx, in.Email)
 	if errEmail == nil {
 		return nil, errs.ErrEmailTaken
 	}
@@ -77,18 +75,20 @@ func (s *Service) RegisterAdvertiser(ctx context.Context, name, email, phone, pa
 		return nil, errPhone
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("hash password: %w", err)
 	}
 
 	a := &models.Advertiser{
-		Name:         name,
-		Email:        email,
+		Name:         in.Name,
+		Email:        in.Email,
 		Phone:        nphone,
 		PasswordHash: string(hash),
 		PasswordSalt: bcryptSaltMarker,
 		Balance:      0,
+		Tariff:       models.TariffTypeNoob,
+		CreatedAt:    time.Now(),
 	}
 
 	id, err := s.advertiserRepo.Create(ctx, a)

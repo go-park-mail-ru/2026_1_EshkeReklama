@@ -11,6 +11,7 @@ type AdCampaign struct {
 	Status       AdStatus     `db:"status"`
 	Name         string       `db:"name"`
 	DailyBudget  int64        `db:"daily_budget"`
+	MainAction   string       `db:"main_action"`
 	CreatedAt    time.Time    `db:"created_at"`
 	UpdatedAt    sql.NullTime `db:"updated_at"`
 }

@@ -94,9 +94,12 @@ func TestCreateAdRequest_ToInput(t *testing.T) {
 }
 
 func TestUpdateAdvertiserProfileRequest_ToInput(t *testing.T) {
-	req := UpdateAdvertiserProfileRequest{Name: "n", Email: "e", Phone: "p"}
+	name := "n"
+	email := "e"
+	phone := "p"
+	req := UpdateAdvertiserProfileRequest{Name: &name, Email: &email, Phone: &phone}
 	in := req.ToInput(7)
-	if in.AdvertiserID != 7 || in.Name != "n" || in.Email != "e" || in.Phone != "p" {
+	if in.AdvertiserID != 7 || *in.Name != "n" || *in.Email != "e" || *in.Phone != "p" {
 		t.Fatalf("unexpected input: %+v", in)
 	}
 }

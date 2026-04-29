@@ -6,6 +6,7 @@ import (
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
+	serviceinput "eshkere/internal/service/input"
 	"eshkere/internal/session"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
@@ -133,4 +134,22 @@ func (a *API) GetAppealByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.JSON(w, http.StatusOK, dto.ToAppealResponse(appeal))
+}
+
+func newCreateAppealInput(r *http.Request) (*serviceinput.CreateAppeal, error) {
+	if err := r.ParseMultipartForm(maxAppealImageSize); err != nil {
+		return nil, err
+	}
+
+	req := dto.NewCreateAppealRequestFromForm(r.Form)
+	if err := requestValidator.Struct(req); err != nil {
+		return nil, err
+	}
+
+	uploaded, err := parseOptionalUploadedImage(r.MultipartForm, "screenshot")
+	if err != nil {
+		return nil, err
+	}
+
+	return req.ToInput(uploaded), nil
 }

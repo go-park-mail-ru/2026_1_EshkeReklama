@@ -12,7 +12,7 @@ import (
 )
 
 func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
-	groups := r.PathPrefix("/advertiser").Subrouter()
+	groups := r.PathPrefix("/advertisers").Subrouter()
 
 	groups.HandleFunc("/register", a.Register).Methods(http.MethodPost)
 	groups.HandleFunc("/login", a.Login).Methods(http.MethodPost)
@@ -34,7 +34,7 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 // @Success      200   {object}  dto.RegisterResponse
 // @Failure      400   {object}  httpx.Error "Invalid request или User already exists"
 // @Failure      500   {object}  httpx.Error
-// @Router       /advertiser/register [post]
+// @Router       /advertisers/register [post]
 func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -44,7 +44,7 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	adv, err := a.service.RegisterAdvertiser(ctx, req.Name, req.Email, req.Phone, req.Password)
+	adv, err := a.service.RegisterAdvertiser(ctx, req.ToInput())
 	if err != nil {
 		handler.HandleError(w, r, "register advertiser", err)
 		return
@@ -72,7 +72,7 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 // @Failure      400   {object}  httpx.Error "Invalid identifier или password"
 // @Failure      401   {object}  httpx.Error "Неверные учётные данные"
 // @Failure      500   {object}  httpx.Error
-// @Router       /advertiser/login [post]
+// @Router       /advertisers/login [post]
 func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -108,7 +108,7 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 // @Failure      401   {object}  httpx.Error
 // @Failure      404   {object}  httpx.Error
 // @Failure      500   {object}  httpx.Error
-// @Router       /advertiser/me [get]
+// @Router       /advertisers/me [get]
 // @Security     CookieAuth
 func (a *API) Me(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -137,7 +137,7 @@ func (a *API) Me(w http.ResponseWriter, r *http.Request) {
 // @Failure      400    {object}  httpx.Error
 // @Failure      401    {object}  httpx.Error
 // @Failure      500    {object}  httpx.Error
-// @Router       /advertiser/me [put]
+// @Router       /advertisers/me [put]
 // @Security     CookieAuth
 func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -169,7 +169,7 @@ func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 // @Produce      json
 // @Success      200   {object}  map[string]string
 // @Failure      500   {object}  httpx.Error
-// @Router       /advertiser/logout [post]
+// @Router       /advertisers/logout [post]
 func (a *API) Logout(w http.ResponseWriter, r *http.Request) {
 
 	if err := a.sessionManager.Destroy(w, r); err != nil {
@@ -190,7 +190,7 @@ func (a *API) Logout(w http.ResponseWriter, r *http.Request) {
 // @Failure      401  {object}  httpx.Error
 // @Failure      404  {object}  httpx.Error
 // @Failure      500  {object}  httpx.Error
-// @Router       /advertiser/balance [get]
+// @Router       /advertisers/balance [get]
 // @Security     CookieAuth
 func (a *API) GetBalance(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -222,7 +222,7 @@ func (a *API) GetBalance(w http.ResponseWriter, r *http.Request) {
 // @Failure      400   {object}  httpx.Error
 // @Failure      401   {object}  httpx.Error
 // @Failure      500   {object}  httpx.Error
-// @Router       /advertiser/balance/topup [post]
+// @Router       /advertisers/balance/topup [post]
 // @Security     CookieAuth
 func (a *API) TopUpBalance(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -260,7 +260,7 @@ func (a *API) TopUpBalance(w http.ResponseWriter, r *http.Request) {
 // @Failure      400     {object}  httpx.Error
 // @Failure      401     {object}  httpx.Error
 // @Failure      500     {object}  httpx.Error
-// @Router       /advertiser/me/avatar [put]
+// @Router       /advertisers/me/avatar [put]
 // @Security     CookieAuth
 func (a *API) UpdateAvatar(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

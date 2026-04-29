@@ -6,16 +6,15 @@ import (
 )
 
 type CreateAdCampaignRequest struct {
-	Name        string `json:"name" validate:"required"`
-	DailyBudget int64  `json:"daily_budget" validate:"required"`
-	MainAction  string `json:"main_action" validate:"omitempty"`
+	Name       string `json:"name" validate:"required"`
+	MainAction string `json:"main_action" validate:"omitempty"`
 }
 
 func (c *CreateAdCampaignRequest) ToInput(advertiserID int) *serviceinput.CreateAdCampaign {
 	return &serviceinput.CreateAdCampaign{
 		AdvertiserID: advertiserID,
 		Name:         c.Name,
-		DailyBudget:  c.DailyBudget,
+		MainAction:   c.MainAction,
 	}
 }
 
@@ -24,34 +23,34 @@ type CreateAdCampaignResponse struct {
 }
 
 type UpdateAdCampaignRequest struct {
-	Name        *string          `json:"name" validate:"omitempty,min=1"`
-	Status      *models.AdStatus `json:"status" validate:"omitempty,min=1"`
-	DailyBudget *int64           `json:"daily_budget" validate:"omitempty,min=1"`
-	MainAction  *string          `json:"main_action" validate:"omitempty,min=1"`
+	Name       *string `json:"name" validate:"omitempty,min=1"`
+	Status     *string `json:"status" validate:"omitempty,min=1"`
+	MainAction *string `json:"main_action" validate:"omitempty,min=1"`
 }
 
 func (u *UpdateAdCampaignRequest) ToInput(campaignID int) *serviceinput.UpdateAdCampaign {
 	return &serviceinput.UpdateAdCampaign{
-		ID:          campaignID,
-		Name:        u.Name,
-		Status:      u.Status,
-		DailyBudget: u.DailyBudget,
+		ID:         campaignID,
+		Name:       u.Name,
+		MainAction: u.MainAction,
+		Status:     (*models.AdStatus)(u.Status),
 	}
 }
 
 type AdCampaignResponse struct {
-	ID          int             `json:"id"`
-	Status      models.AdStatus `json:"status"`
-	Name        string          `json:"name"`
-	DailyBudget int64           `json:"daily_budget"`
-	MainAction  string          `json:"main_action"`
+	ID          int    `json:"id"`
+	Status      string `json:"status"`
+	Name        string `json:"name"`
+	DailyBudget int64  `json:"daily_budget"`
+	MainAction  string `json:"main_action"`
 }
 
 func ToAdCampaignResponse(c *models.AdCampaign) *AdCampaignResponse {
 	return &AdCampaignResponse{
 		ID:          c.ID,
-		Status:      c.Status,
+		Status:      string(c.Status),
 		Name:        c.Name,
+		MainAction:  c.MainAction,
 		DailyBudget: c.DailyBudget,
 	}
 }

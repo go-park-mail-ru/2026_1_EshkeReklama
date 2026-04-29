@@ -10,7 +10,7 @@ import (
 )
 
 type Service interface {
-	RegisterAdvertiser(ctx context.Context, name, email, phone, password string) (*models.Advertiser, error)
+	RegisterAdvertiser(ctx context.Context, in *serviceinput.RegisterAdvertiser) (*models.Advertiser, error)
 	AuthenticateAdvertiser(ctx context.Context, identifier, password string) (*models.Advertiser, error)
 	GetAdvertiserByID(ctx context.Context, id int) (*models.Advertiser, error)
 	UpdateAdvertiserProfile(ctx context.Context, in *serviceinput.UpdateAdvertiserProfile) (*models.Advertiser, error)

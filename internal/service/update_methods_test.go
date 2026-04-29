@@ -147,9 +147,10 @@ func TestUpdateAdvertiserProfile_InvalidPhone(t *testing.T) {
 
 	advRepo.EXPECT().GetByID(gomock.Any(), 1).Return(&models.Advertiser{ID: 1}, nil)
 
+	phone := "bad"
 	_, err := svc.UpdateAdvertiserProfile(context.Background(), &serviceinput.UpdateAdvertiserProfile{
 		AdvertiserID: 1,
-		Phone:        "bad",
+		Phone:        &phone,
 	})
 	if err == nil {
 		t.Fatalf("expected error")

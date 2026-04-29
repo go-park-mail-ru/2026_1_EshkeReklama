@@ -22,9 +22,9 @@ func TestAdvertiser_UpdateProfile_WithoutAvatar(t *testing.T) {
 	sess := createSessionCookie(t, sm, 1)
 
 	body, err := json.Marshal(dto.UpdateAdvertiserProfileRequest{
-		Name:  "New Name",
-		Email: "NEW@MAIL.TEST",
-		Phone: "+7 900 123-45-67",
+		Name:  &[]string{"New Name"}[0],
+		Email: &[]string{"NEW@MAIL.TEST"}[0],
+		Phone: &[]string{"+7 900 123-45-67"}[0],
 	})
 	if err != nil {
 		t.Fatalf("marshal request: %v", err)
@@ -34,10 +34,22 @@ func TestAdvertiser_UpdateProfile_WithoutAvatar(t *testing.T) {
 		if in.AdvertiserID != 1 {
 			t.Fatalf("unexpected advertiser id: %d", in.AdvertiserID)
 		}
-		return &models.Advertiser{ID: 1, Name: in.Name, Email: in.Email, Phone: in.Phone}, nil
+		name := ""
+		if in.Name != nil {
+			name = *in.Name
+		}
+		email := ""
+		if in.Email != nil {
+			email = *in.Email
+		}
+		phone := ""
+		if in.Phone != nil {
+			phone = *in.Phone
+		}
+		return &models.Advertiser{ID: 1, Name: name, Email: email, Phone: phone}, nil
 	}
 
-	req := httptest.NewRequest(http.MethodPut, "/advertiser/me", bytes.NewReader(body))
+	req := httptest.NewRequest(http.MethodPut, "/advertisers/me", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.AddCookie(sess)
 	req.AddCookie(csrf)

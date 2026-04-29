@@ -1,4 +1,12 @@
-.PHONY: up down
+.PHONY: up down proto
+
+proto:
+	protoc \
+		--go_out=. \
+		--go_opt=module=eshkere \
+		--go-grpc_out=. \
+		--go-grpc_opt=module=eshkere \
+		proto/auth/v1/auth.proto
 
 up:
 	docker compose up -d --build

@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	errs "eshkere/internal/errors"
@@ -13,12 +14,12 @@ import (
 )
 
 func TestHandlers_BadRequests(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
-	sess := createSessionCookie(t, sm, 1)
+	sess := createSessionCookie(t, ac, 1)
 
 	// invalid ad_group_id (route var not int)
 	req := httptest.NewRequest(http.MethodPost, "/ad_campaigns/1/ad_groups/zzz/ads", nil)
@@ -57,7 +58,7 @@ func TestHandlers_BadRequests(t *testing.T) {
 	svc.createAdCampaignFn = func(_ context.Context, _ *serviceinput.CreateAdCampaign) (*models.AdCampaign, error) {
 		return nil, errs.BadRequestError
 	}
-	req4 := httptest.NewRequest(http.MethodPost, "/ad_campaigns", bytes.NewBufferString(`{"name":"camp","daily_budget":10}`))
+	req4 := httptest.NewRequest(http.MethodPost, "/ad_campaigns", bytes.NewBufferString(`{"name":"camp"}`))
 	req4.AddCookie(sess)
 	req4.AddCookie(csrf)
 	req4.Header.Set("X-CSRF-Token", csrf.Value)
@@ -69,9 +70,9 @@ func TestHandlers_BadRequests(t *testing.T) {
 }
 
 func TestFeed_NotFound(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	svc.getAdsByFeedTokenFn = func(_ context.Context, token string) ([]*models.Ad, error) {
 		if token != "missing" {
@@ -89,9 +90,9 @@ func TestFeed_NotFound(t *testing.T) {
 }
 
 func TestFeed_InternalError(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	svc.getAdsByFeedTokenFn = func(_ context.Context, token string) ([]*models.Ad, error) {
 		if token != "tok" {

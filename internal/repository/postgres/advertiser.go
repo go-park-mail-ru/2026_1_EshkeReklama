@@ -18,48 +18,22 @@ func NewAdvertiserRepository(db *sql.DB) *AdvertiserRepository {
 }
 
 const (
-	insertAdvertiser = `INSERT INTO eshkere.advertiser (
-		name, surname, email, phone_number, password_hash, password_salt, balance, company, city, tariff, created_at) 
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`
-
 	selectAdvertiserByID = `SELECT
-        id, name, surname, mail, phone_number, avatar_url, password_hash, password_salt, balance, company, city, tariff, created_at, updated_at
+        id, name, surname, avatar_url, balance, company, city, tariff, created_at, updated_at
     FROM eshkere.advertiser
     WHERE id = $1`
 
-	selectAdvertiserByEmail = `SELECT
-		id, name, surname, email, phone_number, avatar_url, password_hash, password_salt, balance, company, city, tariff, created_at, updated_at
-	FROM eshkere.advertiser
-	WHERE email = $1`
-
-	selectAdvertiserByPhone = `SELECT
-		id, name, surname, email, phone_number, avatar_url, password_hash, password_salt, balance, company, city, tariff, created_at, updated_at
-	FROM eshkere.advertiser
-	WHERE phone_number = $1`
-
 	updateAdvertiser = `UPDATE eshkere.advertiser SET 
-    name = $1, surname = $2, email = $3, phone_number = $4, avatar_url = $5, password_hash = $6, password_salt = $7, balance = $8, company = $9, city = $10, tariff = $11
-    WHERE id = $12`
+    name = $1, surname = $2, avatar_url = $3, balance = $4, company = $5, city = $6, tariff = $7
+    WHERE id = $8`
 
-	deleteAdvertiser = `DELETE FROM eshkere.advertiser WHERE id = $1`
+	// insertProfile вставляет профиль рекламодателя с явным id (из auth-сервиса).
+	// OVERRIDING SYSTEM VALUE позволяет передать id явно при GENERATED ALWAYS AS IDENTITY.
+	insertProfile = `INSERT INTO eshkere.advertiser
+		(id, name, balance, tariff, created_at)
+		OVERRIDING SYSTEM VALUE
+		VALUES ($1, $2, 0, 'noob', NOW())`
 )
-
-func (r *AdvertiserRepository) Create(ctx context.Context, a *models.Advertiser) (int, error) {
-	if a == nil {
-		return 0, fmt.Errorf("advertiser cannot be nil")
-	}
-
-	logger.GetLoggerFromCtx(ctx).Debugf("db: create advertiser")
-
-	err := r.db.QueryRowContext(ctx, insertAdvertiser,
-		a.Name, a.Surname, a.Email, a.Phone, a.PasswordHash, a.PasswordSalt, a.Balance, a.Company, a.City, a.Tariff, a.CreatedAt,
-	).Scan(&a.ID)
-	if err != nil {
-		return 0, fmt.Errorf("insert advertiser: %w", err)
-	}
-
-	return a.ID, nil
-}
 
 func (r *AdvertiserRepository) GetByID(ctx context.Context, id int) (*models.Advertiser, error) {
 	logger.GetLoggerFromCtx(ctx).Debugf("db: get advertiser by id: %d", id)
@@ -70,11 +44,7 @@ func (r *AdvertiserRepository) GetByID(ctx context.Context, id int) (*models.Adv
 		&a.ID,
 		&a.Name,
 		&a.Surname,
-		&a.Email,
-		&a.Phone,
 		&a.AvatarURL,
-		&a.PasswordHash,
-		&a.PasswordSalt,
 		&a.Balance,
 		&a.Company,
 		&a.City,
@@ -92,74 +62,6 @@ func (r *AdvertiserRepository) GetByID(ctx context.Context, id int) (*models.Adv
 	return &a, nil
 }
 
-func (r *AdvertiserRepository) GetByEmail(ctx context.Context, email string) (*models.Advertiser, error) {
-	if email == "" {
-		return nil, fmt.Errorf("email cannot be empty")
-	}
-
-	logger.GetLoggerFromCtx(ctx).Debugf("db: get advertiser by email: %s", email)
-
-	var a models.Advertiser
-	err := r.db.QueryRowContext(ctx, selectAdvertiserByEmail, email).Scan(
-		&a.ID,
-		&a.Name,
-		&a.Surname,
-		&a.Email,
-		&a.Phone,
-		&a.AvatarURL,
-		&a.PasswordHash,
-		&a.PasswordSalt,
-		&a.Balance,
-		&a.Company,
-		&a.City,
-		&a.Tariff,
-		&a.CreatedAt,
-		&a.UpdatedAt,
-	)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("advertiser not found: %w", err)
-		}
-		return nil, fmt.Errorf("get advertiser by email: %w", err)
-	}
-
-	return &a, nil
-}
-
-func (r *AdvertiserRepository) GetByPhone(ctx context.Context, phone string) (*models.Advertiser, error) {
-	if phone == "" {
-		return nil, fmt.Errorf("phone cannot be empty")
-	}
-
-	logger.GetLoggerFromCtx(ctx).Debugf("db: get advertiser by phone: %s", phone)
-
-	var a models.Advertiser
-	err := r.db.QueryRowContext(ctx, selectAdvertiserByPhone, phone).Scan(
-		&a.ID,
-		&a.Name,
-		&a.Surname,
-		&a.Email,
-		&a.Phone,
-		&a.AvatarURL,
-		&a.PasswordHash,
-		&a.PasswordSalt,
-		&a.Balance,
-		&a.Company,
-		&a.City,
-		&a.Tariff,
-		&a.CreatedAt,
-		&a.UpdatedAt,
-	)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("advertiser not found: %w", err)
-		}
-		return nil, fmt.Errorf("get advertiser by phone: %w", err)
-	}
-
-	return &a, nil
-}
-
 func (r *AdvertiserRepository) Update(ctx context.Context, a *models.Advertiser) error {
 	if a == nil {
 		return fmt.Errorf("advertiser cannot be nil")
@@ -167,7 +69,7 @@ func (r *AdvertiserRepository) Update(ctx context.Context, a *models.Advertiser)
 
 	logger.GetLoggerFromCtx(ctx).Debugf("db: update advertiser by id: %d", a.ID)
 
-	_, err := r.db.ExecContext(ctx, updateAdvertiser, a.Name, a.Surname, a.Email, a.Phone, a.AvatarURL, a.PasswordHash, a.PasswordSalt, a.Balance, a.Company, a.City, a.Tariff, a.ID)
+	_, err := r.db.ExecContext(ctx, updateAdvertiser, a.Name, a.Surname, a.AvatarURL, a.Balance, a.Company, a.City, a.Tariff, a.ID)
 	if err != nil {
 		return fmt.Errorf("update advertiser: %w", err)
 	}
@@ -175,21 +77,10 @@ func (r *AdvertiserRepository) Update(ctx context.Context, a *models.Advertiser)
 	return nil
 }
 
-func (r *AdvertiserRepository) Delete(ctx context.Context, id int) error {
-	logger.GetLoggerFromCtx(ctx).Debugf("db: delete advertiser by id: %d", id)
-
-	result, err := r.db.ExecContext(ctx, deleteAdvertiser, id)
+func (r *AdvertiserRepository) CreateProfile(ctx context.Context, id int64, name string) error {
+	_, err := r.db.ExecContext(ctx, insertProfile, id, name)
 	if err != nil {
-		return fmt.Errorf("delete advertiser: %w", err)
+		return fmt.Errorf("insert advertiser profile: %w", err)
 	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("get rows affected: %w", err)
-	}
-	if rowsAffected == 0 {
-		return errors.New("advertiser not found")
-	}
-
 	return nil
 }

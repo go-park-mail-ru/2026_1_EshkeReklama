@@ -9,15 +9,11 @@
 Мы вынесли из таблиц `ad_campaign`, `ad_group`, `ad`, `partner_site` атрибуты `topic`, `status` и `region`, чтобы избавиться от транзитивных зависимостей
 
 ## НФ Бойса-Кодда: 3 НФ и все детерминанты являются потенциальными ключами
-В таблицах `advertiser` и `partner` существуют функциональные зависимости от атрибутов `email` и `phone_number`, в таблице `partner_site` зависимость от атрибута `url` и тд. Так как данные поля являются уникальными, они классифицируются как потенциальные ключи, что полностью удовлетворяет требованиям НФБК
+В таблицах `partner` существуют функциональные зависимости от атрибутов `email` и `phone_number`, в таблице `partner_site` зависимость от атрибута `url` и тд. Так как данные поля являются уникальными, они классифицируются как потенциальные ключи, что полностью удовлетворяет требованиям НФБК
 
 ### `advertiser`:
 
-{id} -> name, email, phone_number, password_hash, password_salt, balance, created_at, updated_at
-
-{email} -> id, name, phone_number, password_hash, password_salt, balance, created_at, updated_at
-
-{phone_number} -> id, name, email, password_hash, password_salt, balance, created_at, updated_at
+{id} -> name, balance, created_at, updated_at
 
 ### `ad_campaign`:
 {id} -> advertiser_id, status, name, daily_budget, created_at, updated_at

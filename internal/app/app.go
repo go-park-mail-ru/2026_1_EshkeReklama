@@ -8,7 +8,7 @@ import (
 	"eshkere/internal/handler/v1"
 	"eshkere/internal/repository/postgres"
 	"eshkere/internal/service"
-	"eshkere/internal/session"
+	authclient "eshkere/internal/client/auth"
 	"fmt"
 	"io"
 	"net/http"
@@ -23,11 +23,11 @@ import (
 )
 
 type App struct {
-	cfg            *config.Config
-	logger         *zap.SugaredLogger
-	closers        []io.Closer
-	service        *service.Service
-	sessionManager *session.Manager
+	cfg        *config.Config
+	logger     *zap.SugaredLogger
+	closers    []io.Closer
+	service    *service.Service
+	authClient *authclient.Client
 }
 
 func New(configPath string) *App {
@@ -91,32 +91,22 @@ func New(configPath string) *App {
 		logger.Fatalf("Failed to init service: %v", err)
 	}
 
-	redisPool, err := initRedis(cfg.Redis)
-	if err != nil {
-		logger.Fatalf("Failed to init redis: %v", err)
+	authAddr := cfg.AuthService.GRPCAddr
+	if authAddr == "" {
+		authAddr = "localhost:50051"
 	}
-
-	closers = append(closers, redisPool)
-
-	sessionStore := session.NewRedisStore(redisPool)
-	sessionManager := session.NewManager(
-		sessionStore,
-		cfg.Session.TTL,
-		session.CookieConfig{
-			Name:     cfg.Session.CookieName,
-			Path:     cfg.Session.CookiePath,
-			HTTPOnly: true,
-			Secure:   cfg.Session.CookieSecure,
-			SameSite: http.SameSiteLaxMode,
-		},
-	)
+	ac, err := authclient.New(authAddr)
+	if err != nil {
+		logger.Fatalf("Failed to connect to auth service: %v", err)
+	}
+	closers = append(closers, ac)
 
 	return &App{
-		cfg:            cfg,
-		logger:         logger,
-		closers:        closers,
-		service:        svc,
-		sessionManager: sessionManager,
+		cfg:        cfg,
+		logger:     logger,
+		closers:    closers,
+		service:    svc,
+		authClient: ac,
 	}
 }
 
@@ -131,8 +121,14 @@ func (a *App) Run() error {
 	}))
 
 	handler.Register(router, v1.NewAPI(v1.APIConfig{
-		Service:        a.service,
-		SessionManager: a.sessionManager,
+		Service:    a.service,
+		AuthClient: a.authClient,
+		CookieConfig: v1.CookieConfig{
+			Name:     a.cfg.Session.CookieName,
+			Path:     a.cfg.Session.CookiePath,
+			HTTPOnly: true,
+			Secure:   a.cfg.Session.CookieSecure,
+		},
 	}))
 
 	server := &http.Server{

@@ -18,11 +18,11 @@ func TestUpdateAdCampaign_UpdatesProvidedFields(t *testing.T) {
 	repo := NewMockAdCampaignRepository(ctrl)
 	svc, _ := NewService(&Config{AdCampaignRepo: repo})
 
-	current := &models.AdCampaign{ID: 1, AdvertiserID: 7, Status: models.AdStatusWorking, Name: "old", DailyBudget: 10}
+	current := &models.AdCampaign{ID: 1, AdvertiserID: 7, Status: models.AdStatusWorking, Name: "old"}
 	repo.EXPECT().GetByID(gomock.Any(), 1).Return(current, nil)
 	repo.EXPECT().Update(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ context.Context, c *models.AdCampaign) error {
-			if c.Name != "new" || c.DailyBudget != 99 || c.Status != models.AdStatusRejected {
+			if c.Name != "new" || c.Status != models.AdStatusRejected {
 				t.Fatalf("unexpected updated: %+v", c)
 			}
 			if c.UpdatedAt.Valid != true {
@@ -32,13 +32,11 @@ func TestUpdateAdCampaign_UpdatesProvidedFields(t *testing.T) {
 		})
 
 	name := "new"
-	budget := int64(99)
 	status := models.AdStatusRejected
 	if err := svc.UpdateAdCampaign(context.Background(), &serviceinput.UpdateAdCampaign{
-		ID:          1,
-		Name:        &name,
-		DailyBudget: &budget,
-		Status:      &status,
+		ID:     1,
+		Name:   &name,
+		Status: &status,
 	}); err != nil {
 		t.Fatalf("UpdateAdCampaign: %v", err)
 	}
@@ -138,20 +136,14 @@ func TestGenerateFeedLink_InvalidArgs(t *testing.T) {
 	}
 }
 
-func TestUpdateAdvertiserProfile_InvalidPhone(t *testing.T) {
+func TestUpdateAdvertiserProfile_InvalidInput(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	advRepo := NewMockAdvertiserRepository(ctrl)
 	svc, _ := NewService(&Config{AdvertiserRepo: advRepo})
 
-	advRepo.EXPECT().GetByID(gomock.Any(), 1).Return(&models.Advertiser{ID: 1}, nil)
-
-	phone := "bad"
-	_, err := svc.UpdateAdvertiserProfile(context.Background(), &serviceinput.UpdateAdvertiserProfile{
-		AdvertiserID: 1,
-		Phone:        &phone,
-	})
+	_, err := svc.UpdateAdvertiserProfile(context.Background(), nil)
 	if err == nil {
 		t.Fatalf("expected error")
 	}

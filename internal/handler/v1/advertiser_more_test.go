@@ -14,12 +14,12 @@ import (
 )
 
 func TestAdvertiser_UpdateProfile_WithoutAvatar(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
-	sess := createSessionCookie(t, sm, 1)
+	sess := createSessionCookie(t, ac, 1)
 
 	body, err := json.Marshal(dto.UpdateAdvertiserProfileRequest{
 		Name:  &[]string{"New Name"}[0],
@@ -38,16 +38,9 @@ func TestAdvertiser_UpdateProfile_WithoutAvatar(t *testing.T) {
 		if in.Name != nil {
 			name = *in.Name
 		}
-		email := ""
-		if in.Email != nil {
-			email = *in.Email
-		}
-		phone := ""
-		if in.Phone != nil {
-			phone = *in.Phone
-		}
-		return &models.Advertiser{ID: 1, Name: name, Email: email, Phone: phone}, nil
+		return &models.Advertiser{ID: 1, Name: name}, nil
 	}
+	ac.setCredentials(1, "NEW@MAIL.TEST", "+7 900 123-45-67")
 
 	req := httptest.NewRequest(http.MethodPut, "/advertisers/me", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -63,12 +56,12 @@ func TestAdvertiser_UpdateProfile_WithoutAvatar(t *testing.T) {
 }
 
 func TestAdvertiser_GenerateFeedLink_OK(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
-	sess := createSessionCookie(t, sm, 1)
+	sess := createSessionCookie(t, ac, 1)
 
 	svc.generateFeedLinkFn = func(_ context.Context, campaignID int) (string, error) {
 		if campaignID != 1 {

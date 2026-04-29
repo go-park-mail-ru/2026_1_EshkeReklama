@@ -6,12 +6,10 @@ import (
 	"regexp"
 	"testing"
 
-	"eshkere/internal/models"
-
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
-func TestAdvertiserRepository_Create_OK(t *testing.T) {
+func TestAdvertiserRepository_CreateProfile_OK(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("sqlmock.New: %v", err)
@@ -20,25 +18,12 @@ func TestAdvertiserRepository_Create_OK(t *testing.T) {
 
 	repo := NewAdvertiserRepository(db)
 
-	adv := &models.Advertiser{
-		Name:         "n",
-		Email:        "e@test",
-		Phone:        "+7000",
-		PasswordHash: "h",
-		PasswordSalt: "s",
-		Balance:      0,
-	}
+	mock.ExpectExec(regexp.QuoteMeta(insertProfile)).
+		WithArgs(int64(123), "name").
+		WillReturnResult(sqlmock.NewResult(0, 1))
 
-	mock.ExpectQuery(regexp.QuoteMeta(insertAdvertiser)).
-		WithArgs(adv.Name, adv.Email, adv.Phone, adv.PasswordHash, adv.PasswordSalt, adv.Balance).
-		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(123))
-
-	id, err := repo.Create(context.Background(), adv)
-	if err != nil {
-		t.Fatalf("Create: %v", err)
-	}
-	if id != 123 || adv.ID != 123 {
-		t.Fatalf("expected id 123 got %d adv.ID=%d", id, adv.ID)
+	if err := repo.CreateProfile(context.Background(), 123, "name"); err != nil {
+		t.Fatalf("CreateProfile: %v", err)
 	}
 
 	if err := mock.ExpectationsWereMet(); err != nil {

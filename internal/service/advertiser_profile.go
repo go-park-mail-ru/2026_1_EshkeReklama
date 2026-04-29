@@ -29,18 +29,6 @@ func (s *Service) UpdateAdvertiserProfile(ctx context.Context, in *serviceinput.
 		adv.Name = *in.Name
 	}
 
-	if in.Email != nil {
-		adv.Email = *in.Email
-	}
-
-	if in.Phone != nil {
-		normalizedPhone, normalizeErr := normalizeAdvertiserPhone(*in.Phone)
-		if normalizeErr != nil {
-			return nil, fmt.Errorf("%w: %v", errs.ErrInvalidAdvertiserArg, normalizeErr)
-		}
-		adv.Phone = normalizedPhone
-	}
-
 	if err = s.advertiserRepo.Update(ctx, adv); err != nil {
 		return nil, err
 	}

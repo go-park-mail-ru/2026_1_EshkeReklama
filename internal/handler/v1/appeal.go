@@ -1,13 +1,11 @@
 package v1
 
 import (
-	"errors"
 	errs "eshkere/internal/errors"
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
 	serviceinput "eshkere/internal/service/input"
-	"eshkere/internal/session"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
 	"net/http"
@@ -20,8 +18,8 @@ func (a *API) RegisterAppealHandlers(r *mux.Router) {
 	appealGroup := r.PathPrefix("/appeals").Subrouter()
 
 	appealGroup.HandleFunc("", a.CreateAppeal).Methods(http.MethodPost)
-	appealGroup.Handle("", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.ListAppeals))).Methods(http.MethodGet)
-	appealGroup.Handle("/{appeal_id}", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.GetAppealByID))).Methods(http.MethodGet)
+	appealGroup.Handle("", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.ListAppeals))).Methods(http.MethodGet)
+	appealGroup.Handle("/{appeal_id}", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.GetAppealByID))).Methods(http.MethodGet)
 }
 
 // @Summary      Создание обращения
@@ -48,14 +46,12 @@ func (a *API) CreateAppeal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sess, err := a.sessionManager.Get(w, r)
-	switch {
-	case err == nil:
-		in.AdvertiserID = &sess.AdvertiserID
-	case errors.Is(err, session.ErrSessionNotFound):
-	default:
-		handler.HandleError(w, r, "getting optional session", err)
-		return
+	// опциональная сессия: если пользователь залогинен — привязываем к обращению
+	if cookie, cookieErr := r.Cookie(a.cookieConfig.Name); cookieErr == nil {
+		if advID, authErr := a.authClient.ValidateSession(ctx, cookie.Value); authErr == nil {
+			intID := int(advID)
+			in.AdvertiserID = &intID
+		}
 	}
 
 	createdAppeal, err := a.service.CreateAppeal(ctx, in)

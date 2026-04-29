@@ -1,12 +1,15 @@
 package v1
 
 import (
+	"context"
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
+	"eshkere/internal/models"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -17,12 +20,12 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 	groups.HandleFunc("/register", a.Register).Methods(http.MethodPost)
 	groups.HandleFunc("/login", a.Login).Methods(http.MethodPost)
 	groups.HandleFunc("/logout", a.Logout).Methods(http.MethodPost)
-	groups.Handle("/balance", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.GetBalance))).Methods(http.MethodGet)
-	groups.Handle("/balance/topup", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.TopUpBalance))).Methods(http.MethodPost)
+	groups.Handle("/balance", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.GetBalance))).Methods(http.MethodGet)
+	groups.Handle("/balance/topup", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.TopUpBalance))).Methods(http.MethodPost)
 
-	groups.Handle("/me", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.Me))).Methods(http.MethodGet)
-	groups.Handle("/me", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.UpdateProfile))).Methods(http.MethodPut)
-	groups.Handle("/me/avatar", middleware.Auth(a.sessionManager)(http.HandlerFunc(a.UpdateAvatar))).Methods(http.MethodPut)
+	groups.Handle("/me", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.Me))).Methods(http.MethodGet)
+	groups.Handle("/me", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.UpdateProfile))).Methods(http.MethodPut)
+	groups.Handle("/me/avatar", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.UpdateAvatar))).Methods(http.MethodPut)
 }
 
 // @Summary      Регистрация рекламодателя
@@ -44,21 +47,25 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	adv, err := a.service.RegisterAdvertiser(ctx, req.ToInput())
+	advID, sessionID, expiresAt, err := a.authClient.Register(ctx, req.Email, req.Phone, req.Password)
 	if err != nil {
 		handler.HandleError(w, r, "register advertiser", err)
 		return
 	}
 
-	if err = a.sessionManager.Create(w, r, adv.ID); err != nil {
-		handler.HandleError(w, r, "creating session", err)
+	if err = a.service.CreateAdvertiserProfile(ctx, advID, req.Name, req.Email); err != nil {
+		// компенсирующая операция: откатываем credentials в auth-сервисе
+		_ = a.authClient.Logout(ctx, sessionID)
+		handler.HandleError(w, r, "create advertiser profile", err)
 		return
 	}
 
+	a.setSessionCookie(w, sessionID, time.Unix(expiresAt, 0))
+
 	httpx.JSON(w, http.StatusOK, dto.RegisterResponse{
-		ID:    adv.ID,
-		Email: adv.Email,
-		Phone: adv.Phone,
+		ID:    int(advID),
+		Email: req.Email,
+		Phone: req.Phone,
 	})
 }
 
@@ -82,21 +89,24 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	adv, err := a.service.AuthenticateAdvertiser(ctx, req.Identifier, req.Password)
+	advID, sessionID, expiresAt, err := a.authClient.Login(ctx, req.Identifier, req.Password)
 	if err != nil {
 		handler.HandleError(w, r, "auth advertiser", err)
 		return
 	}
 
-	if err = a.sessionManager.Create(w, r, adv.ID); err != nil {
-		handler.HandleError(w, r, "creating session", err)
+	email, phone, err := a.authClient.GetCredentials(ctx, advID)
+	if err != nil {
+		handler.HandleError(w, r, "get advertiser credentials", err)
 		return
 	}
 
+	a.setSessionCookie(w, sessionID, time.Unix(expiresAt, 0))
+
 	httpx.JSON(w, http.StatusOK, dto.LoginResponse{
-		ID:    adv.ID,
-		Email: adv.Email,
-		Phone: adv.Phone,
+		ID:    int(advID),
+		Email: email,
+		Phone: phone,
 	})
 }
 
@@ -122,9 +132,16 @@ func (a *API) Me(w http.ResponseWriter, r *http.Request) {
 	adv, err := a.service.GetAdvertiserByID(ctx, advertiserID)
 	if err != nil {
 		handler.HandleError(w, r, "getting advertiser by id", err)
+		return
 	}
 
-	httpx.JSON(w, http.StatusOK, dto.AdvertiserToProfile(adv))
+	email, phone, err := a.authClient.GetCredentials(ctx, int64(advertiserID))
+	if err != nil {
+		handler.HandleError(w, r, "getting advertiser credentials", err)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, dto.AdvertiserWithContactsToProfile(adv, email, phone))
 }
 
 // @Summary      Обновление профиля рекламодателя
@@ -154,13 +171,56 @@ func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	adv, err := a.service.UpdateAdvertiserProfile(ctx, req.ToInput(advertiserID))
+	email, phone, err := a.resolveUpdatedContacts(ctx, int64(advertiserID), req)
 	if err != nil {
-		handler.HandleError(w, r, "updating profile", err)
+		handler.HandleError(w, r, "updating advertiser credentials", err)
 		return
 	}
 
-	httpx.JSON(w, http.StatusOK, dto.AdvertiserToProfile(adv))
+	var adv *models.Advertiser
+	if hasAdvertiserProfileChanges(req) {
+		adv, err = a.service.UpdateAdvertiserProfile(ctx, req.ToInput(advertiserID))
+		if err != nil {
+			handler.HandleError(w, r, "updating profile", err)
+			return
+		}
+	} else {
+		adv, err = a.service.GetAdvertiserByID(ctx, advertiserID)
+		if err != nil {
+			handler.HandleError(w, r, "getting advertiser by id", err)
+			return
+		}
+	}
+
+	httpx.JSON(w, http.StatusOK, dto.AdvertiserWithContactsToProfile(adv, email, phone))
+}
+
+func hasAdvertiserProfileChanges(req *dto.UpdateAdvertiserProfileRequest) bool {
+	return req.Name != nil || req.Surname != nil || req.Company != nil || req.City != nil || req.Tariff != nil
+}
+
+func (a *API) resolveUpdatedContacts(
+	ctx context.Context,
+	advertiserID int64,
+	req *dto.UpdateAdvertiserProfileRequest,
+) (string, string, error) {
+	if req.Email == nil && req.Phone == nil {
+		return a.authClient.GetCredentials(ctx, advertiserID)
+	}
+
+	email, phone, err := a.authClient.GetCredentials(ctx, advertiserID)
+	if err != nil {
+		return "", "", err
+	}
+
+	if req.Email != nil {
+		email = *req.Email
+	}
+	if req.Phone != nil {
+		phone = *req.Phone
+	}
+
+	return a.authClient.UpdateCredentials(ctx, advertiserID, email, phone)
 }
 
 // @Summary      Выход рекламодателя
@@ -171,11 +231,18 @@ func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 // @Failure      500   {object}  httpx.Error
 // @Router       /advertisers/logout [post]
 func (a *API) Logout(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie(a.cookieConfig.Name)
+	if err != nil {
+		httpx.JSON(w, http.StatusOK, map[string]string{"message": "logout ok"})
+		return
+	}
 
-	if err := a.sessionManager.Destroy(w, r); err != nil {
+	if err := a.authClient.Logout(r.Context(), cookie.Value); err != nil {
 		handler.HandleError(w, r, "destroying session", err)
 		return
 	}
+
+	a.clearSessionCookie(w)
 
 	httpx.JSON(w, http.StatusOK, map[string]string{
 		"message": "logout ok",
@@ -301,5 +368,37 @@ func (a *API) UpdateAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.JSON(w, http.StatusOK, dto.AdvertiserToProfile(adv))
+	email, phone, err := a.authClient.GetCredentials(ctx, int64(advertiserID))
+	if err != nil {
+		handler.HandleError(w, r, "getting advertiser credentials", err)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, dto.AdvertiserWithContactsToProfile(adv, email, phone))
+}
+
+func (a *API) setSessionCookie(w http.ResponseWriter, sessionID string, expiresAt time.Time) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     a.cookieConfig.Name,
+		Value:    sessionID,
+		Path:     a.cookieConfig.Path,
+		Expires:  expiresAt,
+		MaxAge:   int(time.Until(expiresAt).Seconds()),
+		HttpOnly: a.cookieConfig.HTTPOnly,
+		Secure:   a.cookieConfig.Secure,
+		SameSite: http.SameSiteLaxMode,
+	})
+}
+
+func (a *API) clearSessionCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     a.cookieConfig.Name,
+		Value:    "",
+		Path:     a.cookieConfig.Path,
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+		HttpOnly: a.cookieConfig.HTTPOnly,
+		Secure:   a.cookieConfig.Secure,
+		SameSite: http.SameSiteLaxMode,
+	})
 }

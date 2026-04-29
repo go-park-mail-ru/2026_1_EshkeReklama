@@ -3,65 +3,58 @@ package handler_test
 import (
 	"bytes"
 	"context"
+	errs "eshkere/internal/errors"
 	handlers "eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1"
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
-	"eshkere/internal/session"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/gorilla/mux"
-
 	"go.uber.org/mock/gomock"
 )
 
-type memoryStore struct {
-	sessions map[string]session.Session
+const testCookieName = "session_id"
+
+type stubAuthClient struct {
+	sessions map[string]int64
 }
 
-func newMemoryStore() *memoryStore {
-	return &memoryStore{
-		sessions: make(map[string]session.Session),
-	}
+func newStubAuthClient() *stubAuthClient {
+	return &stubAuthClient{sessions: make(map[string]int64)}
 }
 
-func (s *memoryStore) Save(_ context.Context, sessionID string, sess session.Session, _ time.Duration) error {
-	s.sessions[sessionID] = sess
-	return nil
-}
+func (c *stubAuthClient) addSession(id string, advID int64) { c.sessions[id] = advID }
 
-func (s *memoryStore) Get(_ context.Context, sessionID string) (session.Session, error) {
-	sess, ok := s.sessions[sessionID]
+func (c *stubAuthClient) Register(_ context.Context, _, _, _ string) (int64, string, int64, error) {
+	return 0, "", 0, nil
+}
+func (c *stubAuthClient) Login(_ context.Context, _, _ string) (int64, string, int64, error) {
+	return 0, "", 0, nil
+}
+func (c *stubAuthClient) ValidateSession(_ context.Context, sid string) (int64, error) {
+	advID, ok := c.sessions[sid]
 	if !ok {
-		return session.Session{}, session.ErrStoreSessionNotFound
+		return 0, errs.ErrSessionNotFound
 	}
-
-	return sess, nil
+	return advID, nil
 }
-
-func (s *memoryStore) Delete(_ context.Context, sessionID string) error {
-	delete(s.sessions, sessionID)
+func (c *stubAuthClient) Logout(_ context.Context, sid string) error {
+	delete(c.sessions, sid)
 	return nil
 }
-
-func newTestSessionManager() *session.Manager {
-	return session.NewManager(
-		newMemoryStore(),
-		24*time.Hour,
-		session.CookieConfig{
-			Name:     "session_id",
-			Path:     "/",
-			HTTPOnly: true,
-			SameSite: http.SameSiteLaxMode,
-		},
-	)
+func (c *stubAuthClient) GetCredentials(_ context.Context, _ int64) (string, string, error) {
+	return "", "", nil
+}
+func (c *stubAuthClient) UpdateCredentials(_ context.Context, _ int64, email, phone string) (string, string, error) {
+	return email, phone, nil
 }
 
-func newTestRouter(sm *session.Manager, svc v1.Service) *mux.Router {
+func newTestRouter(ac *stubAuthClient, svc v1.Service) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 	r.Use(middleware.CSRF(middleware.CSRFConfig{
 		CookieName: "csrf_token",
@@ -71,8 +64,13 @@ func newTestRouter(sm *session.Manager, svc v1.Service) *mux.Router {
 		w.WriteHeader(http.StatusOK)
 	}).Methods(http.MethodGet)
 	handlers.Register(r, v1.NewAPI(v1.APIConfig{
-		SessionManager: sm,
-		Service:        svc,
+		AuthClient: ac,
+		Service:    svc,
+		CookieConfig: v1.CookieConfig{
+			Name:     testCookieName,
+			Path:     "/",
+			HTTPOnly: true,
+		},
 	}))
 	return r
 }
@@ -91,41 +89,34 @@ func getCSRF(t *testing.T, r *mux.Router) *http.Cookie {
 	return nil
 }
 
-func createSessionCookie(t *testing.T, sm *session.Manager, advertiserID int) *http.Cookie {
+func createSessionCookie(t *testing.T, ac *stubAuthClient, advertiserID int) *http.Cookie {
 	t.Helper()
-	req := httptest.NewRequest(http.MethodPost, "/", nil)
-	rr := httptest.NewRecorder()
-	if err := sm.Create(rr, req, advertiserID); err != nil {
-		t.Fatalf("Create session: %v", err)
-	}
-	cookies := rr.Result().Cookies()
-	if len(cookies) == 0 {
-		t.Fatalf("expected session cookie")
-	}
-	return cookies[0]
+	sessionID := "test-session-" + string(rune('0'+advertiserID))
+	ac.addSession(sessionID, int64(advertiserID))
+	return &http.Cookie{Name: testCookieName, Value: sessionID}
 }
 
 func TestAdCampaign_CRUD(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	svc := handlers.NewMockService(ctrl)
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
-	sess := createSessionCookie(t, sm, 1)
+	sess := createSessionCookie(t, ac, 1)
 
 	svc.EXPECT().
 		CreateAdCampaign(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ any, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error) {
-			if in.AdvertiserID != 1 || in.Name != "camp" || in.DailyBudget != 10 {
+			if in.AdvertiserID != 1 || in.Name != "camp" {
 				t.Fatalf("unexpected campaign input: %+v", in)
 			}
 			return &models.AdCampaign{ID: 42}, nil
 		})
 
-	createReq := httptest.NewRequest(http.MethodPost, "/ad_campaigns", bytes.NewBufferString(`{"name":"camp","daily_budget":10}`))
+	createReq := httptest.NewRequest(http.MethodPost, "/ad_campaigns", bytes.NewBufferString(`{"name":"camp"}`))
 	createReq.AddCookie(sess)
 	createReq.AddCookie(csrf)
 	createReq.Header.Set("X-CSRF-Token", csrf.Value)
@@ -137,7 +128,7 @@ func TestAdCampaign_CRUD(t *testing.T) {
 
 	svc.EXPECT().
 		ListAdCampaigns(gomock.Any(), 1).
-		Return([]*models.AdCampaign{{ID: 1, AdvertiserID: 1, Status: models.AdStatusWorking, Name: "c", DailyBudget: 7}}, nil)
+		Return([]*models.AdCampaign{{ID: 1, AdvertiserID: 1, Status: models.AdStatusWorking, Name: "c"}}, nil)
 
 	listReq := httptest.NewRequest(http.MethodGet, "/ad_campaigns", nil)
 	listReq.AddCookie(sess)
@@ -149,12 +140,11 @@ func TestAdCampaign_CRUD(t *testing.T) {
 	}
 
 	newName := "new"
-	budget := int64(99)
 	svc.EXPECT().
-		UpdateAdCampaign(gomock.Any(), &serviceinput.UpdateAdCampaign{ID: 42, Name: &newName, DailyBudget: &budget}).
+		UpdateAdCampaign(gomock.Any(), &serviceinput.UpdateAdCampaign{ID: 42, Name: &newName}).
 		Return(nil)
 
-	updReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/42", bytes.NewBufferString(`{"name":"new","daily_budget":99}`))
+	updReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/42", bytes.NewBufferString(`{"name":"new"}`))
 	updReq.AddCookie(sess)
 	updReq.AddCookie(csrf)
 	updReq.Header.Set("X-CSRF-Token", csrf.Value)
@@ -178,15 +168,15 @@ func TestAdCampaign_CRUD(t *testing.T) {
 }
 
 func TestAdGroup_And_Ads_CRUD(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	svc := handlers.NewMockService(ctrl)
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
-	sess := createSessionCookie(t, sm, 1)
+	sess := createSessionCookie(t, ac, 1)
 
 	svc.EXPECT().
 		CreateAdGroup(gomock.Any(), gomock.Any()).
@@ -248,7 +238,14 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 			return &models.Ad{ID: 9}, nil
 		})
 
-	createAdReq := httptest.NewRequest(http.MethodPost, "/ad_campaigns/1/ad_groups/2/ads", bytes.NewBufferString(`{"title":"t","short_desc":"s","image_url":"i","target_url":"u"}`))
+	var createAdBody bytes.Buffer
+	createAdWriter := multipart.NewWriter(&createAdBody)
+	_ = createAdWriter.WriteField("title", "t")
+	_ = createAdWriter.WriteField("short_desc", "s")
+	_ = createAdWriter.WriteField("target_url", "u")
+	_ = createAdWriter.Close()
+	createAdReq := httptest.NewRequest(http.MethodPost, "/ad_campaigns/1/ad_groups/2/ads", &createAdBody)
+	createAdReq.Header.Set("Content-Type", createAdWriter.FormDataContentType())
 	createAdReq.AddCookie(sess)
 	createAdReq.AddCookie(csrf)
 	createAdReq.Header.Set("X-CSRF-Token", csrf.Value)
@@ -259,7 +256,12 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 	}
 
 	svc.EXPECT().UpdateAd(gomock.Any(), gomock.Any()).Return(nil)
-	updAdReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/1/ad_groups/2/ads/9", bytes.NewBufferString(`{"title":"t2"}`))
+	var updAdBody bytes.Buffer
+	updAdWriter := multipart.NewWriter(&updAdBody)
+	_ = updAdWriter.WriteField("title", "t2")
+	_ = updAdWriter.Close()
+	updAdReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/1/ad_groups/2/ads/9", &updAdBody)
+	updAdReq.Header.Set("Content-Type", updAdWriter.FormDataContentType())
 	updAdReq.AddCookie(sess)
 	updAdReq.AddCookie(csrf)
 	updAdReq.Header.Set("X-CSRF-Token", csrf.Value)

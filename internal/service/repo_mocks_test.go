@@ -41,34 +41,18 @@ func (m *MockAdvertiserRepository) EXPECT() *MockAdvertiserRepositoryMockRecorde
 	return m.recorder
 }
 
-// Create mocks base method.
-func (m *MockAdvertiserRepository) Create(ctx context.Context, a *models.Advertiser) (int, error) {
+// CreateProfile mocks base method.
+func (m *MockAdvertiserRepository) CreateProfile(ctx context.Context, id int64, name string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, a)
-	ret0, _ := ret[0].(int)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "CreateProfile", ctx, id, name)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-// Create indicates an expected call of Create.
-func (mr *MockAdvertiserRepositoryMockRecorder) Create(ctx, a any) *gomock.Call {
+// CreateProfile indicates an expected call of CreateProfile.
+func (mr *MockAdvertiserRepositoryMockRecorder) CreateProfile(ctx, id, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAdvertiserRepository)(nil).Create), ctx, a)
-}
-
-// GetByEmail mocks base method.
-func (m *MockAdvertiserRepository) GetByEmail(ctx context.Context, email string) (*models.Advertiser, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByEmail", ctx, email)
-	ret0, _ := ret[0].(*models.Advertiser)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByEmail indicates an expected call of GetByEmail.
-func (mr *MockAdvertiserRepositoryMockRecorder) GetByEmail(ctx, email any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEmail", reflect.TypeOf((*MockAdvertiserRepository)(nil).GetByEmail), ctx, email)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateProfile", reflect.TypeOf((*MockAdvertiserRepository)(nil).CreateProfile), ctx, id, name)
 }
 
 // GetByID mocks base method.
@@ -84,21 +68,6 @@ func (m *MockAdvertiserRepository) GetByID(ctx context.Context, id int) (*models
 func (mr *MockAdvertiserRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockAdvertiserRepository)(nil).GetByID), ctx, id)
-}
-
-// GetByPhone mocks base method.
-func (m *MockAdvertiserRepository) GetByPhone(ctx context.Context, phone string) (*models.Advertiser, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByPhone", ctx, phone)
-	ret0, _ := ret[0].(*models.Advertiser)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByPhone indicates an expected call of GetByPhone.
-func (mr *MockAdvertiserRepositoryMockRecorder) GetByPhone(ctx, phone any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByPhone", reflect.TypeOf((*MockAdvertiserRepository)(nil).GetByPhone), ctx, phone)
 }
 
 // Update mocks base method.

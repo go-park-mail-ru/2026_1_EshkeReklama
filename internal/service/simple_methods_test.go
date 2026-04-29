@@ -22,7 +22,7 @@ func TestService_PassthroughMethods(t *testing.T) {
 
 	cRepo.EXPECT().Create(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ context.Context, c *models.AdCampaign) error {
-			if c.AdvertiserID != 1 || c.Name != "camp" || c.DailyBudget != 10 || c.Status != models.AdStatusModeration {
+			if c.AdvertiserID != 1 || c.Name != "camp" || c.Status != models.AdStatusModeration {
 				t.Fatalf("unexpected campaign: %+v", c)
 			}
 			return nil
@@ -30,7 +30,6 @@ func TestService_PassthroughMethods(t *testing.T) {
 	if _, err := svc.CreateAdCampaign(context.Background(), &serviceinput.CreateAdCampaign{
 		AdvertiserID: 1,
 		Name:         "camp",
-		DailyBudget:  10,
 	}); err != nil {
 		t.Fatalf("CreateAdCampaign: %v", err)
 	}

@@ -15,7 +15,7 @@ import (
 func (a *API) RegisterAdCampaignHandlers(r *mux.Router) {
 	campaigns := r.PathPrefix("/ad_campaigns").Subrouter()
 
-	campaigns.Use(middleware.Auth(a.sessionManager))
+	campaigns.Use(middleware.Auth(a.authClient, a.cookieConfig.Name))
 	campaigns.HandleFunc("", a.CreateAdCampaign).Methods(http.MethodPost)
 	campaigns.HandleFunc("", a.ListAdCampaigns).Methods(http.MethodGet)
 	campaigns.HandleFunc("/{ad_campaign_id}", a.UpdateAdCampaign).Methods(http.MethodPut)

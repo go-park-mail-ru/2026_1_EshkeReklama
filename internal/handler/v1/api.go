@@ -4,14 +4,21 @@ import (
 	"context"
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
-	"eshkere/internal/session"
 
 	"github.com/gorilla/mux"
 )
 
+type AuthClient interface {
+	Register(ctx context.Context, email, phone, password string) (advertiserID int64, sessionID string, expiresAt int64, err error)
+	Login(ctx context.Context, identifier, password string) (advertiserID int64, sessionID string, expiresAt int64, err error)
+	ValidateSession(ctx context.Context, sessionID string) (advertiserID int64, err error)
+	Logout(ctx context.Context, sessionID string) error
+	GetCredentials(ctx context.Context, advertiserID int64) (email, phone string, err error)
+	UpdateCredentials(ctx context.Context, advertiserID int64, email, phone string) (updatedEmail, updatedPhone string, err error)
+}
+
 type Service interface {
-	RegisterAdvertiser(ctx context.Context, in *serviceinput.RegisterAdvertiser) (*models.Advertiser, error)
-	AuthenticateAdvertiser(ctx context.Context, identifier, password string) (*models.Advertiser, error)
+	CreateAdvertiserProfile(ctx context.Context, id int64, name, email string) error
 	GetAdvertiserByID(ctx context.Context, id int) (*models.Advertiser, error)
 	UpdateAdvertiserProfile(ctx context.Context, in *serviceinput.UpdateAdvertiserProfile) (*models.Advertiser, error)
 	UpdateAdvertiserAvatar(ctx context.Context, advertiserID int, avatar []byte, avatarExt, avatarContentType string) (*models.Advertiser, error)
@@ -40,20 +47,30 @@ type Service interface {
 	GetAppealByID(ctx context.Context, appealID int) (*models.Appeal, error)
 }
 
+type CookieConfig struct {
+	Name     string
+	Path     string
+	HTTPOnly bool
+	Secure   bool
+}
+
 type APIConfig struct {
-	SessionManager *session.Manager
-	Service        Service
+	AuthClient   AuthClient
+	Service      Service
+	CookieConfig CookieConfig
 }
 
 type API struct {
-	sessionManager *session.Manager
-	service        Service
+	authClient   AuthClient
+	service      Service
+	cookieConfig CookieConfig
 }
 
 func NewAPI(config APIConfig) *API {
 	return &API{
-		sessionManager: config.SessionManager,
-		service:        config.Service,
+		authClient:   config.AuthClient,
+		service:      config.Service,
+		cookieConfig: config.CookieConfig,
 	}
 }
 

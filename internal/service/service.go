@@ -7,10 +7,8 @@ import (
 )
 
 type AdvertiserRepository interface {
-	Create(ctx context.Context, a *models.Advertiser) (int, error)
+	CreateProfile(ctx context.Context, id int64, name string) error
 	GetByID(ctx context.Context, id int) (*models.Advertiser, error)
-	GetByEmail(ctx context.Context, email string) (*models.Advertiser, error)
-	GetByPhone(ctx context.Context, phone string) (*models.Advertiser, error)
 	Update(ctx context.Context, a *models.Advertiser) error
 }
 

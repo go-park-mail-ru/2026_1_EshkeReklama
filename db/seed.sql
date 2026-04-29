@@ -7,10 +7,16 @@ INSERT INTO eshkere.region (name) VALUES ('Москва'), ('Санкт-Пете
 
 -- 2. Рекламодатели (Advertisers)
 -- Баланс хранится в копейках (BIGINT)
-INSERT INTO eshkere.advertiser (name, email, phone_number, password_hash, password_salt, balance)
+INSERT INTO eshkere.advertiser (name, balance)
 VALUES
-    ('ООО Ромашка', 'info@romashka.ru', '9001112233', 'hash123', 'salt123', 5000000),
-    ('ИП ТехноМир', 'ads@techno.io', '9998887766', 'hash456', 'salt456', 150050);
+    ('ООО Ромашка', 5000000),
+    ('ИП ТехноМир', 150050);
+
+-- 2.1. Учетные данные рекламодателей в auth-service
+INSERT INTO auth.credentials (id, email, phone, password_hash)
+VALUES
+    (1, 'info@romashka.ru', '9001112233', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy'),
+    (2, 'ads@techno.io', '9998887766', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
 
 -- 3. Рекламные кампании (Ad Campaigns)
 -- Бюджет хранится в копейках (BIGINT)

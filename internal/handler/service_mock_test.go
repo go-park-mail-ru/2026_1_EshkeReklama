@@ -42,19 +42,18 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 	return m.recorder
 }
 
-// AuthenticateAdvertiser mocks base method.
-func (m *MockService) AuthenticateAdvertiser(ctx context.Context, identifier, password string) (*models.Advertiser, error) {
+// CreateAdvertiserProfile mocks base method.
+func (m *MockService) CreateAdvertiserProfile(ctx context.Context, id int64, name, email string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AuthenticateAdvertiser", ctx, identifier, password)
-	ret0, _ := ret[0].(*models.Advertiser)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "CreateAdvertiserProfile", ctx, id, name, email)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-// AuthenticateAdvertiser indicates an expected call of AuthenticateAdvertiser.
-func (mr *MockServiceMockRecorder) AuthenticateAdvertiser(ctx, identifier, password any) *gomock.Call {
+// CreateAdvertiserProfile indicates an expected call of CreateAdvertiserProfile.
+func (mr *MockServiceMockRecorder) CreateAdvertiserProfile(ctx, id, name, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthenticateAdvertiser", reflect.TypeOf((*MockService)(nil).AuthenticateAdvertiser), ctx, identifier, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAdvertiserProfile", reflect.TypeOf((*MockService)(nil).CreateAdvertiserProfile), ctx, id, name, email)
 }
 
 // CreateAd mocks base method.
@@ -232,21 +231,6 @@ func (m *MockService) ListAds(ctx context.Context, groupID int) ([]*models.Ad, e
 func (mr *MockServiceMockRecorder) ListAds(ctx, groupID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAds", reflect.TypeOf((*MockService)(nil).ListAds), ctx, groupID)
-}
-
-// RegisterAdvertiser mocks base method.
-func (m *MockService) RegisterAdvertiser(ctx context.Context, name, email, phone, password string) (*models.Advertiser, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterAdvertiser", ctx, name, email, phone, password)
-	ret0, _ := ret[0].(*models.Advertiser)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RegisterAdvertiser indicates an expected call of RegisterAdvertiser.
-func (mr *MockServiceMockRecorder) RegisterAdvertiser(ctx, name, email, phone, password any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterAdvertiser", reflect.TypeOf((*MockService)(nil).RegisterAdvertiser), ctx, name, email, phone, password)
 }
 
 // TopUpAdvertiserBalance mocks base method.

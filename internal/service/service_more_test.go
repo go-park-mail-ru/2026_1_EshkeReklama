@@ -8,36 +8,7 @@ import (
 	"eshkere/internal/models"
 
 	"go.uber.org/mock/gomock"
-	"golang.org/x/crypto/bcrypt"
 )
-
-func TestAuthenticateAdvertiser_OK_WithEmail(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	advRepo := NewMockAdvertiserRepository(ctrl)
-	svc, _ := NewService(&Config{AdvertiserRepo: advRepo})
-
-	hash, err := bcrypt.GenerateFromPassword([]byte("secret1"), bcrypt.DefaultCost)
-	if err != nil {
-		t.Fatalf("bcrypt: %v", err)
-	}
-
-	advRepo.EXPECT().GetByEmail(gomock.Any(), "a@a.test").Return(&models.Advertiser{
-		ID:           10,
-		Email:        "a@a.test",
-		PasswordSalt: bcryptSaltMarker,
-		PasswordHash: string(hash),
-	}, nil)
-
-	adv, err := svc.AuthenticateAdvertiser(context.Background(), "A@A.TEST", "secret1")
-	if err != nil {
-		t.Fatalf("AuthenticateAdvertiser: %v", err)
-	}
-	if adv.ID != 10 {
-		t.Fatalf("expected id 10 got %d", adv.ID)
-	}
-}
 
 func TestTopUpAdvertiserBalance_OK(t *testing.T) {
 	ctrl := gomock.NewController(t)

@@ -7,28 +7,102 @@ import (
 	errs "eshkere/internal/errors"
 	handlers "eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"time"
-
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
-	"eshkere/internal/session"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 
 	"github.com/gorilla/mux"
 )
 
 const testCookieName = "session_id"
 
-type memoryStore struct {
-	sessions map[string]session.Session
+// stubAuthClient simulates the auth service for handler tests.
+type stubAuthClient struct {
+	sessions            map[string]int64 // sessionID → advertiserID
+	credentials         map[int64]authTestCredentials
+	registerFn          func(ctx context.Context, email, phone, password string) (int64, string, int64, error)
+	loginFn             func(ctx context.Context, identifier, password string) (int64, string, int64, error)
+	validateFn          func(ctx context.Context, sessionID string) (int64, error)
+	logoutFn            func(ctx context.Context, sessionID string) error
+	getCredentialsFn    func(ctx context.Context, advertiserID int64) (string, string, error)
+	updateCredentialsFn func(ctx context.Context, advertiserID int64, email, phone string) (string, string, error)
 }
 
+type authTestCredentials struct {
+	email string
+	phone string
+}
+
+func newStubAuthClient() *stubAuthClient {
+	return &stubAuthClient{
+		sessions:    make(map[string]int64),
+		credentials: make(map[int64]authTestCredentials),
+	}
+}
+
+func (c *stubAuthClient) addSession(sessionID string, advertiserID int64) {
+	c.sessions[sessionID] = advertiserID
+}
+
+func (c *stubAuthClient) setCredentials(advertiserID int64, email, phone string) {
+	c.credentials[advertiserID] = authTestCredentials{email: email, phone: phone}
+}
+
+func (c *stubAuthClient) Register(ctx context.Context, email, phone, password string) (int64, string, int64, error) {
+	if c.registerFn != nil {
+		return c.registerFn(ctx, email, phone, password)
+	}
+	return 0, "", 0, nil
+}
+
+func (c *stubAuthClient) Login(ctx context.Context, identifier, password string) (int64, string, int64, error) {
+	if c.loginFn != nil {
+		return c.loginFn(ctx, identifier, password)
+	}
+	return 0, "", 0, nil
+}
+
+func (c *stubAuthClient) ValidateSession(ctx context.Context, sessionID string) (int64, error) {
+	if c.validateFn != nil {
+		return c.validateFn(ctx, sessionID)
+	}
+	advID, ok := c.sessions[sessionID]
+	if !ok {
+		return 0, errs.ErrSessionNotFound
+	}
+	return advID, nil
+}
+
+func (c *stubAuthClient) Logout(ctx context.Context, sessionID string) error {
+	if c.logoutFn != nil {
+		return c.logoutFn(ctx, sessionID)
+	}
+	delete(c.sessions, sessionID)
+	return nil
+}
+
+func (c *stubAuthClient) GetCredentials(ctx context.Context, advertiserID int64) (string, string, error) {
+	if c.getCredentialsFn != nil {
+		return c.getCredentialsFn(ctx, advertiserID)
+	}
+	cred := c.credentials[advertiserID]
+	return cred.email, cred.phone, nil
+}
+
+func (c *stubAuthClient) UpdateCredentials(ctx context.Context, advertiserID int64, email, phone string) (string, string, error) {
+	if c.updateCredentialsFn != nil {
+		return c.updateCredentialsFn(ctx, advertiserID, email, phone)
+	}
+	c.setCredentials(advertiserID, email, phone)
+	return email, phone, nil
+}
+
+// stubService implements the Service interface for handler tests.
 type stubService struct {
-	registerAdvertiserFn      func(ctx context.Context, name, email, phone, password string) (*models.Advertiser, error)
-	authenticateAdvertiserFn  func(ctx context.Context, identifier, password string) (*models.Advertiser, error)
+	createAdvertiserProfileFn func(ctx context.Context, id int64, name, email string) error
 	getAdvertiserByIDFn       func(ctx context.Context, id int) (*models.Advertiser, error)
 	updateAdvertiserProfileFn func(ctx context.Context, in *serviceinput.UpdateAdvertiserProfile) (*models.Advertiser, error)
 	updateAdvertiserAvatarFn  func(ctx context.Context, advertiserID int, avatar []byte, avatarExt, avatarContentType string) (*models.Advertiser, error)
@@ -52,18 +126,11 @@ type stubService struct {
 	getAppealByIDFn           func(ctx context.Context, appealID int) (*models.Appeal, error)
 }
 
-func (s *stubService) RegisterAdvertiser(ctx context.Context, name, email, phone, password string) (*models.Advertiser, error) {
-	if s.registerAdvertiserFn != nil {
-		return s.registerAdvertiserFn(ctx, name, email, phone, password)
+func (s *stubService) CreateAdvertiserProfile(ctx context.Context, id int64, name, email string) error {
+	if s.createAdvertiserProfileFn != nil {
+		return s.createAdvertiserProfileFn(ctx, id, name, email)
 	}
-	return nil, nil
-}
-
-func (s *stubService) AuthenticateAdvertiser(ctx context.Context, identifier, password string) (*models.Advertiser, error) {
-	if s.authenticateAdvertiserFn != nil {
-		return s.authenticateAdvertiserFn(ctx, identifier, password)
-	}
-	return nil, nil
+	return nil
 }
 
 func (s *stubService) GetAdvertiserByID(ctx context.Context, id int) (*models.Advertiser, error) {
@@ -213,59 +280,7 @@ func (s *stubService) GetAppealByID(ctx context.Context, appealID int) (*models.
 	return nil, nil
 }
 
-func newMemoryStore() *memoryStore {
-	return &memoryStore{
-		sessions: make(map[string]session.Session),
-	}
-}
-
-func (s *memoryStore) Save(_ context.Context, sessionID string, sess session.Session, _ time.Duration) error {
-	s.sessions[sessionID] = sess
-	return nil
-}
-
-func (s *memoryStore) Get(_ context.Context, sessionID string) (session.Session, error) {
-	sess, ok := s.sessions[sessionID]
-	if !ok {
-		return session.Session{}, session.ErrStoreSessionNotFound
-	}
-
-	return sess, nil
-}
-
-func (s *memoryStore) Delete(_ context.Context, sessionID string) error {
-	delete(s.sessions, sessionID)
-	return nil
-}
-
-func newTestSessionManager() *session.Manager {
-	return session.NewManager(
-		newMemoryStore(),
-		24*time.Hour,
-		session.CookieConfig{
-			Name:     testCookieName,
-			Path:     "/",
-			HTTPOnly: true,
-			SameSite: http.SameSiteLaxMode,
-		},
-	)
-}
-
-func createSessionCookie(t *testing.T, sm *session.Manager, advertiserID int) *http.Cookie {
-	t.Helper()
-	req := httptest.NewRequest(http.MethodPost, "/", nil)
-	rr := httptest.NewRecorder()
-	if err := sm.Create(rr, req, advertiserID); err != nil {
-		t.Fatalf("Create session: %v", err)
-	}
-	cookies := rr.Result().Cookies()
-	if len(cookies) == 0 {
-		t.Fatalf("expected session cookie")
-	}
-	return cookies[0]
-}
-
-func newTestRouter(sm *session.Manager, svc Service) *mux.Router {
+func newTestRouter(ac *stubAuthClient, svc Service) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 	r.Use(middleware.CSRF(middleware.CSRFConfig{
 		CookieName: "csrf_token",
@@ -275,8 +290,13 @@ func newTestRouter(sm *session.Manager, svc Service) *mux.Router {
 		w.WriteHeader(http.StatusOK)
 	}).Methods(http.MethodGet)
 	handlers.Register(r, NewAPI(APIConfig{
-		SessionManager: sm,
-		Service:        svc,
+		AuthClient: ac,
+		Service:    svc,
+		CookieConfig: CookieConfig{
+			Name:     testCookieName,
+			Path:     "/",
+			HTTPOnly: true,
+		},
 	}))
 	return r
 }
@@ -295,22 +315,31 @@ func getCSRF(t *testing.T, r *mux.Router) *http.Cookie {
 	return nil
 }
 
+// createSessionCookie adds a session to the stub auth client and returns the cookie.
+func createSessionCookie(t *testing.T, ac *stubAuthClient, advertiserID int) *http.Cookie {
+	t.Helper()
+	sessionID := "test-session-" + string(rune('0'+advertiserID))
+	ac.addSession(sessionID, int64(advertiserID))
+	return &http.Cookie{Name: testCookieName, Value: sessionID}
+}
+
 func TestRegister_OK(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
 
-	svc.registerAdvertiserFn = func(_ context.Context, _ string, email, phone, password string) (*models.Advertiser, error) {
+	ac.registerFn = func(_ context.Context, email, phone, password string) (int64, string, int64, error) {
 		if email != "a@a.test" || phone != "+70000000000" || password != "secret" {
 			t.Fatalf("unexpected register args: email=%s phone=%s password=%s", email, phone, password)
 		}
-		return &models.Advertiser{ID: 99, Email: email, Phone: phone}, nil
+		ac.setCredentials(99, email, phone)
+		return 99, "sess-abc", 9999999999, nil
 	}
 
 	body := `{"email":"a@a.test","phone":"+70000000000","password":"secret"}`
-	req := httptest.NewRequest(http.MethodPost, "/advertiser/register", bytes.NewBufferString(body))
+	req := httptest.NewRequest(http.MethodPost, "/advertisers/register", bytes.NewBufferString(body))
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)
 	rr := httptest.NewRecorder()
@@ -325,27 +354,28 @@ func TestRegister_OK(t *testing.T) {
 }
 
 func TestLogin_UnauthorizedAndOK(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
 
-	svc.authenticateAdvertiserFn = func(_ context.Context, identifier, password string) (*models.Advertiser, error) {
+	ac.loginFn = func(_ context.Context, identifier, password string) (int64, string, int64, error) {
 		if identifier != "test@mail.com" {
 			t.Fatalf("unexpected identifier: %s", identifier)
 		}
 		if password == "bad" {
-			return nil, errs.ErrInvalidCredentials
+			return 0, "", 0, errs.ErrInvalidCredentials
 		}
 		if password == "ok" {
-			return &models.Advertiser{ID: 1, Email: "test@mail.com", Phone: "9000000000"}, nil
+			return 1, "sess-ok", 9999999999, nil
 		}
 		t.Fatalf("unexpected password: %s", password)
-		return nil, nil
+		return 0, "", 0, nil
 	}
+	ac.setCredentials(1, "test@mail.com", "9000000000")
 
-	req := httptest.NewRequest(http.MethodPost, "/advertiser/login", bytes.NewBufferString(`{"identifier":"test@mail.com","password":"bad"}`))
+	req := httptest.NewRequest(http.MethodPost, "/advertisers/login", bytes.NewBufferString(`{"identifier":"test@mail.com","password":"bad"}`))
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)
 	rr := httptest.NewRecorder()
@@ -354,7 +384,7 @@ func TestLogin_UnauthorizedAndOK(t *testing.T) {
 		t.Fatalf("expected 401 got %d body=%s", rr.Code, rr.Body.String())
 	}
 
-	req2 := httptest.NewRequest(http.MethodPost, "/advertiser/login", bytes.NewBufferString(`{"identifier":"test@mail.com","password":"ok"}`))
+	req2 := httptest.NewRequest(http.MethodPost, "/advertisers/login", bytes.NewBufferString(`{"identifier":"test@mail.com","password":"ok"}`))
 	req2.AddCookie(csrf)
 	req2.Header.Set("X-CSRF-Token", csrf.Value)
 	rr2 := httptest.NewRecorder()
@@ -365,9 +395,9 @@ func TestLogin_UnauthorizedAndOK(t *testing.T) {
 }
 
 func TestMe_UnauthorizedAndOK(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
 
@@ -378,31 +408,22 @@ func TestMe_UnauthorizedAndOK(t *testing.T) {
 		return &models.Advertiser{
 			ID:      1,
 			Name:    "Test",
-			Email:   "test@mail.com",
-			Phone:   "9000000000",
 			Balance: 100,
 		}, nil
 	}
+	ac.setCredentials(1, "test@mail.com", "9000000000")
 
-	req := httptest.NewRequest(http.MethodGet, "/advertiser/me", nil)
+	req := httptest.NewRequest(http.MethodGet, "/advertisers/me", nil)
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 	if rr.Code != http.StatusUnauthorized {
 		t.Fatalf("expected 401 got %d body=%s", rr.Code, rr.Body.String())
 	}
 
-	createReq := httptest.NewRequest(http.MethodPost, "/", nil)
-	createRR := httptest.NewRecorder()
-	if err := sm.Create(createRR, createReq, 1); err != nil {
-		t.Fatalf("Create: %v", err)
-	}
-	cookies := createRR.Result().Cookies()
-	if len(cookies) == 0 {
-		t.Fatalf("expected cookie")
-	}
+	sess := createSessionCookie(t, ac, 1)
 
-	req2 := httptest.NewRequest(http.MethodGet, "/advertiser/me", nil)
-	req2.AddCookie(cookies[0])
+	req2 := httptest.NewRequest(http.MethodGet, "/advertisers/me", nil)
+	req2.AddCookie(sess)
 	req2.AddCookie(csrf)
 	rr2 := httptest.NewRecorder()
 	r.ServeHTTP(rr2, req2)
@@ -412,13 +433,13 @@ func TestMe_UnauthorizedAndOK(t *testing.T) {
 }
 
 func TestLogout_AlwaysOK(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
 
-	req := httptest.NewRequest(http.MethodPost, "/advertiser/logout", nil)
+	req := httptest.NewRequest(http.MethodPost, "/advertisers/logout", nil)
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)
 	rr := httptest.NewRecorder()
@@ -430,11 +451,12 @@ func TestLogout_AlwaysOK(t *testing.T) {
 }
 
 func TestBalance_GetAndTopUp(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
+	sess := createSessionCookie(t, ac, 1)
 
 	svc.getAdvertiserByIDFn = func(_ context.Context, id int) (*models.Advertiser, error) {
 		if id != 1 {
@@ -449,19 +471,8 @@ func TestBalance_GetAndTopUp(t *testing.T) {
 		return 250, nil
 	}
 
-	createReq := httptest.NewRequest(http.MethodPost, "/", nil)
-	createRR := httptest.NewRecorder()
-	if err := sm.Create(createRR, createReq, 1); err != nil {
-		t.Fatalf("Create: %v", err)
-	}
-
-	cookies := createRR.Result().Cookies()
-	if len(cookies) == 0 {
-		t.Fatalf("expected cookie")
-	}
-
-	getReq := httptest.NewRequest(http.MethodGet, "/advertiser/balance", nil)
-	getReq.AddCookie(cookies[0])
+	getReq := httptest.NewRequest(http.MethodGet, "/advertisers/balance", nil)
+	getReq.AddCookie(sess)
 	getReq.AddCookie(csrf)
 	getRR := httptest.NewRecorder()
 	r.ServeHTTP(getRR, getReq)
@@ -469,8 +480,8 @@ func TestBalance_GetAndTopUp(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", getRR.Code, getRR.Body.String())
 	}
 
-	topupReq := httptest.NewRequest(http.MethodPost, "/advertiser/balance/topup", bytes.NewBufferString(`{"amount":150}`))
-	topupReq.AddCookie(cookies[0])
+	topupReq := httptest.NewRequest(http.MethodPost, "/advertisers/balance/topup", bytes.NewBufferString(`{"amount":150}`))
+	topupReq.AddCookie(sess)
 	topupReq.AddCookie(csrf)
 	topupReq.Header.Set("X-CSRF-Token", csrf.Value)
 	topupRR := httptest.NewRecorder()
@@ -481,9 +492,9 @@ func TestBalance_GetAndTopUp(t *testing.T) {
 }
 
 func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
 
@@ -501,19 +512,10 @@ func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
 		t.Fatalf("expected 401 got %d body=%s", rr.Code, rr.Body.String())
 	}
 
-	createReq := httptest.NewRequest(http.MethodPost, "/", nil)
-	createRR := httptest.NewRecorder()
-	if err := sm.Create(createRR, createReq, 1); err != nil {
-		t.Fatalf("Create: %v", err)
-	}
-
-	cookies := createRR.Result().Cookies()
-	if len(cookies) == 0 {
-		t.Fatalf("expected cookie")
-	}
+	sess := createSessionCookie(t, ac, 1)
 
 	req2 := httptest.NewRequest(http.MethodGet, "/ad_campaigns/1/ad_groups/2/ads", nil)
-	req2.AddCookie(cookies[0])
+	req2.AddCookie(sess)
 	req2.AddCookie(csrf)
 	rr2 := httptest.NewRecorder()
 	r.ServeHTTP(rr2, req2)
@@ -537,9 +539,9 @@ func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
 }
 
 func TestFeed_EmptyList(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	svc.getAdsByFeedTokenFn = func(_ context.Context, token string) ([]*models.Ad, error) {
 		if token != "feed-token" {

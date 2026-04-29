@@ -8,9 +8,9 @@ import (
 )
 
 func TestToModel_AdCampaign(t *testing.T) {
-	req := CreateAdCampaignRequest{Name: "n", DailyBudget: 10}
+	req := CreateAdCampaignRequest{Name: "n"}
 	in := req.ToInput(7)
-	if in.AdvertiserID != 7 || in.Name != "n" || in.DailyBudget != 10 {
+	if in.AdvertiserID != 7 || in.Name != "n" {
 		t.Fatalf("unexpected input: %+v", in)
 	}
 }
@@ -38,9 +38,9 @@ func TestAdvertiserToProfile_NilAndNonNil(t *testing.T) {
 	}
 
 	now := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
-	adv := &models.Advertiser{ID: 1, Name: "n", Email: "e", Phone: "p", Balance: 10, CreatedAt: now}
-	p := AdvertiserToProfile(adv)
-	if p.ID != 1 || p.CreatedAt != now.Format(time.RFC3339) {
+	adv := &models.Advertiser{ID: 1, Name: "n", Balance: 10, CreatedAt: now}
+	p := AdvertiserWithContactsToProfile(adv, "e", "p")
+	if p.ID != 1 || p.Email != "e" || p.Phone != "p" || p.CreatedAt != now.Format(time.RFC3339) {
 		t.Fatalf("unexpected profile: %+v", p)
 	}
 }
@@ -86,7 +86,7 @@ func TestToListAdGroupsResponse(t *testing.T) {
 }
 
 func TestCreateAdRequest_ToInput(t *testing.T) {
-	req := CreateAdRequest{Title: "t", ShortDesc: "s", ImageURL: "i", TargetURL: "u"}
+	req := CreateAdRequest{Title: "t", ShortDesc: "s", TargetURL: "u"}
 	in := req.ToInput(3)
 	if in.AdGroupID != 3 || in.Title != "t" || in.TargetURL != "u" {
 		t.Fatalf("unexpected input: %+v", in)
@@ -99,7 +99,7 @@ func TestUpdateAdvertiserProfileRequest_ToInput(t *testing.T) {
 	phone := "p"
 	req := UpdateAdvertiserProfileRequest{Name: &name, Email: &email, Phone: &phone}
 	in := req.ToInput(7)
-	if in.AdvertiserID != 7 || *in.Name != "n" || *in.Email != "e" || *in.Phone != "p" {
+	if in.AdvertiserID != 7 || *in.Name != "n" {
 		t.Fatalf("unexpected input: %+v", in)
 	}
 }

@@ -19,12 +19,12 @@ import (
 )
 
 func TestAdCampaign_UpdateListDelete(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
-	sess := createSessionCookie(t, sm, 1)
+	sess := createSessionCookie(t, ac, 1)
 
 	svc.updateAdCampaignFn = func(_ context.Context, in *serviceinput.UpdateAdCampaign) error {
 		if in.ID != 5 || in.Name == nil || *in.Name != "new" {
@@ -85,12 +85,12 @@ func TestAdCampaign_UpdateListDelete(t *testing.T) {
 }
 
 func TestAdGroup_UpdateListDelete(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
-	sess := createSessionCookie(t, sm, 1)
+	sess := createSessionCookie(t, ac, 1)
 
 	svc.updateAdGroupFn = func(_ context.Context, in *serviceinput.UpdateAdGroup) error {
 		if in.ID != 3 || in.Name == nil || *in.Name != "new-group" {
@@ -142,12 +142,12 @@ func TestAdGroup_UpdateListDelete(t *testing.T) {
 }
 
 func TestAd_UpdateDelete(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
-	sess := createSessionCookie(t, sm, 1)
+	sess := createSessionCookie(t, ac, 1)
 
 	svc.updateAdFn = func(_ context.Context, in *serviceinput.UpdateAd) error {
 		if in.ID != 8 || in.Title == nil || *in.Title != "renamed" {
@@ -194,12 +194,12 @@ func TestAd_UpdateDelete(t *testing.T) {
 }
 
 func TestAdvertiser_UpdateAvatar_OK(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
-	sess := createSessionCookie(t, sm, 1)
+	sess := createSessionCookie(t, ac, 1)
 
 	var body bytes.Buffer
 	writer := multipart.NewWriter(&body)
@@ -227,14 +227,13 @@ func TestAdvertiser_UpdateAvatar_OK(t *testing.T) {
 		return &models.Advertiser{
 			ID:        1,
 			Name:      "name",
-			Email:     "a@a.test",
-			Phone:     "9001234567",
 			AvatarURL: sql.NullString{String: "https://cdn/avatar.png", Valid: true},
 			CreatedAt: time.Unix(0, 0),
 		}, nil
 	}
+	ac.setCredentials(1, "a@a.test", "9001234567")
 
-	req := httptest.NewRequest(http.MethodPut, "/advertiser/me/avatar", &body)
+	req := httptest.NewRequest(http.MethodPut, "/advertisers/me/avatar", &body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.AddCookie(sess)
 	req.AddCookie(csrf)
@@ -247,9 +246,9 @@ func TestAdvertiser_UpdateAvatar_OK(t *testing.T) {
 }
 
 func TestAppeal_CreateMultipartWithoutScreenshot_OK(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
 
@@ -290,7 +289,7 @@ func TestAppeal_CreateMultipartWithoutScreenshot_OK(t *testing.T) {
 		t.Fatalf("Close writer: %v", err)
 	}
 
-	req := httptest.NewRequest(http.MethodPost, "/appeal", &body)
+	req := httptest.NewRequest(http.MethodPost, "/appeals", &body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)
@@ -313,9 +312,9 @@ func TestAppeal_CreateMultipartWithoutScreenshot_OK(t *testing.T) {
 }
 
 func TestAppeal_CreateMultipartWithScreenshot_OK(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
 
@@ -364,7 +363,7 @@ func TestAppeal_CreateMultipartWithScreenshot_OK(t *testing.T) {
 		t.Fatalf("Close writer: %v", err)
 	}
 
-	req := httptest.NewRequest(http.MethodPost, "/appeal", &body)
+	req := httptest.NewRequest(http.MethodPost, "/appeals", &body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)
@@ -387,13 +386,13 @@ func TestAppeal_CreateMultipartWithScreenshot_OK(t *testing.T) {
 }
 
 func TestAppeal_CreateJSONRejected(t *testing.T) {
-	sm := newTestSessionManager()
+	ac := newStubAuthClient()
 	svc := &stubService{}
-	r := newTestRouter(sm, svc)
+	r := newTestRouter(ac, svc)
 
 	csrf := getCSRF(t, r)
 
-	req := httptest.NewRequest(http.MethodPost, "/appeal", bytes.NewBufferString(`{"category":"question","title":"How to top up?","description":"Need help","name":"Ivan","email":"ivan@example.com"}`))
+	req := httptest.NewRequest(http.MethodPost, "/appeals", bytes.NewBufferString(`{"category":"question","title":"How to top up?","description":"Need help","name":"Ivan","email":"ivan@example.com"}`))
 	req.Header.Set("Content-Type", "application/json")
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)

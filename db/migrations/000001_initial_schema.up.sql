@@ -30,15 +30,10 @@ INSERT INTO eshkere.region (name) VALUES ('any');
 CREATE TABLE eshkere.advertiser (
     id              INT                         PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name            TEXT                        NOT NULL,
-    email           TEXT                        NOT NULL UNIQUE,
-    phone_number    TEXT                        NOT NULL UNIQUE,
-    password_hash   TEXT                        NOT NULL,
-    password_salt   TEXT                        NOT NULL,
     balance         BIGINT                      NOT NULL DEFAULT 0,
     created_at      TIMESTAMP WITH TIME ZONE    DEFAULT NOW(),
     updated_at      TIMESTAMP WITH TIME ZONE,
     CONSTRAINT check_advertiser_name_length CHECK (LENGTH(name) <= 255),
-    CONSTRAINT check_advertiser_phone_number_length CHECK (LENGTH(phone_number) = 10),
     CONSTRAINT check_advertiser_balance_positive CHECK (balance >= 0)
 );
 

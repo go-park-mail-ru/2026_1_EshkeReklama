@@ -19,15 +19,6 @@ type RegisterResponse struct {
 	Phone string `json:"phone"`
 }
 
-func (r *RegisterRequest) ToInput() *serviceinput.RegisterAdvertiser {
-	return &serviceinput.RegisterAdvertiser{
-		Name:     r.Name,
-		Email:    r.Email,
-		Phone:    r.Phone,
-		Password: r.Password,
-	}
-}
-
 type LoginRequest struct {
 	Identifier string `json:"identifier"`
 	Password   string `json:"password"`
@@ -54,8 +45,6 @@ func (u *UpdateAdvertiserProfileRequest) ToInput(advertiserID int) *serviceinput
 		AdvertiserID: advertiserID,
 		Name:         u.Name,
 		Surname:      u.Surname,
-		Email:        u.Email,
-		Phone:        u.Phone,
 		Company:      u.Company,
 		City:         u.City,
 		Tariff:       u.Tariff,
@@ -86,16 +75,24 @@ type BalanceResponse struct {
 }
 
 func AdvertiserToProfile(adv *models.Advertiser) AdvertiserProfileResponse {
+	return AdvertiserWithContactsToProfile(adv, "", "")
+}
+
+func AdvertiserWithContactsToProfile(adv *models.Advertiser, email, phone string) AdvertiserProfileResponse {
 	if adv == nil {
 		return AdvertiserProfileResponse{}
 	}
 	return AdvertiserProfileResponse{
 		ID:        adv.ID,
 		Name:      adv.Name,
-		Email:     adv.Email,
-		Phone:     adv.Phone,
+		Surname:   adv.Surname,
+		Email:     email,
+		Phone:     phone,
 		AvatarURL: adv.AvatarURL.String,
 		Balance:   adv.Balance,
+		Company:   adv.Company,
+		City:      adv.City,
+		Tariff:    string(adv.Tariff),
 		CreatedAt: adv.CreatedAt.Format(time.RFC3339),
 	}
 }

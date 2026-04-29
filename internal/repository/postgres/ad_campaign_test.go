@@ -22,8 +22,8 @@ func TestAdCampaignRepository_ListAndUpdateAndDelete(t *testing.T) {
 	repo := NewAdCampaignRepository(db)
 
 	now := time.Now()
-	rows := sqlmock.NewRows([]string{"id", "advertiser_id", "status", "name", "daily_budget", "created_at", "updated_at"}).
-		AddRow(1, 7, models.AdStatusWorking, "c", int64(10), now, sql.NullTime{})
+	rows := sqlmock.NewRows([]string{"id", "advertiser_id", "status", "name", "daily_budget", "main_action", "created_at", "updated_at"}).
+		AddRow(1, 7, models.AdStatusWorking, "c", int64(10), "", now, sql.NullTime{})
 
 	mock.ExpectQuery(regexp.QuoteMeta(selectAdCampaignsByAdvertiserID)).
 		WithArgs(7).
@@ -39,7 +39,7 @@ func TestAdCampaignRepository_ListAndUpdateAndDelete(t *testing.T) {
 
 	c := &models.AdCampaign{ID: 1, AdvertiserID: 7, Status: models.AdStatusWorking, Name: "n", DailyBudget: 1, UpdatedAt: sql.NullTime{Time: now, Valid: true}}
 	mock.ExpectExec(regexp.QuoteMeta(updateAdCampaign)).
-		WithArgs(c.AdvertiserID, c.Status, c.Name, c.DailyBudget, c.UpdatedAt, c.ID).
+		WithArgs(c.AdvertiserID, c.Status, c.Name, c.DailyBudget, c.MainAction, c.UpdatedAt, c.ID).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 
 	if err := repo.Update(context.Background(), c); err != nil {

@@ -16,4 +16,5 @@ var (
 	ErrEmailTaken           = errors.New("email already registered")
 	ErrPhoneTaken           = errors.New("phone already registered")
 	ErrInvalidAdvertiserArg = errors.New("invalid advertiser argument")
+	ErrSessionNotFound      = errors.New("session not found")
 )

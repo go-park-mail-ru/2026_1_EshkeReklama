@@ -8,6 +8,7 @@ import (
 	"errors"
 	errs "eshkere/internal/errors"
 	"fmt"
+	"math/big"
 
 	"eshkere/internal/models"
 )
@@ -32,7 +33,7 @@ func (s *Service) GenerateFeedLink(ctx context.Context, campaignID int) (string,
 	return fmt.Sprintf("%s%s", BaseFeedURL, token), nil
 }
 
-func (s *Service) GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error) {
+func (s *Service) GetAdByFeedToken(ctx context.Context, token string) (*models.Ad, error) {
 	if token == "" {
 		return nil, fmt.Errorf("%w: empty token", errs.ErrInvalidAdvertiserArg)
 	}
@@ -47,14 +48,19 @@ func (s *Service) GetAdsByFeedToken(ctx context.Context, token string) ([]*model
 
 	ads, err := s.adRepo.ListByAdCampaignID(ctx, campaignID)
 	if err != nil {
-		return []*models.Ad{}, nil
+		return &models.Ad{}, nil
 	}
 
 	if ads == nil {
-		return []*models.Ad{}, nil
+		return &models.Ad{}, nil
 	}
 
-	return ads, nil
+	randAdInd, err := rand.Int(rand.Reader, big.NewInt(int64(len(ads))))
+	if err != nil {
+		randAdInd = big.NewInt(0)
+	}
+
+	return ads[randAdInd.Int64()], nil
 }
 
 func generateToken(size int) (string, error) {

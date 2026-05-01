@@ -15,9 +15,9 @@ import (
 	"google.golang.org/grpc"
 
 	authrepo "eshkere/internal/auth/repository/postgres"
-	authsession "eshkere/internal/auth/session"
 	authserver "eshkere/internal/auth/server"
 	authsvc "eshkere/internal/auth/service"
+	authsession "eshkere/internal/auth/session"
 	authv1 "eshkere/pkg/pb/auth/v1"
 )
 
@@ -25,6 +25,7 @@ func main() {
 	addr := envOr("AUTH_GRPC_ADDR", ":50051")
 	pgDSN := envOr("AUTH_PG_DSN", "postgres://eshkere:eshkere@localhost:5432/eshkere?sslmode=disable")
 	redisAddr := envOr("AUTH_REDIS_ADDR", "localhost:6379")
+	redisPassword := envOr("AUTH_REDIS_PASSWORD", "")
 	sessionTTL := envDuration("AUTH_SESSION_TTL", 24*time.Hour)
 
 	db, err := initPostgres(pgDSN)
@@ -33,7 +34,7 @@ func main() {
 	}
 	defer db.Close()
 
-	redisPool, err := initRedis(redisAddr)
+	redisPool, err := initRedis(redisAddr, redisPassword)
 	if err != nil {
 		log.Fatalf("redis: %v", err)
 	}
@@ -79,18 +80,23 @@ func initPostgres(dsn string) (*sql.DB, error) {
 	return db, nil
 }
 
-func initRedis(addr string) (*redis.Pool, error) {
+func initRedis(addr, password string) (*redis.Pool, error) {
+	dialOpts := []redis.DialOption{
+		redis.DialConnectTimeout(5 * time.Second),
+		redis.DialReadTimeout(3 * time.Second),
+		redis.DialWriteTimeout(3 * time.Second),
+	}
+	if password != "" {
+		dialOpts = append(dialOpts, redis.DialPassword(password))
+	}
+
 	pool := &redis.Pool{
 		MaxIdle:     10,
 		MaxActive:   100,
 		IdleTimeout: 240 * time.Second,
 		Wait:        true,
 		Dial: func() (redis.Conn, error) {
-			return redis.Dial("tcp", addr,
-				redis.DialConnectTimeout(5*time.Second),
-				redis.DialReadTimeout(3*time.Second),
-				redis.DialWriteTimeout(3*time.Second),
-			)
+			return redis.Dial("tcp", addr, dialOpts...)
 		},
 	}
 	conn := pool.Get()

@@ -60,8 +60,8 @@ type AppealStorage interface {
 }
 
 type AdStorage interface {
-	UploadAdImage(ctx context.Context, adID int, data []byte, ext string, contentType string) (string, error)
-	DeleteAdImage(ctx context.Context, adID int, imageKey string) error
+	UploadAdImage(ctx context.Context, data []byte, ext string, contentType string) (string, error)
+	DeleteAdImage(ctx context.Context, imageKey string) error
 	GetAdImageURL(imagKey string) string
 }
 

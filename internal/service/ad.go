@@ -19,26 +19,24 @@ func (s *Service) CreateAd(ctx context.Context, in *serviceinput.CreateAd) (*mod
 		TargetURL: in.TargetURL,
 	}
 
-	if err := s.adRepo.Create(ctx, ad); err != nil {
-		return nil, err
-	}
-
 	if len(in.Image) > 0 {
 		if s.adStorage == nil {
 			return nil, fmt.Errorf("%w: ad storage is not configured", errs.InternalServiceError)
 		}
 
-		imageKey, err := s.adStorage.UploadAdImage(ctx, ad.ID, in.Image, in.ImageExt, in.ImageType)
+		imageKey, err := s.adStorage.UploadAdImage(ctx, in.Image, in.ImageExt, in.ImageType)
 		if err != nil {
 			return nil, err
 		}
 
-		if err = s.adRepo.UpdateImage(ctx, ad.ID, imageKey); err != nil {
-			_ = s.adStorage.DeleteAdImage(ctx, ad.ID, imageKey)
-			return nil, err
-		}
-
 		ad.ImageURL = imageKey
+	}
+
+	if err := s.adRepo.Create(ctx, ad); err != nil {
+		if ad.ImageURL != "" && s.adStorage != nil {
+			_ = s.adStorage.DeleteAdImage(ctx, ad.ImageURL)
+		}
+		return nil, err
 	}
 
 	s.decorateAdImageURL(ad)
@@ -78,7 +76,7 @@ func (s *Service) UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error
 			imageType = *in.ImageType
 		}
 
-		imageKey, err := s.adStorage.UploadAdImage(ctx, currentAd.ID, *in.Image, imageExt, imageType)
+		imageKey, err := s.adStorage.UploadAdImage(ctx, *in.Image, imageExt, imageType)
 		if err != nil {
 			return err
 		}
@@ -86,7 +84,14 @@ func (s *Service) UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error
 	}
 	currentAd.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
-	return s.adRepo.Update(ctx, currentAd)
+	if err := s.adRepo.Update(ctx, currentAd); err != nil {
+		if in.Image != nil && len(*in.Image) > 0 && s.adStorage != nil {
+			_ = s.adStorage.DeleteAdImage(ctx, currentAd.ImageURL)
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (s *Service) ListAds(ctx context.Context, groupID int) ([]*models.Ad, error) {

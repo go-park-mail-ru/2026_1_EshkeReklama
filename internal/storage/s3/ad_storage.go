@@ -2,9 +2,12 @@ package s3
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type AdStorage struct {
@@ -15,7 +18,7 @@ func NewAdStorage(client *Client) *AdStorage {
 	return &AdStorage{client: client}
 }
 
-func buildAdImageKey(adID int, ext string) string {
+func buildAdImageKey(ext string) string {
 	cleanExt := strings.TrimSpace(ext)
 	if cleanExt == "" {
 		cleanExt = ".bin"
@@ -30,15 +33,20 @@ func buildAdImageKey(adID int, ext string) string {
 		cleanExt = ".bin"
 	}
 
+	suffix := make([]byte, 16)
+	if _, err := rand.Read(suffix); err != nil {
+		return fmt.Sprintf("ads/images/fallback-%d%s", time.Now().UnixNano(), cleanExt)
+	}
+
 	return fmt.Sprintf(
-		"ads/%d/images/%s",
-		adID,
+		"ads/images/%s%s",
+		hex.EncodeToString(suffix),
 		cleanExt,
 	)
 }
 
-func (s *AdStorage) UploadAdImage(ctx context.Context, adID int, data []byte, ext, contentType string) (string, error) {
-	key := buildAdImageKey(adID, ext)
+func (s *AdStorage) UploadAdImage(ctx context.Context, data []byte, ext, contentType string) (string, error) {
+	key := buildAdImageKey(ext)
 
 	if err := s.client.PutObject(ctx, key, data, contentType); err != nil {
 		return "", fmt.Errorf("upload ad image: %w", err)
@@ -47,7 +55,7 @@ func (s *AdStorage) UploadAdImage(ctx context.Context, adID int, data []byte, ex
 	return key, nil
 }
 
-func (s *AdStorage) DeleteAdImage(ctx context.Context, adID int, imageKey string) error {
+func (s *AdStorage) DeleteAdImage(ctx context.Context, imageKey string) error {
 	if strings.TrimSpace(imageKey) == "" {
 		return nil
 	}

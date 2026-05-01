@@ -25,7 +25,7 @@ type Service interface {
 	TopUpAdvertiserBalance(ctx context.Context, advertiserID int, amount int64) (int64, error)
 
 	GenerateFeedLink(ctx context.Context, campaignID int) (string, error)
-	GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error)
+	GetAdByFeedToken(ctx context.Context, token string) (*models.Ad, error)
 
 	CreateAdCampaign(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error)
 	UpdateAdCampaign(ctx context.Context, in *serviceinput.UpdateAdCampaign) error

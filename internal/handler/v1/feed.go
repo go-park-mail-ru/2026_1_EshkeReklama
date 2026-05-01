@@ -28,20 +28,13 @@ func (a *API) GetFeed(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	token := mux.Vars(r)["token"]
 
-	ads, err := a.service.GetAdsByFeedToken(ctx, token)
+	ad, err := a.service.GetAdByFeedToken(ctx, token)
 	if err != nil {
 		handler.HandleError(w, r, "getting ads by feed token", err)
 		return
 	}
 
-	adsResponse := make([]*dto.AdResponse, 0, len(ads))
-	for _, ad := range ads {
-		adsResponse = append(adsResponse, dto.ToAdResponse(ad))
-	}
-
-	httpx.JSON(w, http.StatusOK, map[string]any{
-		"ads": adsResponse,
-	})
+	httpx.JSON(w, http.StatusOK, dto.ToAdResponse(ad))
 }
 
 // @Summary      Создать feed-ссылку для кампании

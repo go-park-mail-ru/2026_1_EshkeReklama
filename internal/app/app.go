@@ -2,13 +2,13 @@ package app
 
 import (
 	"context"
+	authclient "eshkere/internal/client/auth"
 	"eshkere/internal/config"
 	"eshkere/internal/handler"
 	middleware2 "eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1"
 	"eshkere/internal/repository/postgres"
 	"eshkere/internal/service"
-	authclient "eshkere/internal/client/auth"
 	"fmt"
 	"io"
 	"net/http"
@@ -33,7 +33,14 @@ type App struct {
 func New(configPath string) *App {
 	var closers []io.Closer
 
-	logger := zap.Must(zap.NewDevelopment()).Sugar()
+	zapCfg := zap.NewDevelopmentConfig()
+	zapCfg.DisableStacktrace = true
+
+	baseLogger, err := zapCfg.Build()
+	if err != nil {
+		panic(err)
+	}
+	logger := baseLogger.Sugar()
 
 	cfg, err := config.ReadConfig(configPath)
 	if err != nil {
@@ -92,9 +99,7 @@ func New(configPath string) *App {
 	}
 
 	authAddr := cfg.AuthService.GRPCAddr
-	if authAddr == "" {
-		authAddr = "localhost:50051"
-	}
+
 	ac, err := authclient.New(authAddr)
 	if err != nil {
 		logger.Fatalf("Failed to connect to auth service: %v", err)

@@ -1,8 +1,28 @@
 services:
+  auth:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: auth
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      AUTH_PG_DSN: postgres://${POSTGRES_USER:-eshkere}:${POSTGRES_PASSWORD:-eshkere}@postgres:5432/${POSTGRES_DB:-eshkere}?sslmode=disable
+      AUTH_REDIS_ADDR: redis:6379
+      AUTH_REDIS_PASSWORD: ${REDIS_PASSWORD:-password}
+      AUTH_GRPC_ADDR: :50051
+    ports:
+      - "50051:50051"
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      target: eshkere
     restart: unless-stopped
     depends_on:
       postgres:
@@ -12,6 +32,8 @@ services:
       migrate:
         condition: service_completed_successfully
       minio:
+        condition: service_started
+      auth:
         condition: service_started
     environment:
       POSTGRES_HOST: postgres
@@ -26,6 +48,7 @@ services:
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-minioadmin}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
       S3_PUBLIC_BASE_URL: ${S3_PUBLIC_BASE_URL:-http://localhost:9000/eshkere}
+      AUTH_GRPC_ADDR: ${AUTH_GRPC_ADDR}
     ports:
       - "8000:8000"
 

@@ -85,13 +85,13 @@ func AdvertiserWithContactsToProfile(adv *models.Advertiser, email, phone string
 	return AdvertiserProfileResponse{
 		ID:        adv.ID,
 		Name:      adv.Name,
-		Surname:   adv.Surname,
+		Surname:   adv.Surname.String,
 		Email:     email,
 		Phone:     phone,
 		AvatarURL: adv.AvatarURL.String,
 		Balance:   adv.Balance,
-		Company:   adv.Company,
-		City:      adv.City,
+		Company:   adv.Company.String,
+		City:      adv.City.String,
 		Tariff:    string(adv.Tariff),
 		CreatedAt: adv.CreatedAt.Format(time.RFC3339),
 	}

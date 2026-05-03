@@ -28,6 +28,18 @@ func (s *Service) UpdateAdvertiserProfile(ctx context.Context, in *serviceinput.
 	if in.Name != nil {
 		adv.Name = *in.Name
 	}
+	if in.Surname != nil {
+		adv.Surname = sql.NullString{String: *in.Surname, Valid: true}
+	}
+	if in.Company != nil {
+		adv.Company = sql.NullString{String: *in.Company, Valid: true}
+	}
+	if in.City != nil {
+		adv.City = sql.NullString{String: *in.City, Valid: true}
+	}
+	if in.Tariff != nil {
+		adv.Tariff = models.TariffType(*in.Tariff)
+	}
 
 	if err = s.advertiserRepo.Update(ctx, adv); err != nil {
 		return nil, err

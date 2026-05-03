@@ -118,7 +118,9 @@ func resolvePartnerCookieConfig(defaultCfg, partnerCfg CookieConfig) CookieConfi
 
 func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterAdvertiserHandlers(r)
-	a.RegisterPartnerHandlers(r)
+	// Partner auth/profile HTTP layer is intentionally disabled for now.
+	// We keep the underlying service/repository code in place, but do not
+	// mount these endpoints until the partner onboarding flow is enabled.
 	a.RegisterPartnerDictionaryHandlers(r)
 	a.RegisterPartnerSiteHandlers(r)
 	a.RegisterPartnerBlockHandlers(r)

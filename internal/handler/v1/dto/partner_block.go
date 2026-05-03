@@ -38,6 +38,7 @@ type UpdatePartnerBlockGeneralRequest struct {
 	Theme                        *string `json:"theme" validate:"omitempty,oneof=light dark"`
 	InterscrollerMode            *string `json:"interscroller_mode" validate:"omitempty,oneof=auto enabled disabled"`
 	InterscrollerBackgroundColor *string `json:"interscroller_background_color"`
+	RevenueShareBPS              *int    `json:"revenue_share_bps" validate:"omitempty,gte=0,lte=10000"`
 }
 
 func (r *UpdatePartnerBlockGeneralRequest) ToInput(blockID int) *serviceinput.UpdatePartnerBlockGeneral {
@@ -70,6 +71,7 @@ func (r *UpdatePartnerBlockGeneralRequest) ToInput(blockID int) *serviceinput.Up
 		v := models.InterscrollerMode(*r.InterscrollerMode)
 		input.InterscrollerMode = &v
 	}
+	input.RevenueShareBPS = r.RevenueShareBPS
 	return input
 }
 
@@ -151,6 +153,7 @@ type PartnerBlockGeneralSettingsResponse struct {
 	Theme                        string  `json:"theme"`
 	InterscrollerMode            string  `json:"interscroller_mode"`
 	InterscrollerBackgroundColor *string `json:"interscroller_background_color"`
+	RevenueShareBPS              int     `json:"revenue_share_bps"`
 }
 
 type PartnerBlockGeoRuleResponse struct {
@@ -228,6 +231,7 @@ func ToPartnerBlockDetailsResponse(block *models.PartnerBlock, rules []*models.P
 			Theme:                        string(block.Theme),
 			InterscrollerMode:            string(block.InterscrollerMode),
 			InterscrollerBackgroundColor: toNullableString(block.InterscrollerBackgroundColor),
+			RevenueShareBPS:              block.RevenueShareBPS,
 		},
 		GeographySettings: PartnerBlockGeographySettingsResponse{
 			OnlyConfigured: onlyConfigured,

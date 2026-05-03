@@ -28,6 +28,7 @@ type Partner struct {
 	RegistrationRegionCode string          `db:"registration_region_code"`
 	CooperationForm        CooperationForm `db:"cooperation_form"`
 	PayoutCurrency         PayoutCurrency  `db:"payout_currency"`
+	Balance                int64           `db:"balance"`
 	CreatedAt              time.Time       `db:"created_at"`
 	UpdatedAt              sql.NullTime    `db:"updated_at"`
 }

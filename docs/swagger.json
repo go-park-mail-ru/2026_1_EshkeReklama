@@ -2764,6 +2764,9 @@
         "dto.AdCampaignResponse": {
             "type": "object",
             "properties": {
+                "cpm_price": {
+                    "type": "integer"
+                },
                 "daily_budget": {
                     "type": "integer"
                 },
@@ -2933,6 +2936,14 @@
                 "name"
             ],
             "properties": {
+                "cpm_price": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "daily_budget": {
+                    "type": "integer",
+                    "minimum": 0
+                },
                 "main_action": {
                     "type": "string"
                 },
@@ -3252,6 +3263,9 @@
                 "interscroller_mode": {
                     "type": "string"
                 },
+                "revenue_share_bps": {
+                    "type": "integer"
+                },
                 "size_mode": {
                     "type": "string"
                 },
@@ -3340,6 +3354,9 @@
         "dto.PartnerProfileResponse": {
             "type": "object",
             "properties": {
+                "balance": {
+                    "type": "integer"
+                },
                 "birth_date": {
                     "type": "string"
                 },
@@ -3501,6 +3518,14 @@
         "dto.UpdateAdCampaignRequest": {
             "type": "object",
             "properties": {
+                "cpm_price": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "daily_budget": {
+                    "type": "integer",
+                    "minimum": 0
+                },
                 "main_action": {
                     "type": "string",
                     "minLength": 1
@@ -3617,6 +3642,11 @@
                         "enabled",
                         "disabled"
                     ]
+                },
+                "revenue_share_bps": {
+                    "type": "integer",
+                    "maximum": 10000,
+                    "minimum": 0
                 },
                 "size_mode": {
                     "type": "string",

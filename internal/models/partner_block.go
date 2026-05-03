@@ -66,6 +66,7 @@ type PartnerBlock struct {
 	Theme                        ThemeMode          `db:"theme"`
 	InterscrollerMode            InterscrollerMode  `db:"interscroller_mode"`
 	InterscrollerBackgroundColor sql.NullString     `db:"interscroller_background_color"`
+	RevenueShareBPS              int                `db:"revenue_share_bps"`
 	SelfAdSettings               json.RawMessage    `db:"self_ad_settings"`
 	CreatedAt                    time.Time          `db:"created_at"`
 	UpdatedAt                    sql.NullTime       `db:"updated_at"`

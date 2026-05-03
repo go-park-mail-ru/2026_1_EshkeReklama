@@ -246,6 +246,7 @@ func defaultPartnerBlock(blockType models.PartnerBlockType) *models.PartnerBlock
 		Theme:                        models.ThemeModeLight,
 		InterscrollerMode:            models.InterscrollerModeAuto,
 		InterscrollerBackgroundColor: background,
+		RevenueShareBPS:              7000,
 		SelfAdSettings:               append(json.RawMessage(nil), defaultSelfAdSettings...),
 	}
 }
@@ -360,6 +361,12 @@ func (s *Service) UpdatePartnerBlockGeneralSettings(ctx context.Context, partner
 			block.InterscrollerBackgroundColor = sql.NullString{String: color, Valid: true}
 		}
 	}
+	if in.RevenueShareBPS != nil {
+		if *in.RevenueShareBPS < 0 || *in.RevenueShareBPS > 10000 {
+			return nil, fmt.Errorf("%w: invalid revenue share", errs.BadRequestError)
+		}
+		block.RevenueShareBPS = *in.RevenueShareBPS
+	}
 	if err := s.partnerBlockRepo.Update(ctx, block); err != nil {
 		return nil, err
 	}
@@ -425,6 +432,10 @@ func (s *Service) DeletePartnerBlock(ctx context.Context, partnerID, siteID, blo
 		return err
 	}
 	return s.partnerBlockRepo.Delete(ctx, block.ID)
+}
+
+func (s *Service) SettlePartnerDailyEarnings(ctx context.Context, earningDate time.Time) (int64, error) {
+	return s.partnerRepo.SettleDailyEarnings(ctx, dateOnly(earningDate.UTC()))
 }
 
 func (s *Service) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL, adSDKURL string) (string, string, string, string, error) {

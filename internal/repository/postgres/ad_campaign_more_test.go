@@ -21,9 +21,9 @@ func TestAdCampaignRepository_CreateAndGetByID(t *testing.T) {
 
 	repo := NewAdCampaignRepository(db)
 
-	c := &models.AdCampaign{AdvertiserID: 7, Status: models.AdStatusModeration, Name: "n", DailyBudget: 10}
+	c := &models.AdCampaign{AdvertiserID: 7, Status: models.AdStatusModeration, Name: "n", DailyBudget: 10, CPMPrice: 20}
 	mock.ExpectQuery(regexp.QuoteMeta(insertAdCampaign)).
-		WithArgs(c.AdvertiserID, c.Status, c.Name, c.DailyBudget, c.MainAction).
+		WithArgs(c.AdvertiserID, c.Status, c.Name, c.DailyBudget, c.CPMPrice, c.MainAction).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(3))
 
 	if err := repo.Create(context.Background(), c); err != nil {
@@ -36,8 +36,8 @@ func TestAdCampaignRepository_CreateAndGetByID(t *testing.T) {
 	now := time.Now()
 	mock.ExpectQuery(regexp.QuoteMeta(selectAdCampaignByID)).
 		WithArgs(3).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "advertiser_id", "status", "name", "daily_budget", "main_action", "created_at", "updated_at"}).
-			AddRow(3, 7, models.AdStatusModeration, "n", int64(10), "", now, sql.NullTime{}),
+		WillReturnRows(sqlmock.NewRows([]string{"id", "advertiser_id", "status", "name", "daily_budget", "cpm_price", "main_action", "created_at", "updated_at"}).
+			AddRow(3, 7, models.AdStatusModeration, "n", int64(10), int64(20), "", now, sql.NullTime{}),
 		)
 
 	got, err := repo.GetByID(context.Background(), 3)

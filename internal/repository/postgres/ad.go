@@ -7,6 +7,7 @@ import (
 	"eshkere/internal/models"
 	"eshkere/pkg/logger"
 	"fmt"
+	"time"
 )
 
 type AdRepository struct {
@@ -48,6 +49,45 @@ const (
 	WHERE a.status = 'working' AND ac.status = 'working'
 	ORDER BY RANDOM()
 	LIMIT 1`
+
+	selectAdCandidates = `SELECT
+		ac.id, ac.advertiser_id, ac.daily_budget, ac.cpm_price, adv.balance,
+		COALESCE(ds.advertiser_spend, 0),
+		a.id, a.ad_group_id, a.status, a.title, a.short_desc, a.image_url, a.target_url, a.created_at, a.updated_at
+	FROM eshkere.ad a
+	JOIN eshkere.ad_group ag ON a.ad_group_id = ag.id
+	JOIN eshkere.ad_campaign ac ON ag.ad_campaign_id = ac.id
+	JOIN eshkere.advertiser adv ON ac.advertiser_id = adv.id
+	LEFT JOIN eshkere.ad_campaign_daily_spend ds
+		ON ds.campaign_id = ac.id AND ds.spend_date = $1
+	WHERE a.status = 'working' AND ac.status = 'working'
+	ORDER BY ac.id, a.id`
+
+	updateAdvertiserBalanceForImpression = `UPDATE eshkere.advertiser
+	SET balance = balance - $1
+	WHERE id = $2 AND balance >= $1`
+
+	upsertCampaignDailySpend = `INSERT INTO eshkere.ad_campaign_daily_spend (
+		campaign_id, spend_date, advertiser_spend, partner_reward, platform_revenue, impressions
+	) SELECT $1, $2, $3, $4, $5, 1
+	WHERE $3 <= $6
+	ON CONFLICT (campaign_id, spend_date)
+	DO UPDATE SET
+		advertiser_spend = eshkere.ad_campaign_daily_spend.advertiser_spend + EXCLUDED.advertiser_spend,
+		partner_reward = eshkere.ad_campaign_daily_spend.partner_reward + EXCLUDED.partner_reward,
+		platform_revenue = eshkere.ad_campaign_daily_spend.platform_revenue + EXCLUDED.platform_revenue,
+		impressions = eshkere.ad_campaign_daily_spend.impressions + 1,
+		updated_at = NOW()
+	WHERE eshkere.ad_campaign_daily_spend.advertiser_spend + EXCLUDED.advertiser_spend <= $6`
+
+	upsertPartnerBlockDailyEarning = `INSERT INTO eshkere.partner_block_daily_earning (
+		partner_block_id, earning_date, reward, impressions
+	) VALUES ($1, $2, $3, 1)
+	ON CONFLICT (partner_block_id, earning_date)
+	DO UPDATE SET
+		reward = eshkere.partner_block_daily_earning.reward + EXCLUDED.reward,
+		impressions = eshkere.partner_block_daily_earning.impressions + 1,
+		updated_at = NOW()`
 
 	updateAd = `UPDATE eshkere.ad SET
 		ad_group_id = $1, status = $2, title = $3, short_desc = $4, image_url = $5, target_url = $6, updated_at = $7
@@ -195,6 +235,99 @@ func (r *AdRepository) GetRandomWorking(ctx context.Context) (*models.Ad, error)
 	}
 
 	return &ad, nil
+}
+
+func (r *AdRepository) ListAdCandidates(ctx context.Context, spendDate time.Time) ([]*models.AdCandidate, error) {
+	logger.GetLoggerFromCtx(ctx).Debugf("db: list ad candidates by date: %s", spendDate.Format("2006-01-02"))
+
+	rows, err := r.db.QueryContext(ctx, selectAdCandidates, spendDate)
+	if err != nil {
+		return nil, fmt.Errorf("list ad candidates: %w", err)
+	}
+	defer rows.Close()
+
+	candidates := make([]*models.AdCandidate, 0)
+	for rows.Next() {
+		candidate := &models.AdCandidate{Ad: &models.Ad{}}
+		if err := rows.Scan(
+			&candidate.CampaignID,
+			&candidate.AdvertiserID,
+			&candidate.DailyBudget,
+			&candidate.CPMPrice,
+			&candidate.AdvertiserBalance,
+			&candidate.SpentToday,
+			&candidate.Ad.ID,
+			&candidate.Ad.AdGroupID,
+			&candidate.Ad.Status,
+			&candidate.Ad.Title,
+			&candidate.Ad.ShortDesc,
+			&candidate.Ad.ImageURL,
+			&candidate.Ad.TargetURL,
+			&candidate.Ad.CreatedAt,
+			&candidate.Ad.UpdatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("scan ad candidate: %w", err)
+		}
+		candidates = append(candidates, candidate)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate ad candidates: %w", err)
+	}
+
+	return candidates, nil
+}
+
+func (r *AdRepository) ReserveImpression(ctx context.Context, reservation models.ImpressionReservation) (bool, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return false, fmt.Errorf("begin reserve impression tx: %w", err)
+	}
+	defer tx.Rollback()
+
+	result, err := tx.ExecContext(ctx, updateAdvertiserBalanceForImpression, reservation.Price, reservation.AdvertiserID)
+	if err != nil {
+		return false, fmt.Errorf("reserve advertiser balance: %w", err)
+	}
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("advertiser balance rows affected: %w", err)
+	}
+	if affected == 0 {
+		return false, nil
+	}
+
+	result, err = tx.ExecContext(ctx, upsertCampaignDailySpend,
+		reservation.CampaignID,
+		reservation.SpendDate,
+		reservation.Price,
+		reservation.PartnerReward,
+		reservation.PlatformRevenue,
+		reservation.DailyBudget,
+	)
+	if err != nil {
+		return false, fmt.Errorf("reserve campaign daily spend: %w", err)
+	}
+	affected, err = result.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("campaign daily spend rows affected: %w", err)
+	}
+	if affected == 0 {
+		return false, nil
+	}
+
+	if _, err = tx.ExecContext(ctx, upsertPartnerBlockDailyEarning,
+		reservation.PartnerBlockID,
+		reservation.SpendDate,
+		reservation.PartnerReward,
+	); err != nil {
+		return false, fmt.Errorf("reserve partner block earning: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return false, fmt.Errorf("commit reserve impression tx: %w", err)
+	}
+
+	return true, nil
 }
 
 func (r *AdRepository) Update(ctx context.Context, ad *models.Ad) error {

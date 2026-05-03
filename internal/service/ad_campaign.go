@@ -13,6 +13,8 @@ func (s *Service) CreateAdCampaign(ctx context.Context, in *serviceinput.CreateA
 		AdvertiserID: in.AdvertiserID,
 		Status:       models.AdStatusModeration,
 		Name:         in.Name,
+		DailyBudget:  in.DailyBudget,
+		CPMPrice:     in.CPMPrice,
 		MainAction:   in.MainAction,
 	}
 
@@ -33,6 +35,12 @@ func (s *Service) UpdateAdCampaign(ctx context.Context, in *serviceinput.UpdateA
 	}
 	if in.Status != nil {
 		current.Status = *in.Status
+	}
+	if in.DailyBudget != nil {
+		current.DailyBudget = *in.DailyBudget
+	}
+	if in.CPMPrice != nil {
+		current.CPMPrice = *in.CPMPrice
 	}
 	if in.MainAction != nil {
 		current.MainAction = *in.MainAction

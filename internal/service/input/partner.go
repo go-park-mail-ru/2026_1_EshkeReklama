@@ -60,6 +60,7 @@ type UpdatePartnerBlockGeneral struct {
 	Theme                        *models.ThemeMode
 	InterscrollerMode            *models.InterscrollerMode
 	InterscrollerBackgroundColor *string
+	RevenueShareBPS              *int
 }
 
 type UpdatePartnerBlockGeography struct {

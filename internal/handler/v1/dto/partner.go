@@ -84,6 +84,7 @@ type PartnerProfileResponse struct {
 	RegistrationRegionCode string `json:"registration_region_code"`
 	CooperationForm        string `json:"cooperation_form"`
 	PayoutCurrency         string `json:"payout_currency"`
+	Balance                int64  `json:"balance"`
 	CreatedAt              string `json:"created_at"`
 }
 
@@ -103,6 +104,7 @@ func PartnerToProfile(partner *models.Partner, email, phone string) PartnerProfi
 		RegistrationRegionCode: partner.RegistrationRegionCode,
 		CooperationForm:        string(partner.CooperationForm),
 		PayoutCurrency:         string(partner.PayoutCurrency),
+		Balance:                partner.Balance,
 		CreatedAt:              partner.CreatedAt.Format(time.RFC3339),
 	}
 }

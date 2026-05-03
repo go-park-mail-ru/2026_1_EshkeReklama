@@ -13,6 +13,7 @@ import (
 	context "context"
 	models "eshkere/internal/models"
 	reflect "reflect"
+	time "time"
 
 	gomock "go.uber.org/mock/gomock"
 )
@@ -135,6 +136,21 @@ func (m *MockPartnerRepository) GetByID(ctx context.Context, id int) (*models.Pa
 func (mr *MockPartnerRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockPartnerRepository)(nil).GetByID), ctx, id)
+}
+
+// SettleDailyEarnings mocks base method.
+func (m *MockPartnerRepository) SettleDailyEarnings(ctx context.Context, earningDate time.Time) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SettleDailyEarnings", ctx, earningDate)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SettleDailyEarnings indicates an expected call of SettleDailyEarnings.
+func (mr *MockPartnerRepositoryMockRecorder) SettleDailyEarnings(ctx, earningDate any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SettleDailyEarnings", reflect.TypeOf((*MockPartnerRepository)(nil).SettleDailyEarnings), ctx, earningDate)
 }
 
 // Update mocks base method.
@@ -700,6 +716,21 @@ func (mr *MockAdRepositoryMockRecorder) GetRandomWorking(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRandomWorking", reflect.TypeOf((*MockAdRepository)(nil).GetRandomWorking), ctx)
 }
 
+// ListAdCandidates mocks base method.
+func (m *MockAdRepository) ListAdCandidates(ctx context.Context, spendDate time.Time) ([]*models.AdCandidate, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAdCandidates", ctx, spendDate)
+	ret0, _ := ret[0].([]*models.AdCandidate)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListAdCandidates indicates an expected call of ListAdCandidates.
+func (mr *MockAdRepositoryMockRecorder) ListAdCandidates(ctx, spendDate any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAdCandidates", reflect.TypeOf((*MockAdRepository)(nil).ListAdCandidates), ctx, spendDate)
+}
+
 // ListByAdCampaignID mocks base method.
 func (m *MockAdRepository) ListByAdCampaignID(ctx context.Context, campaignID int) ([]*models.Ad, error) {
 	m.ctrl.T.Helper()
@@ -728,6 +759,21 @@ func (m *MockAdRepository) ListByAdGroupID(ctx context.Context, adGroupID int) (
 func (mr *MockAdRepositoryMockRecorder) ListByAdGroupID(ctx, adGroupID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAdGroupID", reflect.TypeOf((*MockAdRepository)(nil).ListByAdGroupID), ctx, adGroupID)
+}
+
+// ReserveImpression mocks base method.
+func (m *MockAdRepository) ReserveImpression(ctx context.Context, reservation models.ImpressionReservation) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReserveImpression", ctx, reservation)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReserveImpression indicates an expected call of ReserveImpression.
+func (mr *MockAdRepositoryMockRecorder) ReserveImpression(ctx, reservation any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReserveImpression", reflect.TypeOf((*MockAdRepository)(nil).ReserveImpression), ctx, reservation)
 }
 
 // Update mocks base method.

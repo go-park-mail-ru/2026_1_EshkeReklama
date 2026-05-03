@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"eshkere/internal/models"
+	"time"
 )
 
 type AdvertiserRepository interface {
@@ -17,6 +18,7 @@ type PartnerRepository interface {
 	CreateProfile(ctx context.Context, partner *models.Partner) error
 	GetByID(ctx context.Context, id int) (*models.Partner, error)
 	Update(ctx context.Context, partner *models.Partner) error
+	SettleDailyEarnings(ctx context.Context, earningDate time.Time) (int64, error)
 }
 
 type PartnerSiteRepository interface {
@@ -64,6 +66,8 @@ type AdRepository interface {
 	ListByAdGroupID(ctx context.Context, adGroupID int) ([]*models.Ad, error)
 	ListByAdCampaignID(ctx context.Context, campaignID int) ([]*models.Ad, error)
 	GetRandomWorking(ctx context.Context) (*models.Ad, error)
+	ListAdCandidates(ctx context.Context, spendDate time.Time) ([]*models.AdCandidate, error)
+	ReserveImpression(ctx context.Context, reservation models.ImpressionReservation) (bool, error)
 	UpdateImage(ctx context.Context, adID int, imageKey string) error
 	Update(ctx context.Context, ad *models.Ad) error
 	Delete(ctx context.Context, id int) error

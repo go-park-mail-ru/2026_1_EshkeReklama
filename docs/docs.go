@@ -2770,6 +2770,9 @@ const docTemplate = `{
         "dto.AdCampaignResponse": {
             "type": "object",
             "properties": {
+                "cpm_price": {
+                    "type": "integer"
+                },
                 "daily_budget": {
                     "type": "integer"
                 },
@@ -2939,6 +2942,14 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
+                "cpm_price": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "daily_budget": {
+                    "type": "integer",
+                    "minimum": 0
+                },
                 "main_action": {
                     "type": "string"
                 },
@@ -3258,6 +3269,9 @@ const docTemplate = `{
                 "interscroller_mode": {
                     "type": "string"
                 },
+                "revenue_share_bps": {
+                    "type": "integer"
+                },
                 "size_mode": {
                     "type": "string"
                 },
@@ -3346,6 +3360,9 @@ const docTemplate = `{
         "dto.PartnerProfileResponse": {
             "type": "object",
             "properties": {
+                "balance": {
+                    "type": "integer"
+                },
                 "birth_date": {
                     "type": "string"
                 },
@@ -3507,6 +3524,14 @@ const docTemplate = `{
         "dto.UpdateAdCampaignRequest": {
             "type": "object",
             "properties": {
+                "cpm_price": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "daily_budget": {
+                    "type": "integer",
+                    "minimum": 0
+                },
                 "main_action": {
                     "type": "string",
                     "minLength": 1
@@ -3623,6 +3648,11 @@ const docTemplate = `{
                         "enabled",
                         "disabled"
                     ]
+                },
+                "revenue_share_bps": {
+                    "type": "integer",
+                    "maximum": 10000,
+                    "minimum": 0
                 },
                 "size_mode": {
                     "type": "string",

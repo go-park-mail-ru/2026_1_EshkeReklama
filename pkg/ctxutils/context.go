@@ -11,10 +11,12 @@ type ContextKey string
 
 const (
 	AdvertiserIDKey ContextKey = "advertiser_id"
+	PartnerIDKey    ContextKey = "partner_id"
 	RequestIDKey    ContextKey = "request_id"
 )
 
 var ErrAdvertiserIDNotFound = errors.New("advertiser id not found in logger")
+var ErrPartnerIDNotFound = errors.New("partner id not found in logger")
 
 func AdvertiserIDFromContext(ctx context.Context) (int, error) {
 	value := ctx.Value(AdvertiserIDKey)
@@ -25,6 +27,20 @@ func AdvertiserIDFromContext(ctx context.Context) (int, error) {
 	id, ok := value.(int)
 	if !ok {
 		return 0, ErrAdvertiserIDNotFound
+	}
+
+	return id, nil
+}
+
+func PartnerIDFromContext(ctx context.Context) (int, error) {
+	value := ctx.Value(PartnerIDKey)
+	if value == nil {
+		return 0, ErrPartnerIDNotFound
+	}
+
+	id, ok := value.(int)
+	if !ok {
+		return 0, ErrPartnerIDNotFound
 	}
 
 	return id, nil

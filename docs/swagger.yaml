@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  dto.AdCampaignResponse:
+  eshkere_internal_handler_v1_dto.AdCampaignResponse:
     properties:
       daily_budget:
         type: integer
@@ -13,7 +13,7 @@ definitions:
       status:
         type: string
     type: object
-  dto.AdGroupResponse:
+  eshkere_internal_handler_v1_dto.AdGroupResponse:
     properties:
       age_from:
         type: integer
@@ -30,7 +30,7 @@ definitions:
       topic_id:
         type: integer
     type: object
-  dto.AdResponse:
+  eshkere_internal_handler_v1_dto.AdResponse:
     properties:
       id:
         type: integer
@@ -45,7 +45,7 @@ definitions:
       title:
         type: string
     type: object
-  dto.AdvertiserProfileResponse:
+  eshkere_internal_handler_v1_dto.AdvertiserProfileResponse:
     properties:
       avatar_url:
         type: string
@@ -70,7 +70,7 @@ definitions:
       tariff:
         type: string
     type: object
-  dto.AppealResponse:
+  eshkere_internal_handler_v1_dto.AppealResponse:
     properties:
       category:
         type: string
@@ -87,12 +87,12 @@ definitions:
       title:
         type: string
     type: object
-  dto.BalanceResponse:
+  eshkere_internal_handler_v1_dto.BalanceResponse:
     properties:
       balance:
         type: integer
     type: object
-  dto.CreateAdCampaignRequest:
+  eshkere_internal_handler_v1_dto.CreateAdCampaignRequest:
     properties:
       main_action:
         type: string
@@ -101,12 +101,12 @@ definitions:
     required:
     - name
     type: object
-  dto.CreateAdCampaignResponse:
+  eshkere_internal_handler_v1_dto.CreateAdCampaignResponse:
     properties:
       id:
         type: integer
     type: object
-  dto.CreateAdGroupRequest:
+  eshkere_internal_handler_v1_dto.CreateAdGroupRequest:
     properties:
       age_from:
         type: integer
@@ -132,65 +132,110 @@ definitions:
     - region_id
     - topic_id
     type: object
-  dto.CreateAdGroupResponse:
+  eshkere_internal_handler_v1_dto.CreateAdGroupResponse:
     properties:
       id:
         type: integer
     type: object
-  dto.CreateAdResponse:
+  eshkere_internal_handler_v1_dto.CreateAdResponse:
     properties:
       id:
         type: integer
     type: object
-  dto.CreateAppealResponse:
+  eshkere_internal_handler_v1_dto.CreateAppealResponse:
     properties:
       id:
         type: integer
     type: object
-  dto.ListAdCampaignsResponse:
+  eshkere_internal_handler_v1_dto.CreatePartnerBlockRequest:
+    properties:
+      block_type:
+        enum:
+        - banner
+        - fullscreen
+        - floor_ad
+        - top_ad
+        - feed
+        - in_image
+        type: string
+      name:
+        type: string
+    required:
+    - block_type
+    - name
+    type: object
+  eshkere_internal_handler_v1_dto.CreatePartnerSiteRequest:
+    properties:
+      domain:
+        type: string
+      site_name:
+        type: string
+    required:
+    - domain
+    - site_name
+    type: object
+  eshkere_internal_handler_v1_dto.ListAdCampaignsResponse:
     properties:
       advertiser_id:
         type: integer
       campaigns:
         items:
-          $ref: '#/definitions/dto.AdCampaignResponse'
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.AdCampaignResponse'
         type: array
     type: object
-  dto.ListAdGroupsResponse:
+  eshkere_internal_handler_v1_dto.ListAdGroupsResponse:
     properties:
       ad_campaign_id:
         type: integer
       groups:
         items:
-          $ref: '#/definitions/dto.AdGroupResponse'
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.AdGroupResponse'
         type: array
     type: object
-  dto.ListAdsResponse:
+  eshkere_internal_handler_v1_dto.ListAdsResponse:
     properties:
       ads:
         items:
-          $ref: '#/definitions/dto.AdResponse'
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.AdResponse'
         type: array
       group_id:
         type: integer
     type: object
-  dto.ListAppealsResponse:
+  eshkere_internal_handler_v1_dto.ListAppealsResponse:
     properties:
       advertiser_id:
         type: integer
       appeals:
         items:
-          $ref: '#/definitions/dto.AppealResponse'
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.AppealResponse'
         type: array
     type: object
-  dto.LoginRequest:
+  eshkere_internal_handler_v1_dto.ListPartnerBlocksResponse:
+    properties:
+      blocks:
+        items:
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockResponse'
+        type: array
+      site_id:
+        type: integer
+    type: object
+  eshkere_internal_handler_v1_dto.ListPartnerSitesResponse:
+    properties:
+      partner_id:
+        type: integer
+      sites:
+        items:
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerSiteResponse'
+        type: array
+    type: object
+  eshkere_internal_handler_v1_dto.LoginRequest:
     properties:
       identifier:
         type: string
       password:
         type: string
     type: object
-  dto.LoginResponse:
+  eshkere_internal_handler_v1_dto.LoginResponse:
     properties:
       email:
         type: string
@@ -199,7 +244,210 @@ definitions:
       phone:
         type: string
     type: object
-  dto.RegisterRequest:
+  eshkere_internal_handler_v1_dto.PartnerAuthResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      phone:
+        type: string
+    type: object
+  eshkere_internal_handler_v1_dto.PartnerBlockDetailsResponse:
+    properties:
+      block_type:
+        type: string
+      created_at:
+        type: string
+      general_settings:
+        $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockGeneralSettingsResponse'
+      geography_settings:
+        $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockGeographySettingsResponse'
+      id:
+        type: integer
+      name:
+        type: string
+      self_ad_settings:
+        $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockSelfAdSettingsResponse'
+      site_id:
+        type: integer
+      status:
+        type: string
+      supported_platforms:
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: string
+    type: object
+  eshkere_internal_handler_v1_dto.PartnerBlockEmbedResponse:
+    properties:
+      block_id:
+        type: integer
+      embed_token:
+        type: string
+      html_snippet:
+        type: string
+      iframe_url:
+        type: string
+      script_url:
+        type: string
+    type: object
+  eshkere_internal_handler_v1_dto.PartnerBlockGeneralSettingsResponse:
+    properties:
+      amp_mode:
+        type: string
+      border_mode:
+        type: string
+      corner_mode:
+        type: string
+      cpm_strategy:
+        type: string
+      interscroller_background_color:
+        type: string
+      interscroller_mode:
+        type: string
+      size_mode:
+        type: string
+      theme:
+        type: string
+    type: object
+  eshkere_internal_handler_v1_dto.PartnerBlockGeoRuleResponse:
+    properties:
+      cpmv:
+        type: integer
+      geo_code:
+        type: string
+      is_enabled:
+        type: boolean
+    type: object
+  eshkere_internal_handler_v1_dto.PartnerBlockGeographySettingsResponse:
+    properties:
+      global_cpmv:
+        type: integer
+      only_configured:
+        type: boolean
+      rules:
+        items:
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockGeoRuleResponse'
+        type: array
+    type: object
+  eshkere_internal_handler_v1_dto.PartnerBlockResponse:
+    properties:
+      block_type:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  eshkere_internal_handler_v1_dto.PartnerBlockSelfAdSettingsResponse:
+    properties:
+      reserved:
+        type: boolean
+    type: object
+  eshkere_internal_handler_v1_dto.PartnerLoginRequest:
+    properties:
+      identifier:
+        type: string
+      password:
+        type: string
+    required:
+    - identifier
+    - password
+    type: object
+  eshkere_internal_handler_v1_dto.PartnerProfileResponse:
+    properties:
+      birth_date:
+        type: string
+      cooperation_form:
+        type: string
+      country_code:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      middle_name:
+        type: string
+      payout_currency:
+        type: string
+      phone:
+        type: string
+      registration_region_code:
+        type: string
+    type: object
+  eshkere_internal_handler_v1_dto.PartnerRegisterRequest:
+    properties:
+      birth_date:
+        type: string
+      cooperation_form:
+        enum:
+        - self_employed
+        - individual_entrepreneur
+        - legal_entity
+        type: string
+      country_code:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      middle_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      payout_currency:
+        enum:
+        - RUB
+        - USD
+        - EUR
+        type: string
+      phone:
+        type: string
+      registration_region_code:
+        type: string
+    required:
+    - birth_date
+    - cooperation_form
+    - country_code
+    - email
+    - first_name
+    - last_name
+    - password
+    - payout_currency
+    - phone
+    - registration_region_code
+    type: object
+  eshkere_internal_handler_v1_dto.PartnerSiteResponse:
+    properties:
+      created_at:
+        type: string
+      domain:
+        type: string
+      id:
+        type: integer
+      site_name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  eshkere_internal_handler_v1_dto.RegisterRequest:
     properties:
       email:
         type: string
@@ -210,7 +458,7 @@ definitions:
       phone:
         type: string
     type: object
-  dto.RegisterResponse:
+  eshkere_internal_handler_v1_dto.RegisterResponse:
     properties:
       email:
         type: string
@@ -219,12 +467,12 @@ definitions:
       phone:
         type: string
     type: object
-  dto.TopUpBalanceRequest:
+  eshkere_internal_handler_v1_dto.TopUpBalanceRequest:
     properties:
       amount:
         type: integer
     type: object
-  dto.UpdateAdCampaignRequest:
+  eshkere_internal_handler_v1_dto.UpdateAdCampaignRequest:
     properties:
       main_action:
         minLength: 1
@@ -236,7 +484,7 @@ definitions:
         minLength: 1
         type: string
     type: object
-  dto.UpdateAdGroupRequest:
+  eshkere_internal_handler_v1_dto.UpdateAdGroupRequest:
     properties:
       age_from:
         minimum: 1
@@ -261,7 +509,7 @@ definitions:
         minimum: 1
         type: integer
     type: object
-  dto.UpdateAdvertiserProfileRequest:
+  eshkere_internal_handler_v1_dto.UpdateAdvertiserProfileRequest:
     properties:
       city:
         type: string
@@ -276,6 +524,117 @@ definitions:
       surname:
         type: string
       tariff:
+        type: string
+    type: object
+  eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeneralRequest:
+    properties:
+      amp_mode:
+        enum:
+        - disabled
+        - enabled
+        type: string
+      border_mode:
+        enum:
+        - auto
+        - enabled
+        - disabled
+        type: string
+      corner_mode:
+        enum:
+        - auto
+        - rounded
+        - square
+        type: string
+      cpm_strategy:
+        enum:
+        - max_income
+        type: string
+      interscroller_background_color:
+        type: string
+      interscroller_mode:
+        enum:
+        - auto
+        - enabled
+        - disabled
+        type: string
+      size_mode:
+        enum:
+        - adaptive
+        type: string
+      theme:
+        enum:
+        - light
+        - dark
+        type: string
+    type: object
+  eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRequest:
+    properties:
+      global_cpmv:
+        type: integer
+      only_configured:
+        type: boolean
+      rules:
+        items:
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRuleRequest'
+        type: array
+    type: object
+  eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRuleRequest:
+    properties:
+      cpmv:
+        type: integer
+      geo_code:
+        type: string
+      is_enabled:
+        type: boolean
+    required:
+    - geo_code
+    type: object
+  eshkere_internal_handler_v1_dto.UpdatePartnerBlockMetaRequest:
+    properties:
+      name:
+        type: string
+    type: object
+  eshkere_internal_handler_v1_dto.UpdatePartnerBlockSelfAdRequest:
+    properties:
+      reserved:
+        type: boolean
+    type: object
+  eshkere_internal_handler_v1_dto.UpdatePartnerProfileRequest:
+    properties:
+      birth_date:
+        type: string
+      cooperation_form:
+        enum:
+        - self_employed
+        - individual_entrepreneur
+        - legal_entity
+        type: string
+      country_code:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      middle_name:
+        type: string
+      payout_currency:
+        enum:
+        - RUB
+        - USD
+        - EUR
+        type: string
+      phone:
+        type: string
+      registration_region_code:
+        type: string
+    type: object
+  eshkere_internal_handler_v1_dto.UpdatePartnerSiteRequest:
+    properties:
+      domain:
+        type: string
+      site_name:
         type: string
     type: object
   httpx.Error:
@@ -303,7 +662,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ListAdCampaignsResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.ListAdCampaignsResponse'
         "401":
           description: Unauthorized
           schema:
@@ -327,14 +686,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateAdCampaignRequest'
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreateAdCampaignRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.CreateAdCampaignResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreateAdCampaignResponse'
         "400":
           description: Bad Request
           schema:
@@ -399,7 +758,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateAdCampaignRequest'
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdateAdCampaignRequest'
       produces:
       - application/json
       responses:
@@ -438,7 +797,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ListAdGroupsResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.ListAdGroupsResponse'
         "400":
           description: Bad Request
           schema:
@@ -470,14 +829,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateAdGroupRequest'
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreateAdGroupRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.CreateAdGroupResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreateAdGroupResponse'
         "400":
           description: Bad Request
           schema:
@@ -551,7 +910,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateAdGroupRequest'
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdateAdGroupRequest'
       produces:
       - application/json
       responses:
@@ -595,7 +954,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ListAdsResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.ListAdsResponse'
         "400":
           description: Bad Request
           schema:
@@ -652,7 +1011,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.CreateAdResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreateAdResponse'
         "400":
           description: Bad Request
           schema:
@@ -820,7 +1179,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.BalanceResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.BalanceResponse'
         "401":
           description: Unauthorized
           schema:
@@ -849,14 +1208,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/dto.TopUpBalanceRequest'
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.TopUpBalanceRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.BalanceResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.BalanceResponse'
         "400":
           description: Bad Request
           schema:
@@ -885,14 +1244,14 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/dto.LoginRequest'
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.LoginResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.LoginResponse'
         "400":
           description: Invalid identifier или password
           schema:
@@ -936,7 +1295,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.AdvertiserProfileResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.AdvertiserProfileResponse'
         "401":
           description: Unauthorized
           schema:
@@ -964,14 +1323,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateAdvertiserProfileRequest'
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdateAdvertiserProfileRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.AdvertiserProfileResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.AdvertiserProfileResponse'
         "400":
           description: Bad Request
           schema:
@@ -1006,7 +1365,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.AdvertiserProfileResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.AdvertiserProfileResponse'
         "400":
           description: Bad Request
           schema:
@@ -1035,14 +1394,14 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/dto.RegisterRequest'
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.RegisterRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.RegisterResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.RegisterResponse'
         "400":
           description: Invalid request или User already exists
           schema:
@@ -1063,7 +1422,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ListAppealsResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.ListAppealsResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1122,7 +1481,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dto.CreateAppealResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreateAppealResponse'
         "400":
           description: Bad Request
           schema:
@@ -1149,7 +1508,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.AppealResponse'
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.AppealResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1196,6 +1555,854 @@ paths:
       summary: Публичный feed объявлений
       tags:
       - feed
+  /partners/dictionaries/block-types:
+    get:
+      description: Справочник доступных типов блоков
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Типы рекламных блоков
+      tags:
+      - partner_dictionaries
+  /partners/dictionaries/cooperation-forms:
+    get:
+      description: Справочник форм сотрудничества
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Формы сотрудничества
+      tags:
+      - partner_dictionaries
+  /partners/dictionaries/countries:
+    get:
+      description: Справочник стран для анкеты партнера
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Страны партнера
+      tags:
+      - partner_dictionaries
+  /partners/dictionaries/geo-tree:
+    get:
+      description: Возвращает географическое дерево для настроек блока
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Дерево географии
+      tags:
+      - partner_dictionaries
+  /partners/dictionaries/payout-currencies:
+    get:
+      description: Справочник валют выплат
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Валюты выплат
+      tags:
+      - partner_dictionaries
+  /partners/dictionaries/registration-regions:
+    get:
+      description: Справочник регионов регистрации по стране
+      parameters:
+      - description: Код страны
+        in: query
+        name: country_code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Регионы регистрации
+      tags:
+      - partner_dictionaries
+  /partners/login:
+    post:
+      consumes:
+      - application/json
+      description: Логин по email или телефону и паролю
+      parameters:
+      - description: Учетные данные
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerAuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Вход партнера
+      tags:
+      - partner
+  /partners/logout:
+    post:
+      description: Завершает текущую партнерскую сессию
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Выход партнера
+      tags:
+      - partner
+  /partners/me:
+    get:
+      description: Возвращает профиль текущего партнера по сессии
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerProfileResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Профиль партнера
+      tags:
+      - partner
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные текущего партнера
+      parameters:
+      - description: Поля профиля
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление профиля партнера
+      tags:
+      - partner
+  /partners/register:
+    post:
+      consumes:
+      - application/json
+      description: Создает профиль партнера и открывает сессию
+      parameters:
+      - description: Данные партнера
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerRegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerAuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Регистрация партнера
+      tags:
+      - partner
+  /partners/sites:
+    get:
+      description: Возвращает все сайты текущего партнера
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.ListPartnerSitesResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Список сайтов партнера
+      tags:
+      - partner_sites
+    post:
+      consumes:
+      - application/json
+      description: Добавляет новый домен в раздел "Реклама на сайтах"
+      parameters:
+      - description: Домен и название сайта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreatePartnerSiteRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Создание сайта партнера
+      tags:
+      - partner_sites
+  /partners/sites/{site_id}:
+    delete:
+      description: Удаляет сайт текущего партнера
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Удаление сайта партнера
+      tags:
+      - partner_sites
+    get:
+      description: Возвращает один сайт текущего партнера
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerSiteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Сайт партнера
+      tags:
+      - partner_sites
+    put:
+      consumes:
+      - application/json
+      description: Обновляет домен и название сайта
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: Поля сайта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerSiteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerSiteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление сайта партнера
+      tags:
+      - partner_sites
+  /partners/sites/{site_id}/blocks:
+    get:
+      description: Возвращает все рекламные блоки сайта текущего партнера
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.ListPartnerBlocksResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Список блоков сайта
+      tags:
+      - partner_blocks
+    post:
+      consumes:
+      - application/json
+      description: 'Первый шаг конструктора: тип блока и название'
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: Параметры блока
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreatePartnerBlockRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Создание рекламного блока
+      tags:
+      - partner_blocks
+  /partners/sites/{site_id}/blocks/{block_id}:
+    delete:
+      description: Удаляет рекламный блок сайта
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: ID блока
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Удаление блока
+      tags:
+      - partner_blocks
+    get:
+      description: Возвращает полную карточку блока со всеми настройками
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: ID блока
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockDetailsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Детали рекламного блока
+      tags:
+      - partner_blocks
+  /partners/sites/{site_id}/blocks/{block_id}/embed:
+    get:
+      description: Возвращает script URL, iframe URL и HTML snippet для вставки блока
+        на сайт
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: ID блока
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockEmbedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Embed-код блока
+      tags:
+      - partner_blocks
+  /partners/sites/{site_id}/blocks/{block_id}/general:
+    put:
+      consumes:
+      - application/json
+      description: Сохраняет вкладку "Общие"
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: ID блока
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      - description: Общие настройки
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeneralRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Общие настройки блока
+      tags:
+      - partner_blocks
+  /partners/sites/{site_id}/blocks/{block_id}/geography:
+    put:
+      consumes:
+      - application/json
+      description: Сохраняет вкладку "География"
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: ID блока
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      - description: Настройки географии
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: География блока
+      tags:
+      - partner_blocks
+  /partners/sites/{site_id}/blocks/{block_id}/meta:
+    put:
+      consumes:
+      - application/json
+      description: Обновляет мета-данные блока
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: ID блока
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      - description: Имя блока
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockMetaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление названия блока
+      tags:
+      - partner_blocks
+  /partners/sites/{site_id}/blocks/{block_id}/self-ad:
+    put:
+      consumes:
+      - application/json
+      description: Сохраняет вкладку "Своя реклама" в reserved-режиме
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: ID блока
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      - description: Настройки вкладки
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockSelfAdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Своя реклама
+      tags:
+      - partner_blocks
 securityDefinitions:
   CookieAuth:
     in: cookie

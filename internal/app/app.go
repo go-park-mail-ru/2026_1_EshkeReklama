@@ -55,6 +55,10 @@ func New(configPath string) *App {
 	closers = append([]io.Closer{db}, closers...)
 
 	advertiserRepo := postgres.NewAdvertiserRepository(db)
+	partnerRepo := postgres.NewPartnerRepository(db)
+	partnerSiteRepo := postgres.NewPartnerSiteRepository(db)
+	partnerBlockRepo := postgres.NewPartnerBlockRepository(db)
+	partnerBlockGeoRuleRepo := postgres.NewPartnerBlockGeoRuleRepository(db)
 	adGroupRepo := postgres.NewAdGroupRepository(db)
 	adRepo := postgres.NewAdRepository(db)
 	adCampaignRepo := postgres.NewAdCampaignRepository(db)
@@ -79,20 +83,22 @@ func New(configPath string) *App {
 	adStorage := s3.NewAdStorage(s3Client)
 
 	svc, err := service.NewService(&service.Config{
-		AdvertiserRepo:  advertiserRepo,
-		PartnerRepo:     nil,
-		PartnerSiteRepo: nil,
-		AdCampaignRepo:  adCampaignRepo,
-		AdGroupRepo:     adGroupRepo,
-		AdRepo:          adRepo,
-		FeedLinkRepo:    feedLinkRepo,
-		AppealRepo:      appealRepo,
-		AvatarStorage:   avatarStorage,
-		AppealStorage:   appealStorage,
-		AdStorage:       adStorage,
-		AdActionRepo:    nil,
-		TopicRepo:       nil,
-		RegionRepo:      nil,
+		AdvertiserRepo:          advertiserRepo,
+		PartnerRepo:             partnerRepo,
+		PartnerSiteRepo:         partnerSiteRepo,
+		PartnerBlockRepo:        partnerBlockRepo,
+		PartnerBlockGeoRuleRepo: partnerBlockGeoRuleRepo,
+		AdCampaignRepo:          adCampaignRepo,
+		AdGroupRepo:             adGroupRepo,
+		AdRepo:                  adRepo,
+		FeedLinkRepo:            feedLinkRepo,
+		AppealRepo:              appealRepo,
+		AvatarStorage:           avatarStorage,
+		AppealStorage:           appealStorage,
+		AdStorage:               adStorage,
+		AdActionRepo:            nil,
+		TopicRepo:               nil,
+		RegionRepo:              nil,
 	})
 	if err != nil {
 		logger.Fatalf("Failed to init service: %v", err)

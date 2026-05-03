@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"eshkere/internal/models"
 )
@@ -12,9 +13,34 @@ type AdvertiserRepository interface {
 	Update(ctx context.Context, a *models.Advertiser) error
 }
 
-type PartnerRepository interface{}
+type PartnerRepository interface {
+	CreateProfile(ctx context.Context, partner *models.Partner) error
+	GetByID(ctx context.Context, id int) (*models.Partner, error)
+	Update(ctx context.Context, partner *models.Partner) error
+}
 
-type PartnerSiteRepository interface{}
+type PartnerSiteRepository interface {
+	Create(ctx context.Context, site *models.PartnerSite) error
+	GetByID(ctx context.Context, siteID int) (*models.PartnerSite, error)
+	ListByPartnerID(ctx context.Context, partnerID int) ([]*models.PartnerSite, error)
+	Update(ctx context.Context, site *models.PartnerSite) error
+	Delete(ctx context.Context, siteID int) error
+	ExistsByDomain(ctx context.Context, domain string) (bool, error)
+}
+
+type PartnerBlockRepository interface {
+	Create(ctx context.Context, block *models.PartnerBlock) error
+	GetByID(ctx context.Context, blockID int) (*models.PartnerBlock, error)
+	ListBySiteID(ctx context.Context, siteID int) ([]*models.PartnerBlock, error)
+	Update(ctx context.Context, block *models.PartnerBlock) error
+	Delete(ctx context.Context, blockID int) error
+	GetByEmbedToken(ctx context.Context, token string) (*models.PartnerBlock, error)
+}
+
+type PartnerBlockGeoRuleRepository interface {
+	ListByBlockID(ctx context.Context, blockID int) ([]*models.PartnerBlockGeoRule, error)
+	ReplaceByBlockID(ctx context.Context, blockID int, rules []*models.PartnerBlockGeoRule) error
+}
 
 type AdCampaignRepository interface {
 	Create(ctx context.Context, c *models.AdCampaign) error
@@ -79,37 +105,41 @@ type AppealRepository interface {
 }
 
 type Config struct {
-	AdvertiserRepo  AdvertiserRepository
-	PartnerRepo     PartnerRepository
-	PartnerSiteRepo PartnerSiteRepository
-	AdCampaignRepo  AdCampaignRepository
-	AdGroupRepo     AdGroupRepository
-	AdRepo          AdRepository
-	FeedLinkRepo    FeedLinkRepository
-	AvatarStorage   AvatarStorage
-	AppealStorage   AppealStorage
-	AdStorage       AdStorage
-	AdActionRepo    AdActionRepository
-	TopicRepo       TopicRepository
-	RegionRepo      RegionRepository
-	AppealRepo      AppealRepository
+	AdvertiserRepo          AdvertiserRepository
+	PartnerRepo             PartnerRepository
+	PartnerSiteRepo         PartnerSiteRepository
+	PartnerBlockRepo        PartnerBlockRepository
+	PartnerBlockGeoRuleRepo PartnerBlockGeoRuleRepository
+	AdCampaignRepo          AdCampaignRepository
+	AdGroupRepo             AdGroupRepository
+	AdRepo                  AdRepository
+	FeedLinkRepo            FeedLinkRepository
+	AvatarStorage           AvatarStorage
+	AppealStorage           AppealStorage
+	AdStorage               AdStorage
+	AdActionRepo            AdActionRepository
+	TopicRepo               TopicRepository
+	RegionRepo              RegionRepository
+	AppealRepo              AppealRepository
 }
 
 type Service struct {
-	advertiserRepo  AdvertiserRepository
-	partnerRepo     PartnerRepository
-	partnerSiteRepo PartnerSiteRepository
-	adCampaignRepo  AdCampaignRepository
-	adGroupRepo     AdGroupRepository
-	adRepo          AdRepository
-	feedLinkRepo    FeedLinkRepository
-	avatarStorage   AvatarStorage
-	appealStorage   AppealStorage
-	adStorage       AdStorage
-	adActionRepo    AdActionRepository
-	topicRepo       TopicRepository
-	regionRepo      RegionRepository
-	appealRepo      AppealRepository
+	advertiserRepo          AdvertiserRepository
+	partnerRepo             PartnerRepository
+	partnerSiteRepo         PartnerSiteRepository
+	partnerBlockRepo        PartnerBlockRepository
+	partnerBlockGeoRuleRepo PartnerBlockGeoRuleRepository
+	adCampaignRepo          AdCampaignRepository
+	adGroupRepo             AdGroupRepository
+	adRepo                  AdRepository
+	feedLinkRepo            FeedLinkRepository
+	avatarStorage           AvatarStorage
+	appealStorage           AppealStorage
+	adStorage               AdStorage
+	adActionRepo            AdActionRepository
+	topicRepo               TopicRepository
+	regionRepo              RegionRepository
+	appealRepo              AppealRepository
 }
 
 func NewService(cfg *Config) (*Service, error) {
@@ -118,19 +148,47 @@ func NewService(cfg *Config) (*Service, error) {
 	}
 
 	return &Service{
-		advertiserRepo:  cfg.AdvertiserRepo,
-		partnerRepo:     cfg.PartnerRepo,
-		partnerSiteRepo: cfg.PartnerSiteRepo,
-		adCampaignRepo:  cfg.AdCampaignRepo,
-		adGroupRepo:     cfg.AdGroupRepo,
-		adRepo:          cfg.AdRepo,
-		feedLinkRepo:    cfg.FeedLinkRepo,
-		avatarStorage:   cfg.AvatarStorage,
-		appealStorage:   cfg.AppealStorage,
-		adStorage:       cfg.AdStorage,
-		adActionRepo:    cfg.AdActionRepo,
-		topicRepo:       cfg.TopicRepo,
-		regionRepo:      cfg.RegionRepo,
-		appealRepo:      cfg.AppealRepo,
+		advertiserRepo:          cfg.AdvertiserRepo,
+		partnerRepo:             cfg.PartnerRepo,
+		partnerSiteRepo:         cfg.PartnerSiteRepo,
+		partnerBlockRepo:        cfg.PartnerBlockRepo,
+		partnerBlockGeoRuleRepo: cfg.PartnerBlockGeoRuleRepo,
+		adCampaignRepo:          cfg.AdCampaignRepo,
+		adGroupRepo:             cfg.AdGroupRepo,
+		adRepo:                  cfg.AdRepo,
+		feedLinkRepo:            cfg.FeedLinkRepo,
+		avatarStorage:           cfg.AvatarStorage,
+		appealStorage:           cfg.AppealStorage,
+		adStorage:               cfg.AdStorage,
+		adActionRepo:            cfg.AdActionRepo,
+		topicRepo:               cfg.TopicRepo,
+		regionRepo:              cfg.RegionRepo,
+		appealRepo:              cfg.AppealRepo,
 	}, nil
 }
+
+type DictionaryItem struct {
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
+type BlockTypeDictionaryItem struct {
+	Code        string   `json:"code"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Platforms   []string `json:"platforms"`
+}
+
+type GeoTreeNode struct {
+	Code     string         `json:"code"`
+	Name     string         `json:"name"`
+	Children []*GeoTreeNode `json:"children"`
+}
+
+type PartnerBlockSettings struct {
+	OnlyConfigured bool                          `json:"only_configured"`
+	GlobalCPMV     *int64                        `json:"global_cpmv"`
+	Rules          []*models.PartnerBlockGeoRule `json:"rules"`
+}
+
+var defaultSelfAdSettings = json.RawMessage(`{"reserved":true}`)

@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"eshkere/internal/models"
+	"eshkere/internal/service"
 	serviceinput "eshkere/internal/service/input"
 
 	"github.com/gorilla/mux"
@@ -45,6 +46,30 @@ type Service interface {
 	CreateAppeal(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
 	ListAppeals(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
 	GetAppealByID(ctx context.Context, appealID int) (*models.Appeal, error)
+
+	CreatePartnerProfile(ctx context.Context, in *serviceinput.CreatePartnerProfile) error
+	GetPartnerByID(ctx context.Context, id int) (*models.Partner, error)
+	UpdatePartnerProfile(ctx context.Context, in *serviceinput.UpdatePartnerProfile) (*models.Partner, error)
+	CreatePartnerSite(ctx context.Context, in *serviceinput.CreatePartnerSite) (*models.PartnerSite, error)
+	GetPartnerSite(ctx context.Context, siteID int) (*models.PartnerSite, error)
+	ListPartnerSites(ctx context.Context, partnerID int) ([]*models.PartnerSite, error)
+	UpdatePartnerSite(ctx context.Context, in *serviceinput.UpdatePartnerSite) (*models.PartnerSite, error)
+	DeletePartnerSite(ctx context.Context, partnerID, siteID int) error
+	CreatePartnerBlock(ctx context.Context, partnerID int, in *serviceinput.CreatePartnerBlock) (*models.PartnerBlock, error)
+	GetPartnerBlock(ctx context.Context, partnerID, siteID, blockID int) (*models.PartnerBlock, []*models.PartnerBlockGeoRule, error)
+	ListPartnerBlocks(ctx context.Context, partnerID, siteID int) ([]*models.PartnerBlock, error)
+	UpdatePartnerBlockMeta(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockMeta) (*models.PartnerBlock, error)
+	UpdatePartnerBlockGeneralSettings(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockGeneral) (*models.PartnerBlock, error)
+	UpdatePartnerBlockGeographySettings(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockGeography) ([]*models.PartnerBlockGeoRule, error)
+	UpdatePartnerBlockSelfAdSettings(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockSelfAd) (*models.PartnerBlock, error)
+	DeletePartnerBlock(ctx context.Context, partnerID, siteID, blockID int) error
+	GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, string, error)
+	ListPartnerCountries(ctx context.Context) []service.DictionaryItem
+	ListPartnerRegistrationRegions(ctx context.Context, countryCode string) []service.DictionaryItem
+	ListPartnerCooperationForms(ctx context.Context) []service.DictionaryItem
+	ListPartnerPayoutCurrencies(ctx context.Context) []service.DictionaryItem
+	ListPartnerBlockTypes(ctx context.Context) []service.BlockTypeDictionaryItem
+	GetPartnerGeoTree(ctx context.Context) []*service.GeoTreeNode
 }
 
 type CookieConfig struct {
@@ -55,27 +80,44 @@ type CookieConfig struct {
 }
 
 type APIConfig struct {
-	AuthClient   AuthClient
-	Service      Service
-	CookieConfig CookieConfig
+	AuthClient          AuthClient
+	Service             Service
+	CookieConfig        CookieConfig
+	PartnerCookieConfig CookieConfig
 }
 
 type API struct {
-	authClient   AuthClient
-	service      Service
-	cookieConfig CookieConfig
+	authClient          AuthClient
+	service             Service
+	cookieConfig        CookieConfig
+	partnerCookieConfig CookieConfig
 }
 
 func NewAPI(config APIConfig) *API {
 	return &API{
-		authClient:   config.AuthClient,
-		service:      config.Service,
-		cookieConfig: config.CookieConfig,
+		authClient:          config.AuthClient,
+		service:             config.Service,
+		cookieConfig:        config.CookieConfig,
+		partnerCookieConfig: resolvePartnerCookieConfig(config.CookieConfig, config.PartnerCookieConfig),
 	}
+}
+
+func resolvePartnerCookieConfig(defaultCfg, partnerCfg CookieConfig) CookieConfig {
+	if partnerCfg.Name == "" {
+		return defaultCfg
+	}
+	if partnerCfg.Path == "" {
+		partnerCfg.Path = defaultCfg.Path
+	}
+	return partnerCfg
 }
 
 func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterAdvertiserHandlers(r)
+	a.RegisterPartnerHandlers(r)
+	a.RegisterPartnerDictionaryHandlers(r)
+	a.RegisterPartnerSiteHandlers(r)
+	a.RegisterPartnerBlockHandlers(r)
 	a.RegisterAdCampaignHandlers(r)
 	a.RegisterAdGroupHandlers(r)
 	a.RegisterAdsHandlers(r)

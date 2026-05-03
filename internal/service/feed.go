@@ -63,6 +63,29 @@ func (s *Service) GetAdByFeedToken(ctx context.Context, token string) (*models.A
 	return ads[randAdInd.Int64()], nil
 }
 
+func (s *Service) GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error) {
+	if token == "" {
+		return nil, fmt.Errorf("%w: empty token", errs.ErrInvalidAdvertiserArg)
+	}
+
+	campaignID, err := s.feedLinkRepo.GetCampaignIDByToken(ctx, token)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("%w: feed with this token not found", errs.NotFoundError)
+		}
+		return nil, err
+	}
+
+	ads, err := s.adRepo.ListByAdCampaignID(ctx, campaignID)
+	if err != nil {
+		return []*models.Ad{}, nil
+	}
+	if ads == nil {
+		return []*models.Ad{}, nil
+	}
+	return ads, nil
+}
+
 func generateToken(size int) (string, error) {
 	b := make([]byte, size)
 	if _, err := rand.Read(b); err != nil {

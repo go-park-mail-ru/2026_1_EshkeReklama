@@ -9,6 +9,7 @@ import (
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
+	"eshkere/internal/service"
 	serviceinput "eshkere/internal/service/input"
 	"net/http"
 	"net/http/httptest"
@@ -102,28 +103,45 @@ func (c *stubAuthClient) UpdateCredentials(ctx context.Context, advertiserID int
 
 // stubService implements the Service interface for handler tests.
 type stubService struct {
-	createAdvertiserProfileFn func(ctx context.Context, id int64, name, email string) error
-	getAdvertiserByIDFn       func(ctx context.Context, id int) (*models.Advertiser, error)
-	updateAdvertiserProfileFn func(ctx context.Context, in *serviceinput.UpdateAdvertiserProfile) (*models.Advertiser, error)
-	updateAdvertiserAvatarFn  func(ctx context.Context, advertiserID int, avatar []byte, avatarExt, avatarContentType string) (*models.Advertiser, error)
-	topUpAdvertiserBalanceFn  func(ctx context.Context, advertiserID int, amount int64) (int64, error)
-	generateFeedLinkFn        func(ctx context.Context, campaignID int) (string, error)
-	getAdsByFeedTokenFn       func(ctx context.Context, token string) ([]*models.Ad, error)
-	createAdCampaignFn        func(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error)
-	updateAdCampaignFn        func(ctx context.Context, in *serviceinput.UpdateAdCampaign) error
-	listAdCampaignsFn         func(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
-	deleteAdCampaignFn        func(ctx context.Context, campaignID int) error
-	createAdGroupFn           func(ctx context.Context, in *serviceinput.CreateAdGroup) (*models.AdGroup, error)
-	updateAdGroupFn           func(ctx context.Context, in *serviceinput.UpdateAdGroup) error
-	listAdGroupsFn            func(ctx context.Context, campaignID int) ([]*models.AdGroup, error)
-	deleteAdGroupFn           func(ctx context.Context, groupID int) error
-	createAdFn                func(ctx context.Context, in *serviceinput.CreateAd) (*models.Ad, error)
-	updateAdFn                func(ctx context.Context, in *serviceinput.UpdateAd) error
-	listAdsFn                 func(ctx context.Context, groupID int) ([]*models.Ad, error)
-	deleteAdFn                func(ctx context.Context, adID int) error
-	createAppealFn            func(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
-	listAppealsFn             func(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
-	getAppealByIDFn           func(ctx context.Context, appealID int) (*models.Appeal, error)
+	createAdvertiserProfileFn   func(ctx context.Context, id int64, name, email string) error
+	getAdvertiserByIDFn         func(ctx context.Context, id int) (*models.Advertiser, error)
+	updateAdvertiserProfileFn   func(ctx context.Context, in *serviceinput.UpdateAdvertiserProfile) (*models.Advertiser, error)
+	updateAdvertiserAvatarFn    func(ctx context.Context, advertiserID int, avatar []byte, avatarExt, avatarContentType string) (*models.Advertiser, error)
+	topUpAdvertiserBalanceFn    func(ctx context.Context, advertiserID int, amount int64) (int64, error)
+	generateFeedLinkFn          func(ctx context.Context, campaignID int) (string, error)
+	getAdsByFeedTokenFn         func(ctx context.Context, token string) ([]*models.Ad, error)
+	createAdCampaignFn          func(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error)
+	updateAdCampaignFn          func(ctx context.Context, in *serviceinput.UpdateAdCampaign) error
+	listAdCampaignsFn           func(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
+	deleteAdCampaignFn          func(ctx context.Context, campaignID int) error
+	createAdGroupFn             func(ctx context.Context, in *serviceinput.CreateAdGroup) (*models.AdGroup, error)
+	updateAdGroupFn             func(ctx context.Context, in *serviceinput.UpdateAdGroup) error
+	listAdGroupsFn              func(ctx context.Context, campaignID int) ([]*models.AdGroup, error)
+	deleteAdGroupFn             func(ctx context.Context, groupID int) error
+	createAdFn                  func(ctx context.Context, in *serviceinput.CreateAd) (*models.Ad, error)
+	updateAdFn                  func(ctx context.Context, in *serviceinput.UpdateAd) error
+	listAdsFn                   func(ctx context.Context, groupID int) ([]*models.Ad, error)
+	deleteAdFn                  func(ctx context.Context, adID int) error
+	createAppealFn              func(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
+	listAppealsFn               func(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
+	getAppealByIDFn             func(ctx context.Context, appealID int) (*models.Appeal, error)
+	createPartnerProfileFn      func(ctx context.Context, in *serviceinput.CreatePartnerProfile) error
+	getPartnerByIDFn            func(ctx context.Context, id int) (*models.Partner, error)
+	updatePartnerProfileFn      func(ctx context.Context, in *serviceinput.UpdatePartnerProfile) (*models.Partner, error)
+	createPartnerSiteFn         func(ctx context.Context, in *serviceinput.CreatePartnerSite) (*models.PartnerSite, error)
+	getPartnerSiteFn            func(ctx context.Context, siteID int) (*models.PartnerSite, error)
+	listPartnerSitesFn          func(ctx context.Context, partnerID int) ([]*models.PartnerSite, error)
+	updatePartnerSiteFn         func(ctx context.Context, in *serviceinput.UpdatePartnerSite) (*models.PartnerSite, error)
+	deletePartnerSiteFn         func(ctx context.Context, partnerID, siteID int) error
+	createPartnerBlockFn        func(ctx context.Context, partnerID int, in *serviceinput.CreatePartnerBlock) (*models.PartnerBlock, error)
+	getPartnerBlockFn           func(ctx context.Context, partnerID, siteID, blockID int) (*models.PartnerBlock, []*models.PartnerBlockGeoRule, error)
+	listPartnerBlocksFn         func(ctx context.Context, partnerID, siteID int) ([]*models.PartnerBlock, error)
+	updatePartnerBlockMetaFn    func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockMeta) (*models.PartnerBlock, error)
+	updatePartnerBlockGeneralFn func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockGeneral) (*models.PartnerBlock, error)
+	updatePartnerBlockGeoFn     func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockGeography) ([]*models.PartnerBlockGeoRule, error)
+	updatePartnerBlockSelfAdFn  func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockSelfAd) (*models.PartnerBlock, error)
+	deletePartnerBlockFn        func(ctx context.Context, partnerID, siteID, blockID int) error
+	getPartnerBlockEmbedCodeFn  func(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, string, error)
 }
 
 func (s *stubService) CreateAdvertiserProfile(ctx context.Context, id int64, name, email string) error {
@@ -166,6 +184,20 @@ func (s *stubService) GenerateFeedLink(ctx context.Context, campaignID int) (str
 		return s.generateFeedLinkFn(ctx, campaignID)
 	}
 	return "", nil
+}
+
+func (s *stubService) GetAdByFeedToken(ctx context.Context, token string) (*models.Ad, error) {
+	if s.getAdsByFeedTokenFn != nil {
+		ads, err := s.getAdsByFeedTokenFn(ctx, token)
+		if err != nil {
+			return nil, err
+		}
+		if len(ads) == 0 {
+			return &models.Ad{}, nil
+		}
+		return ads[0], nil
+	}
+	return nil, nil
 }
 
 func (s *stubService) GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error) {
@@ -279,6 +311,140 @@ func (s *stubService) GetAppealByID(ctx context.Context, appealID int) (*models.
 	}
 	return nil, nil
 }
+
+func (s *stubService) CreatePartnerProfile(ctx context.Context, in *serviceinput.CreatePartnerProfile) error {
+	if s.createPartnerProfileFn != nil {
+		return s.createPartnerProfileFn(ctx, in)
+	}
+	return nil
+}
+
+func (s *stubService) GetPartnerByID(ctx context.Context, id int) (*models.Partner, error) {
+	if s.getPartnerByIDFn != nil {
+		return s.getPartnerByIDFn(ctx, id)
+	}
+	return nil, nil
+}
+
+func (s *stubService) UpdatePartnerProfile(ctx context.Context, in *serviceinput.UpdatePartnerProfile) (*models.Partner, error) {
+	if s.updatePartnerProfileFn != nil {
+		return s.updatePartnerProfileFn(ctx, in)
+	}
+	return nil, nil
+}
+
+func (s *stubService) CreatePartnerSite(ctx context.Context, in *serviceinput.CreatePartnerSite) (*models.PartnerSite, error) {
+	if s.createPartnerSiteFn != nil {
+		return s.createPartnerSiteFn(ctx, in)
+	}
+	return nil, nil
+}
+
+func (s *stubService) GetPartnerSite(ctx context.Context, siteID int) (*models.PartnerSite, error) {
+	if s.getPartnerSiteFn != nil {
+		return s.getPartnerSiteFn(ctx, siteID)
+	}
+	return nil, nil
+}
+
+func (s *stubService) ListPartnerSites(ctx context.Context, partnerID int) ([]*models.PartnerSite, error) {
+	if s.listPartnerSitesFn != nil {
+		return s.listPartnerSitesFn(ctx, partnerID)
+	}
+	return nil, nil
+}
+
+func (s *stubService) UpdatePartnerSite(ctx context.Context, in *serviceinput.UpdatePartnerSite) (*models.PartnerSite, error) {
+	if s.updatePartnerSiteFn != nil {
+		return s.updatePartnerSiteFn(ctx, in)
+	}
+	return nil, nil
+}
+
+func (s *stubService) DeletePartnerSite(ctx context.Context, partnerID, siteID int) error {
+	if s.deletePartnerSiteFn != nil {
+		return s.deletePartnerSiteFn(ctx, partnerID, siteID)
+	}
+	return nil
+}
+
+func (s *stubService) CreatePartnerBlock(ctx context.Context, partnerID int, in *serviceinput.CreatePartnerBlock) (*models.PartnerBlock, error) {
+	if s.createPartnerBlockFn != nil {
+		return s.createPartnerBlockFn(ctx, partnerID, in)
+	}
+	return nil, nil
+}
+
+func (s *stubService) GetPartnerBlock(ctx context.Context, partnerID, siteID, blockID int) (*models.PartnerBlock, []*models.PartnerBlockGeoRule, error) {
+	if s.getPartnerBlockFn != nil {
+		return s.getPartnerBlockFn(ctx, partnerID, siteID, blockID)
+	}
+	return nil, nil, nil
+}
+
+func (s *stubService) ListPartnerBlocks(ctx context.Context, partnerID, siteID int) ([]*models.PartnerBlock, error) {
+	if s.listPartnerBlocksFn != nil {
+		return s.listPartnerBlocksFn(ctx, partnerID, siteID)
+	}
+	return nil, nil
+}
+
+func (s *stubService) UpdatePartnerBlockMeta(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockMeta) (*models.PartnerBlock, error) {
+	if s.updatePartnerBlockMetaFn != nil {
+		return s.updatePartnerBlockMetaFn(ctx, partnerID, siteID, in)
+	}
+	return nil, nil
+}
+
+func (s *stubService) UpdatePartnerBlockGeneralSettings(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockGeneral) (*models.PartnerBlock, error) {
+	if s.updatePartnerBlockGeneralFn != nil {
+		return s.updatePartnerBlockGeneralFn(ctx, partnerID, siteID, in)
+	}
+	return nil, nil
+}
+
+func (s *stubService) UpdatePartnerBlockGeographySettings(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockGeography) ([]*models.PartnerBlockGeoRule, error) {
+	if s.updatePartnerBlockGeoFn != nil {
+		return s.updatePartnerBlockGeoFn(ctx, partnerID, siteID, in)
+	}
+	return nil, nil
+}
+
+func (s *stubService) UpdatePartnerBlockSelfAdSettings(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockSelfAd) (*models.PartnerBlock, error) {
+	if s.updatePartnerBlockSelfAdFn != nil {
+		return s.updatePartnerBlockSelfAdFn(ctx, partnerID, siteID, in)
+	}
+	return nil, nil
+}
+
+func (s *stubService) DeletePartnerBlock(ctx context.Context, partnerID, siteID, blockID int) error {
+	if s.deletePartnerBlockFn != nil {
+		return s.deletePartnerBlockFn(ctx, partnerID, siteID, blockID)
+	}
+	return nil
+}
+
+func (s *stubService) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, string, error) {
+	if s.getPartnerBlockEmbedCodeFn != nil {
+		return s.getPartnerBlockEmbedCodeFn(ctx, partnerID, siteID, blockID, baseURL)
+	}
+	return "", "", "", "", nil
+}
+
+func (s *stubService) ListPartnerCountries(ctx context.Context) []service.DictionaryItem { return nil }
+func (s *stubService) ListPartnerRegistrationRegions(ctx context.Context, countryCode string) []service.DictionaryItem {
+	return nil
+}
+func (s *stubService) ListPartnerCooperationForms(ctx context.Context) []service.DictionaryItem {
+	return nil
+}
+func (s *stubService) ListPartnerPayoutCurrencies(ctx context.Context) []service.DictionaryItem {
+	return nil
+}
+func (s *stubService) ListPartnerBlockTypes(ctx context.Context) []service.BlockTypeDictionaryItem {
+	return nil
+}
+func (s *stubService) GetPartnerGeoTree(ctx context.Context) []*service.GeoTreeNode { return nil }
 
 func newTestRouter(ac *stubAuthClient, svc Service) *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)

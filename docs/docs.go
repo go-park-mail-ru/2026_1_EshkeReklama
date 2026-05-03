@@ -34,7 +34,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.ListAdCampaignsResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.ListAdCampaignsResponse"
                         }
                     },
                     "401": {
@@ -75,7 +75,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateAdCampaignRequest"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreateAdCampaignRequest"
                         }
                     }
                 ],
@@ -83,7 +83,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateAdCampaignResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreateAdCampaignResponse"
                         }
                     },
                     "400": {
@@ -139,7 +139,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateAdCampaignRequest"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdateAdCampaignRequest"
                         }
                     }
                 ],
@@ -247,7 +247,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.ListAdGroupsResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.ListAdGroupsResponse"
                         }
                     },
                     "400": {
@@ -300,7 +300,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateAdGroupRequest"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreateAdGroupRequest"
                         }
                     }
                 ],
@@ -308,7 +308,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateAdGroupResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreateAdGroupResponse"
                         }
                     },
                     "400": {
@@ -370,7 +370,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateAdGroupRequest"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdateAdGroupRequest"
                         }
                     }
                 ],
@@ -492,7 +492,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.ListAdsResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.ListAdsResponse"
                         }
                     },
                     "400": {
@@ -578,7 +578,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateAdResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreateAdResponse"
                         }
                     },
                     "400": {
@@ -834,7 +834,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.BalanceResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.BalanceResponse"
                         }
                     },
                     "401": {
@@ -883,7 +883,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.TopUpBalanceRequest"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.TopUpBalanceRequest"
                         }
                     }
                 ],
@@ -891,7 +891,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.BalanceResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.BalanceResponse"
                         }
                     },
                     "400": {
@@ -935,7 +935,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.LoginRequest"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.LoginRequest"
                         }
                     }
                 ],
@@ -943,7 +943,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.LoginResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.LoginResponse"
                         }
                     },
                     "400": {
@@ -1015,7 +1015,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.AdvertiserProfileResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AdvertiserProfileResponse"
                         }
                     },
                     "401": {
@@ -1062,7 +1062,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateAdvertiserProfileRequest"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdateAdvertiserProfileRequest"
                         }
                     }
                 ],
@@ -1070,7 +1070,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.AdvertiserProfileResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AdvertiserProfileResponse"
                         }
                     },
                     "400": {
@@ -1125,7 +1125,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.AdvertiserProfileResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AdvertiserProfileResponse"
                         }
                     },
                     "400": {
@@ -1169,7 +1169,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.RegisterRequest"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.RegisterRequest"
                         }
                     }
                 ],
@@ -1177,7 +1177,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.RegisterResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.RegisterResponse"
                         }
                     },
                     "400": {
@@ -1214,7 +1214,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.ListAppealsResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.ListAppealsResponse"
                         }
                     },
                     "401": {
@@ -1296,7 +1296,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateAppealResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreateAppealResponse"
                         }
                     },
                     "400": {
@@ -1342,7 +1342,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.AppealResponse"
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AppealResponse"
                         }
                     },
                     "401": {
@@ -1407,10 +1407,1315 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/partners/dictionaries/block-types": {
+            "get": {
+                "description": "Справочник доступных типов блоков",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_dictionaries"
+                ],
+                "summary": "Типы рекламных блоков",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/dictionaries/cooperation-forms": {
+            "get": {
+                "description": "Справочник форм сотрудничества",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_dictionaries"
+                ],
+                "summary": "Формы сотрудничества",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/dictionaries/countries": {
+            "get": {
+                "description": "Справочник стран для анкеты партнера",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_dictionaries"
+                ],
+                "summary": "Страны партнера",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/dictionaries/geo-tree": {
+            "get": {
+                "description": "Возвращает географическое дерево для настроек блока",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_dictionaries"
+                ],
+                "summary": "Дерево географии",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/dictionaries/payout-currencies": {
+            "get": {
+                "description": "Справочник валют выплат",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_dictionaries"
+                ],
+                "summary": "Валюты выплат",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/dictionaries/registration-regions": {
+            "get": {
+                "description": "Справочник регионов регистрации по стране",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_dictionaries"
+                ],
+                "summary": "Регионы регистрации",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Код страны",
+                        "name": "country_code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/login": {
+            "post": {
+                "description": "Логин по email или телефону и паролю",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner"
+                ],
+                "summary": "Вход партнера",
+                "parameters": [
+                    {
+                        "description": "Учетные данные",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerLoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerAuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/logout": {
+            "post": {
+                "description": "Завершает текущую партнерскую сессию",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner"
+                ],
+                "summary": "Выход партнера",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/me": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Возвращает профиль текущего партнера по сессии",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner"
+                ],
+                "summary": "Профиль партнера",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerProfileResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Обновляет данные текущего партнера",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner"
+                ],
+                "summary": "Обновление профиля партнера",
+                "parameters": [
+                    {
+                        "description": "Поля профиля",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerProfileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/register": {
+            "post": {
+                "description": "Создает профиль партнера и открывает сессию",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner"
+                ],
+                "summary": "Регистрация партнера",
+                "parameters": [
+                    {
+                        "description": "Данные партнера",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerRegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerAuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/sites": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Возвращает все сайты текущего партнера",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_sites"
+                ],
+                "summary": "Список сайтов партнера",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.ListPartnerSitesResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Добавляет новый домен в раздел \"Реклама на сайтах\"",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_sites"
+                ],
+                "summary": "Создание сайта партнера",
+                "parameters": [
+                    {
+                        "description": "Домен и название сайта",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreatePartnerSiteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/sites/{site_id}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Возвращает один сайт текущего партнера",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_sites"
+                ],
+                "summary": "Сайт партнера",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID сайта",
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerSiteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Обновляет домен и название сайта",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_sites"
+                ],
+                "summary": "Обновление сайта партнера",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID сайта",
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Поля сайта",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerSiteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerSiteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Удаляет сайт текущего партнера",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_sites"
+                ],
+                "summary": "Удаление сайта партнера",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID сайта",
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/sites/{site_id}/blocks": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Возвращает все рекламные блоки сайта текущего партнера",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_blocks"
+                ],
+                "summary": "Список блоков сайта",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID сайта",
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.ListPartnerBlocksResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Первый шаг конструктора: тип блока и название",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_blocks"
+                ],
+                "summary": "Создание рекламного блока",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID сайта",
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Параметры блока",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreatePartnerBlockRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/sites/{site_id}/blocks/{block_id}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Возвращает полную карточку блока со всеми настройками",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_blocks"
+                ],
+                "summary": "Детали рекламного блока",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID сайта",
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID блока",
+                        "name": "block_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockDetailsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Удаляет рекламный блок сайта",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_blocks"
+                ],
+                "summary": "Удаление блока",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID сайта",
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID блока",
+                        "name": "block_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/sites/{site_id}/blocks/{block_id}/embed": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Возвращает script URL, iframe URL и HTML snippet для вставки блока на сайт",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_blocks"
+                ],
+                "summary": "Embed-код блока",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID сайта",
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID блока",
+                        "name": "block_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockEmbedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/sites/{site_id}/blocks/{block_id}/general": {
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Сохраняет вкладку \"Общие\"",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_blocks"
+                ],
+                "summary": "Общие настройки блока",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID сайта",
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID блока",
+                        "name": "block_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Общие настройки",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeneralRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/sites/{site_id}/blocks/{block_id}/geography": {
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Сохраняет вкладку \"География\"",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_blocks"
+                ],
+                "summary": "География блока",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID сайта",
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID блока",
+                        "name": "block_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Настройки географии",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/sites/{site_id}/blocks/{block_id}/meta": {
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Обновляет мета-данные блока",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_blocks"
+                ],
+                "summary": "Обновление названия блока",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID сайта",
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID блока",
+                        "name": "block_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Имя блока",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockMetaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/sites/{site_id}/blocks/{block_id}/self-ad": {
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Сохраняет вкладку \"Своя реклама\" в reserved-режиме",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_blocks"
+                ],
+                "summary": "Своя реклама",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID сайта",
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID блока",
+                        "name": "block_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Настройки вкладки",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockSelfAdRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "dto.AdCampaignResponse": {
+        "eshkere_internal_handler_v1_dto.AdCampaignResponse": {
             "type": "object",
             "properties": {
                 "daily_budget": {
@@ -1430,7 +2735,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.AdGroupResponse": {
+        "eshkere_internal_handler_v1_dto.AdGroupResponse": {
             "type": "object",
             "properties": {
                 "age_from": {
@@ -1456,7 +2761,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.AdResponse": {
+        "eshkere_internal_handler_v1_dto.AdResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1479,7 +2784,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.AdvertiserProfileResponse": {
+        "eshkere_internal_handler_v1_dto.AdvertiserProfileResponse": {
             "type": "object",
             "properties": {
                 "avatar_url": {
@@ -1517,7 +2822,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.AppealResponse": {
+        "eshkere_internal_handler_v1_dto.AppealResponse": {
             "type": "object",
             "properties": {
                 "category": {
@@ -1543,7 +2848,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.BalanceResponse": {
+        "eshkere_internal_handler_v1_dto.BalanceResponse": {
             "type": "object",
             "properties": {
                 "balance": {
@@ -1551,7 +2856,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateAdCampaignRequest": {
+        "eshkere_internal_handler_v1_dto.CreateAdCampaignRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -1565,7 +2870,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateAdCampaignResponse": {
+        "eshkere_internal_handler_v1_dto.CreateAdCampaignResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1573,7 +2878,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateAdGroupRequest": {
+        "eshkere_internal_handler_v1_dto.CreateAdGroupRequest": {
             "type": "object",
             "required": [
                 "age_from",
@@ -1609,7 +2914,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateAdGroupResponse": {
+        "eshkere_internal_handler_v1_dto.CreateAdGroupResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1617,7 +2922,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateAdResponse": {
+        "eshkere_internal_handler_v1_dto.CreateAdResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1625,7 +2930,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateAppealResponse": {
+        "eshkere_internal_handler_v1_dto.CreateAppealResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1633,7 +2938,45 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.ListAdCampaignsResponse": {
+        "eshkere_internal_handler_v1_dto.CreatePartnerBlockRequest": {
+            "type": "object",
+            "required": [
+                "block_type",
+                "name"
+            ],
+            "properties": {
+                "block_type": {
+                    "type": "string",
+                    "enum": [
+                        "banner",
+                        "fullscreen",
+                        "floor_ad",
+                        "top_ad",
+                        "feed",
+                        "in_image"
+                    ]
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.CreatePartnerSiteRequest": {
+            "type": "object",
+            "required": [
+                "domain",
+                "site_name"
+            ],
+            "properties": {
+                "domain": {
+                    "type": "string"
+                },
+                "site_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.ListAdCampaignsResponse": {
             "type": "object",
             "properties": {
                 "advertiser_id": {
@@ -1642,12 +2985,12 @@ const docTemplate = `{
                 "campaigns": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.AdCampaignResponse"
+                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AdCampaignResponse"
                     }
                 }
             }
         },
-        "dto.ListAdGroupsResponse": {
+        "eshkere_internal_handler_v1_dto.ListAdGroupsResponse": {
             "type": "object",
             "properties": {
                 "ad_campaign_id": {
@@ -1656,18 +2999,18 @@ const docTemplate = `{
                 "groups": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.AdGroupResponse"
+                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AdGroupResponse"
                     }
                 }
             }
         },
-        "dto.ListAdsResponse": {
+        "eshkere_internal_handler_v1_dto.ListAdsResponse": {
             "type": "object",
             "properties": {
                 "ads": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.AdResponse"
+                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AdResponse"
                     }
                 },
                 "group_id": {
@@ -1675,7 +3018,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.ListAppealsResponse": {
+        "eshkere_internal_handler_v1_dto.ListAppealsResponse": {
             "type": "object",
             "properties": {
                 "advertiser_id": {
@@ -1684,12 +3027,40 @@ const docTemplate = `{
                 "appeals": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.AppealResponse"
+                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AppealResponse"
                     }
                 }
             }
         },
-        "dto.LoginRequest": {
+        "eshkere_internal_handler_v1_dto.ListPartnerBlocksResponse": {
+            "type": "object",
+            "properties": {
+                "blocks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockResponse"
+                    }
+                },
+                "site_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.ListPartnerSitesResponse": {
+            "type": "object",
+            "properties": {
+                "partner_id": {
+                    "type": "integer"
+                },
+                "sites": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerSiteResponse"
+                    }
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.LoginRequest": {
             "type": "object",
             "properties": {
                 "identifier": {
@@ -1700,7 +3071,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.LoginResponse": {
+        "eshkere_internal_handler_v1_dto.LoginResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -1714,7 +3085,310 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.RegisterRequest": {
+        "eshkere_internal_handler_v1_dto.PartnerAuthResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.PartnerBlockDetailsResponse": {
+            "type": "object",
+            "properties": {
+                "block_type": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "general_settings": {
+                    "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockGeneralSettingsResponse"
+                },
+                "geography_settings": {
+                    "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockGeographySettingsResponse"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "self_ad_settings": {
+                    "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockSelfAdSettingsResponse"
+                },
+                "site_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "supported_platforms": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.PartnerBlockEmbedResponse": {
+            "type": "object",
+            "properties": {
+                "block_id": {
+                    "type": "integer"
+                },
+                "embed_token": {
+                    "type": "string"
+                },
+                "html_snippet": {
+                    "type": "string"
+                },
+                "iframe_url": {
+                    "type": "string"
+                },
+                "script_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.PartnerBlockGeneralSettingsResponse": {
+            "type": "object",
+            "properties": {
+                "amp_mode": {
+                    "type": "string"
+                },
+                "border_mode": {
+                    "type": "string"
+                },
+                "corner_mode": {
+                    "type": "string"
+                },
+                "cpm_strategy": {
+                    "type": "string"
+                },
+                "interscroller_background_color": {
+                    "type": "string"
+                },
+                "interscroller_mode": {
+                    "type": "string"
+                },
+                "size_mode": {
+                    "type": "string"
+                },
+                "theme": {
+                    "type": "string"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.PartnerBlockGeoRuleResponse": {
+            "type": "object",
+            "properties": {
+                "cpmv": {
+                    "type": "integer"
+                },
+                "geo_code": {
+                    "type": "string"
+                },
+                "is_enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.PartnerBlockGeographySettingsResponse": {
+            "type": "object",
+            "properties": {
+                "global_cpmv": {
+                    "type": "integer"
+                },
+                "only_configured": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockGeoRuleResponse"
+                    }
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.PartnerBlockResponse": {
+            "type": "object",
+            "properties": {
+                "block_type": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.PartnerBlockSelfAdSettingsResponse": {
+            "type": "object",
+            "properties": {
+                "reserved": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.PartnerLoginRequest": {
+            "type": "object",
+            "required": [
+                "identifier",
+                "password"
+            ],
+            "properties": {
+                "identifier": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.PartnerProfileResponse": {
+            "type": "object",
+            "properties": {
+                "birth_date": {
+                    "type": "string"
+                },
+                "cooperation_form": {
+                    "type": "string"
+                },
+                "country_code": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "middle_name": {
+                    "type": "string"
+                },
+                "payout_currency": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "registration_region_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.PartnerRegisterRequest": {
+            "type": "object",
+            "required": [
+                "birth_date",
+                "cooperation_form",
+                "country_code",
+                "email",
+                "first_name",
+                "last_name",
+                "password",
+                "payout_currency",
+                "phone",
+                "registration_region_code"
+            ],
+            "properties": {
+                "birth_date": {
+                    "type": "string"
+                },
+                "cooperation_form": {
+                    "type": "string",
+                    "enum": [
+                        "self_employed",
+                        "individual_entrepreneur",
+                        "legal_entity"
+                    ]
+                },
+                "country_code": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "middle_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "payout_currency": {
+                    "type": "string",
+                    "enum": [
+                        "RUB",
+                        "USD",
+                        "EUR"
+                    ]
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "registration_region_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.PartnerSiteResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "domain": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "site_name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.RegisterRequest": {
             "type": "object",
             "properties": {
                 "email": {
@@ -1731,7 +3405,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.RegisterResponse": {
+        "eshkere_internal_handler_v1_dto.RegisterResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -1745,7 +3419,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.TopUpBalanceRequest": {
+        "eshkere_internal_handler_v1_dto.TopUpBalanceRequest": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -1753,7 +3427,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateAdCampaignRequest": {
+        "eshkere_internal_handler_v1_dto.UpdateAdCampaignRequest": {
             "type": "object",
             "properties": {
                 "main_action": {
@@ -1770,7 +3444,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateAdGroupRequest": {
+        "eshkere_internal_handler_v1_dto.UpdateAdGroupRequest": {
             "type": "object",
             "properties": {
                 "age_from": {
@@ -1804,7 +3478,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateAdvertiserProfileRequest": {
+        "eshkere_internal_handler_v1_dto.UpdateAdvertiserProfileRequest": {
             "type": "object",
             "properties": {
                 "city": {
@@ -1826,6 +3500,170 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "tariff": {
+                    "type": "string"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeneralRequest": {
+            "type": "object",
+            "properties": {
+                "amp_mode": {
+                    "type": "string",
+                    "enum": [
+                        "disabled",
+                        "enabled"
+                    ]
+                },
+                "border_mode": {
+                    "type": "string",
+                    "enum": [
+                        "auto",
+                        "enabled",
+                        "disabled"
+                    ]
+                },
+                "corner_mode": {
+                    "type": "string",
+                    "enum": [
+                        "auto",
+                        "rounded",
+                        "square"
+                    ]
+                },
+                "cpm_strategy": {
+                    "type": "string",
+                    "enum": [
+                        "max_income"
+                    ]
+                },
+                "interscroller_background_color": {
+                    "type": "string"
+                },
+                "interscroller_mode": {
+                    "type": "string",
+                    "enum": [
+                        "auto",
+                        "enabled",
+                        "disabled"
+                    ]
+                },
+                "size_mode": {
+                    "type": "string",
+                    "enum": [
+                        "adaptive"
+                    ]
+                },
+                "theme": {
+                    "type": "string",
+                    "enum": [
+                        "light",
+                        "dark"
+                    ]
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRequest": {
+            "type": "object",
+            "properties": {
+                "global_cpmv": {
+                    "type": "integer"
+                },
+                "only_configured": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRuleRequest"
+                    }
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRuleRequest": {
+            "type": "object",
+            "required": [
+                "geo_code"
+            ],
+            "properties": {
+                "cpmv": {
+                    "type": "integer"
+                },
+                "geo_code": {
+                    "type": "string"
+                },
+                "is_enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.UpdatePartnerBlockMetaRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.UpdatePartnerBlockSelfAdRequest": {
+            "type": "object",
+            "properties": {
+                "reserved": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.UpdatePartnerProfileRequest": {
+            "type": "object",
+            "properties": {
+                "birth_date": {
+                    "type": "string"
+                },
+                "cooperation_form": {
+                    "type": "string",
+                    "enum": [
+                        "self_employed",
+                        "individual_entrepreneur",
+                        "legal_entity"
+                    ]
+                },
+                "country_code": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "middle_name": {
+                    "type": "string"
+                },
+                "payout_currency": {
+                    "type": "string",
+                    "enum": [
+                        "RUB",
+                        "USD",
+                        "EUR"
+                    ]
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "registration_region_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "eshkere_internal_handler_v1_dto.UpdatePartnerSiteRequest": {
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "type": "string"
+                },
+                "site_name": {
                     "type": "string"
                 }
             }

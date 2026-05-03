@@ -20,7 +20,12 @@ type GenericSettingsRequest interface {
 		dto.CreateAdCampaignRequest | dto.UpdateAdCampaignRequest |
 		dto.CreateAdGroupRequest | dto.UpdateAdGroupRequest |
 		dto.RegisterRequest | dto.LoginRequest | dto.TopUpBalanceRequest |
-		dto.UpdateAdRequest | dto.CreateAppealRequest
+		dto.UpdateAdRequest | dto.CreateAppealRequest |
+		dto.PartnerRegisterRequest | dto.PartnerLoginRequest | dto.UpdatePartnerProfileRequest |
+		dto.CreatePartnerSiteRequest | dto.UpdatePartnerSiteRequest |
+		dto.CreatePartnerBlockRequest | dto.UpdatePartnerBlockMetaRequest |
+		dto.UpdatePartnerBlockGeneralRequest | dto.UpdatePartnerBlockGeographyRequest |
+		dto.UpdatePartnerBlockSelfAdRequest
 }
 
 func newJSONRequest[T GenericSettingsRequest](r *http.Request) (*T, error) {

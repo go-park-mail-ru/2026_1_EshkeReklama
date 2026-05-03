@@ -12,6 +12,7 @@ package handler
 import (
 	context "context"
 	models "eshkere/internal/models"
+	service "eshkere/internal/service"
 	input "eshkere/internal/service/input"
 	reflect "reflect"
 
@@ -260,6 +261,198 @@ func (m *MockService) UpdateAd(ctx context.Context, in *input.UpdateAd) error {
 func (mr *MockServiceMockRecorder) UpdateAd(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAd", reflect.TypeOf((*MockService)(nil).UpdateAd), ctx, in)
+}
+
+func (m *MockService) GetAdByFeedToken(ctx context.Context, token string) (*models.Ad, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAdByFeedToken", ctx, token)
+	ret0, _ := ret[0].(*models.Ad)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (mr *MockServiceMockRecorder) GetAdByFeedToken(ctx, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdByFeedToken", reflect.TypeOf((*MockService)(nil).GetAdByFeedToken), ctx, token)
+}
+
+func (m *MockService) CreatePartnerProfile(ctx context.Context, in *input.CreatePartnerProfile) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreatePartnerProfile", ctx, in)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (m *MockService) GetPartnerByID(ctx context.Context, id int) (*models.Partner, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPartnerByID", ctx, id)
+	ret0, _ := ret[0].(*models.Partner)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (m *MockService) UpdatePartnerProfile(ctx context.Context, in *input.UpdatePartnerProfile) (*models.Partner, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePartnerProfile", ctx, in)
+	ret0, _ := ret[0].(*models.Partner)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (m *MockService) CreatePartnerSite(ctx context.Context, in *input.CreatePartnerSite) (*models.PartnerSite, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreatePartnerSite", ctx, in)
+	ret0, _ := ret[0].(*models.PartnerSite)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (m *MockService) GetPartnerSite(ctx context.Context, siteID int) (*models.PartnerSite, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPartnerSite", ctx, siteID)
+	ret0, _ := ret[0].(*models.PartnerSite)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (m *MockService) ListPartnerSites(ctx context.Context, partnerID int) ([]*models.PartnerSite, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPartnerSites", ctx, partnerID)
+	ret0, _ := ret[0].([]*models.PartnerSite)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (m *MockService) UpdatePartnerSite(ctx context.Context, in *input.UpdatePartnerSite) (*models.PartnerSite, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePartnerSite", ctx, in)
+	ret0, _ := ret[0].(*models.PartnerSite)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (m *MockService) DeletePartnerSite(ctx context.Context, partnerID, siteID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeletePartnerSite", ctx, partnerID, siteID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (m *MockService) CreatePartnerBlock(ctx context.Context, partnerID int, in *input.CreatePartnerBlock) (*models.PartnerBlock, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreatePartnerBlock", ctx, partnerID, in)
+	ret0, _ := ret[0].(*models.PartnerBlock)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (m *MockService) GetPartnerBlock(ctx context.Context, partnerID, siteID, blockID int) (*models.PartnerBlock, []*models.PartnerBlockGeoRule, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPartnerBlock", ctx, partnerID, siteID, blockID)
+	ret0, _ := ret[0].(*models.PartnerBlock)
+	ret1, _ := ret[1].([]*models.PartnerBlockGeoRule)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+func (m *MockService) ListPartnerBlocks(ctx context.Context, partnerID, siteID int) ([]*models.PartnerBlock, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPartnerBlocks", ctx, partnerID, siteID)
+	ret0, _ := ret[0].([]*models.PartnerBlock)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (m *MockService) UpdatePartnerBlockMeta(ctx context.Context, partnerID, siteID int, in *input.UpdatePartnerBlockMeta) (*models.PartnerBlock, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePartnerBlockMeta", ctx, partnerID, siteID, in)
+	ret0, _ := ret[0].(*models.PartnerBlock)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (m *MockService) UpdatePartnerBlockGeneralSettings(ctx context.Context, partnerID, siteID int, in *input.UpdatePartnerBlockGeneral) (*models.PartnerBlock, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePartnerBlockGeneralSettings", ctx, partnerID, siteID, in)
+	ret0, _ := ret[0].(*models.PartnerBlock)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (m *MockService) UpdatePartnerBlockGeographySettings(ctx context.Context, partnerID, siteID int, in *input.UpdatePartnerBlockGeography) ([]*models.PartnerBlockGeoRule, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePartnerBlockGeographySettings", ctx, partnerID, siteID, in)
+	ret0, _ := ret[0].([]*models.PartnerBlockGeoRule)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (m *MockService) UpdatePartnerBlockSelfAdSettings(ctx context.Context, partnerID, siteID int, in *input.UpdatePartnerBlockSelfAd) (*models.PartnerBlock, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePartnerBlockSelfAdSettings", ctx, partnerID, siteID, in)
+	ret0, _ := ret[0].(*models.PartnerBlock)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (m *MockService) DeletePartnerBlock(ctx context.Context, partnerID, siteID, blockID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeletePartnerBlock", ctx, partnerID, siteID, blockID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (m *MockService) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPartnerBlockEmbedCode", ctx, partnerID, siteID, blockID, baseURL)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(string)
+	ret3, _ := ret[3].(string)
+	ret4, _ := ret[4].(error)
+	return ret0, ret1, ret2, ret3, ret4
+}
+
+func (m *MockService) ListPartnerCountries(ctx context.Context) []service.DictionaryItem {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPartnerCountries", ctx)
+	ret0, _ := ret[0].([]service.DictionaryItem)
+	return ret0
+}
+
+func (m *MockService) ListPartnerRegistrationRegions(ctx context.Context, countryCode string) []service.DictionaryItem {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPartnerRegistrationRegions", ctx, countryCode)
+	ret0, _ := ret[0].([]service.DictionaryItem)
+	return ret0
+}
+
+func (m *MockService) ListPartnerCooperationForms(ctx context.Context) []service.DictionaryItem {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPartnerCooperationForms", ctx)
+	ret0, _ := ret[0].([]service.DictionaryItem)
+	return ret0
+}
+
+func (m *MockService) ListPartnerPayoutCurrencies(ctx context.Context) []service.DictionaryItem {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPartnerPayoutCurrencies", ctx)
+	ret0, _ := ret[0].([]service.DictionaryItem)
+	return ret0
+}
+
+func (m *MockService) ListPartnerBlockTypes(ctx context.Context) []service.BlockTypeDictionaryItem {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPartnerBlockTypes", ctx)
+	ret0, _ := ret[0].([]service.BlockTypeDictionaryItem)
+	return ret0
+}
+
+func (m *MockService) GetPartnerGeoTree(ctx context.Context) []*service.GeoTreeNode {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPartnerGeoTree", ctx)
+	ret0, _ := ret[0].([]*service.GeoTreeNode)
+	return ret0
 }
 
 // UpdateAdCampaign mocks base method.

@@ -108,6 +108,49 @@ func (m *MockPartnerRepository) EXPECT() *MockPartnerRepositoryMockRecorder {
 	return m.recorder
 }
 
+// CreateProfile mocks base method.
+func (m *MockPartnerRepository) CreateProfile(ctx context.Context, partner *models.Partner) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateProfile", ctx, partner)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateProfile indicates an expected call of CreateProfile.
+func (mr *MockPartnerRepositoryMockRecorder) CreateProfile(ctx, partner any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateProfile", reflect.TypeOf((*MockPartnerRepository)(nil).CreateProfile), ctx, partner)
+}
+
+// GetByID mocks base method.
+func (m *MockPartnerRepository) GetByID(ctx context.Context, id int) (*models.Partner, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", ctx, id)
+	ret0, _ := ret[0].(*models.Partner)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByID indicates an expected call of GetByID.
+func (mr *MockPartnerRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockPartnerRepository)(nil).GetByID), ctx, id)
+}
+
+// Update mocks base method.
+func (m *MockPartnerRepository) Update(ctx context.Context, partner *models.Partner) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, partner)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockPartnerRepositoryMockRecorder) Update(ctx, partner any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockPartnerRepository)(nil).Update), ctx, partner)
+}
+
 // MockPartnerSiteRepository is a mock of PartnerSiteRepository interface.
 type MockPartnerSiteRepository struct {
 	ctrl     *gomock.Controller
@@ -130,6 +173,257 @@ func NewMockPartnerSiteRepository(ctrl *gomock.Controller) *MockPartnerSiteRepos
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPartnerSiteRepository) EXPECT() *MockPartnerSiteRepositoryMockRecorder {
 	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockPartnerSiteRepository) Create(ctx context.Context, site *models.PartnerSite) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, site)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockPartnerSiteRepositoryMockRecorder) Create(ctx, site any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockPartnerSiteRepository)(nil).Create), ctx, site)
+}
+
+// Delete mocks base method.
+func (m *MockPartnerSiteRepository) Delete(ctx context.Context, siteID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, siteID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockPartnerSiteRepositoryMockRecorder) Delete(ctx, siteID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockPartnerSiteRepository)(nil).Delete), ctx, siteID)
+}
+
+// ExistsByDomain mocks base method.
+func (m *MockPartnerSiteRepository) ExistsByDomain(ctx context.Context, domain string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExistsByDomain", ctx, domain)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExistsByDomain indicates an expected call of ExistsByDomain.
+func (mr *MockPartnerSiteRepositoryMockRecorder) ExistsByDomain(ctx, domain any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExistsByDomain", reflect.TypeOf((*MockPartnerSiteRepository)(nil).ExistsByDomain), ctx, domain)
+}
+
+// GetByID mocks base method.
+func (m *MockPartnerSiteRepository) GetByID(ctx context.Context, siteID int) (*models.PartnerSite, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", ctx, siteID)
+	ret0, _ := ret[0].(*models.PartnerSite)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByID indicates an expected call of GetByID.
+func (mr *MockPartnerSiteRepositoryMockRecorder) GetByID(ctx, siteID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockPartnerSiteRepository)(nil).GetByID), ctx, siteID)
+}
+
+// ListByPartnerID mocks base method.
+func (m *MockPartnerSiteRepository) ListByPartnerID(ctx context.Context, partnerID int) ([]*models.PartnerSite, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListByPartnerID", ctx, partnerID)
+	ret0, _ := ret[0].([]*models.PartnerSite)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListByPartnerID indicates an expected call of ListByPartnerID.
+func (mr *MockPartnerSiteRepositoryMockRecorder) ListByPartnerID(ctx, partnerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByPartnerID", reflect.TypeOf((*MockPartnerSiteRepository)(nil).ListByPartnerID), ctx, partnerID)
+}
+
+// Update mocks base method.
+func (m *MockPartnerSiteRepository) Update(ctx context.Context, site *models.PartnerSite) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, site)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockPartnerSiteRepositoryMockRecorder) Update(ctx, site any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockPartnerSiteRepository)(nil).Update), ctx, site)
+}
+
+// MockPartnerBlockRepository is a mock of PartnerBlockRepository interface.
+type MockPartnerBlockRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockPartnerBlockRepositoryMockRecorder
+	isgomock struct{}
+}
+
+// MockPartnerBlockRepositoryMockRecorder is the mock recorder for MockPartnerBlockRepository.
+type MockPartnerBlockRepositoryMockRecorder struct {
+	mock *MockPartnerBlockRepository
+}
+
+// NewMockPartnerBlockRepository creates a new mock instance.
+func NewMockPartnerBlockRepository(ctrl *gomock.Controller) *MockPartnerBlockRepository {
+	mock := &MockPartnerBlockRepository{ctrl: ctrl}
+	mock.recorder = &MockPartnerBlockRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockPartnerBlockRepository) EXPECT() *MockPartnerBlockRepositoryMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockPartnerBlockRepository) Create(ctx context.Context, block *models.PartnerBlock) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, block)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockPartnerBlockRepositoryMockRecorder) Create(ctx, block any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockPartnerBlockRepository)(nil).Create), ctx, block)
+}
+
+// Delete mocks base method.
+func (m *MockPartnerBlockRepository) Delete(ctx context.Context, blockID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, blockID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockPartnerBlockRepositoryMockRecorder) Delete(ctx, blockID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockPartnerBlockRepository)(nil).Delete), ctx, blockID)
+}
+
+// GetByEmbedToken mocks base method.
+func (m *MockPartnerBlockRepository) GetByEmbedToken(ctx context.Context, token string) (*models.PartnerBlock, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByEmbedToken", ctx, token)
+	ret0, _ := ret[0].(*models.PartnerBlock)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByEmbedToken indicates an expected call of GetByEmbedToken.
+func (mr *MockPartnerBlockRepositoryMockRecorder) GetByEmbedToken(ctx, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEmbedToken", reflect.TypeOf((*MockPartnerBlockRepository)(nil).GetByEmbedToken), ctx, token)
+}
+
+// GetByID mocks base method.
+func (m *MockPartnerBlockRepository) GetByID(ctx context.Context, blockID int) (*models.PartnerBlock, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", ctx, blockID)
+	ret0, _ := ret[0].(*models.PartnerBlock)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByID indicates an expected call of GetByID.
+func (mr *MockPartnerBlockRepositoryMockRecorder) GetByID(ctx, blockID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockPartnerBlockRepository)(nil).GetByID), ctx, blockID)
+}
+
+// ListBySiteID mocks base method.
+func (m *MockPartnerBlockRepository) ListBySiteID(ctx context.Context, siteID int) ([]*models.PartnerBlock, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListBySiteID", ctx, siteID)
+	ret0, _ := ret[0].([]*models.PartnerBlock)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListBySiteID indicates an expected call of ListBySiteID.
+func (mr *MockPartnerBlockRepositoryMockRecorder) ListBySiteID(ctx, siteID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBySiteID", reflect.TypeOf((*MockPartnerBlockRepository)(nil).ListBySiteID), ctx, siteID)
+}
+
+// Update mocks base method.
+func (m *MockPartnerBlockRepository) Update(ctx context.Context, block *models.PartnerBlock) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, block)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockPartnerBlockRepositoryMockRecorder) Update(ctx, block any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockPartnerBlockRepository)(nil).Update), ctx, block)
+}
+
+// MockPartnerBlockGeoRuleRepository is a mock of PartnerBlockGeoRuleRepository interface.
+type MockPartnerBlockGeoRuleRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockPartnerBlockGeoRuleRepositoryMockRecorder
+	isgomock struct{}
+}
+
+// MockPartnerBlockGeoRuleRepositoryMockRecorder is the mock recorder for MockPartnerBlockGeoRuleRepository.
+type MockPartnerBlockGeoRuleRepositoryMockRecorder struct {
+	mock *MockPartnerBlockGeoRuleRepository
+}
+
+// NewMockPartnerBlockGeoRuleRepository creates a new mock instance.
+func NewMockPartnerBlockGeoRuleRepository(ctrl *gomock.Controller) *MockPartnerBlockGeoRuleRepository {
+	mock := &MockPartnerBlockGeoRuleRepository{ctrl: ctrl}
+	mock.recorder = &MockPartnerBlockGeoRuleRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockPartnerBlockGeoRuleRepository) EXPECT() *MockPartnerBlockGeoRuleRepositoryMockRecorder {
+	return m.recorder
+}
+
+// ListByBlockID mocks base method.
+func (m *MockPartnerBlockGeoRuleRepository) ListByBlockID(ctx context.Context, blockID int) ([]*models.PartnerBlockGeoRule, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListByBlockID", ctx, blockID)
+	ret0, _ := ret[0].([]*models.PartnerBlockGeoRule)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListByBlockID indicates an expected call of ListByBlockID.
+func (mr *MockPartnerBlockGeoRuleRepositoryMockRecorder) ListByBlockID(ctx, blockID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByBlockID", reflect.TypeOf((*MockPartnerBlockGeoRuleRepository)(nil).ListByBlockID), ctx, blockID)
+}
+
+// ReplaceByBlockID mocks base method.
+func (m *MockPartnerBlockGeoRuleRepository) ReplaceByBlockID(ctx context.Context, blockID int, rules []*models.PartnerBlockGeoRule) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReplaceByBlockID", ctx, blockID, rules)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReplaceByBlockID indicates an expected call of ReplaceByBlockID.
+func (mr *MockPartnerBlockGeoRuleRepositoryMockRecorder) ReplaceByBlockID(ctx, blockID, rules any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReplaceByBlockID", reflect.TypeOf((*MockPartnerBlockGeoRuleRepository)(nil).ReplaceByBlockID), ctx, blockID, rules)
 }
 
 // MockAdCampaignRepository is a mock of AdCampaignRepository interface.
@@ -391,19 +685,19 @@ func (mr *MockAdRepositoryMockRecorder) GetByID(ctx, adID any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockAdRepository)(nil).GetByID), ctx, adID)
 }
 
-// ListByAdGroupID mocks base method.
-func (m *MockAdRepository) ListByAdGroupID(ctx context.Context, adGroupID int) ([]*models.Ad, error) {
+// GetRandomWorking mocks base method.
+func (m *MockAdRepository) GetRandomWorking(ctx context.Context) (*models.Ad, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListByAdGroupID", ctx, adGroupID)
-	ret0, _ := ret[0].([]*models.Ad)
+	ret := m.ctrl.Call(m, "GetRandomWorking", ctx)
+	ret0, _ := ret[0].(*models.Ad)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListByAdGroupID indicates an expected call of ListByAdGroupID.
-func (mr *MockAdRepositoryMockRecorder) ListByAdGroupID(ctx, adGroupID any) *gomock.Call {
+// GetRandomWorking indicates an expected call of GetRandomWorking.
+func (mr *MockAdRepositoryMockRecorder) GetRandomWorking(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAdGroupID", reflect.TypeOf((*MockAdRepository)(nil).ListByAdGroupID), ctx, adGroupID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRandomWorking", reflect.TypeOf((*MockAdRepository)(nil).GetRandomWorking), ctx)
 }
 
 // ListByAdCampaignID mocks base method.
@@ -421,18 +715,19 @@ func (mr *MockAdRepositoryMockRecorder) ListByAdCampaignID(ctx, campaignID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAdCampaignID", reflect.TypeOf((*MockAdRepository)(nil).ListByAdCampaignID), ctx, campaignID)
 }
 
-// UpdateImage mocks base method.
-func (m *MockAdRepository) UpdateImage(ctx context.Context, adID int, imageKey string) error {
+// ListByAdGroupID mocks base method.
+func (m *MockAdRepository) ListByAdGroupID(ctx context.Context, adGroupID int) ([]*models.Ad, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateImage", ctx, adID, imageKey)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "ListByAdGroupID", ctx, adGroupID)
+	ret0, _ := ret[0].([]*models.Ad)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// UpdateImage indicates an expected call of UpdateImage.
-func (mr *MockAdRepositoryMockRecorder) UpdateImage(ctx, adID, imageKey any) *gomock.Call {
+// ListByAdGroupID indicates an expected call of ListByAdGroupID.
+func (mr *MockAdRepositoryMockRecorder) ListByAdGroupID(ctx, adGroupID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateImage", reflect.TypeOf((*MockAdRepository)(nil).UpdateImage), ctx, adID, imageKey)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAdGroupID", reflect.TypeOf((*MockAdRepository)(nil).ListByAdGroupID), ctx, adGroupID)
 }
 
 // Update mocks base method.
@@ -447,6 +742,20 @@ func (m *MockAdRepository) Update(ctx context.Context, ad *models.Ad) error {
 func (mr *MockAdRepositoryMockRecorder) Update(ctx, ad any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockAdRepository)(nil).Update), ctx, ad)
+}
+
+// UpdateImage mocks base method.
+func (m *MockAdRepository) UpdateImage(ctx context.Context, adID int, imageKey string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateImage", ctx, adID, imageKey)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateImage indicates an expected call of UpdateImage.
+func (mr *MockAdRepositoryMockRecorder) UpdateImage(ctx, adID, imageKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateImage", reflect.TypeOf((*MockAdRepository)(nil).UpdateImage), ctx, adID, imageKey)
 }
 
 // MockFeedLinkRepository is a mock of FeedLinkRepository interface.
@@ -474,17 +783,17 @@ func (m *MockFeedLinkRepository) EXPECT() *MockFeedLinkRepositoryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockFeedLinkRepository) Create(ctx context.Context, campaignID int, token string) error {
+func (m *MockFeedLinkRepository) Create(ctx context.Context, advertiserID int, token string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, campaignID, token)
+	ret := m.ctrl.Call(m, "Create", ctx, advertiserID, token)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockFeedLinkRepositoryMockRecorder) Create(ctx, campaignID, token any) *gomock.Call {
+func (mr *MockFeedLinkRepositoryMockRecorder) Create(ctx, advertiserID, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockFeedLinkRepository)(nil).Create), ctx, campaignID, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockFeedLinkRepository)(nil).Create), ctx, advertiserID, token)
 }
 
 // GetCampaignIDByToken mocks base method.
@@ -527,17 +836,17 @@ func (m *MockAvatarStorage) EXPECT() *MockAvatarStorageMockRecorder {
 }
 
 // DeleteAvatar mocks base method.
-func (m *MockAvatarStorage) DeleteAvatar(ctx context.Context, advertiserID int, avatarURL string) error {
+func (m *MockAvatarStorage) DeleteAvatar(ctx context.Context, advertiserID int, avatarKey string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteAvatar", ctx, advertiserID, avatarURL)
+	ret := m.ctrl.Call(m, "DeleteAvatar", ctx, advertiserID, avatarKey)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteAvatar indicates an expected call of DeleteAvatar.
-func (mr *MockAvatarStorageMockRecorder) DeleteAvatar(ctx, advertiserID, avatarURL any) *gomock.Call {
+func (mr *MockAvatarStorageMockRecorder) DeleteAvatar(ctx, advertiserID, avatarKey any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAvatar", reflect.TypeOf((*MockAvatarStorage)(nil).DeleteAvatar), ctx, advertiserID, avatarURL)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAvatar", reflect.TypeOf((*MockAvatarStorage)(nil).DeleteAvatar), ctx, advertiserID, avatarKey)
 }
 
 // GetAvatarURL mocks base method.
@@ -567,6 +876,140 @@ func (m *MockAvatarStorage) UploadAvatar(ctx context.Context, advertiserID int, 
 func (mr *MockAvatarStorageMockRecorder) UploadAvatar(ctx, advertiserID, data, ext, contentType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadAvatar", reflect.TypeOf((*MockAvatarStorage)(nil).UploadAvatar), ctx, advertiserID, data, ext, contentType)
+}
+
+// MockAppealStorage is a mock of AppealStorage interface.
+type MockAppealStorage struct {
+	ctrl     *gomock.Controller
+	recorder *MockAppealStorageMockRecorder
+	isgomock struct{}
+}
+
+// MockAppealStorageMockRecorder is the mock recorder for MockAppealStorage.
+type MockAppealStorageMockRecorder struct {
+	mock *MockAppealStorage
+}
+
+// NewMockAppealStorage creates a new mock instance.
+func NewMockAppealStorage(ctrl *gomock.Controller) *MockAppealStorage {
+	mock := &MockAppealStorage{ctrl: ctrl}
+	mock.recorder = &MockAppealStorageMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAppealStorage) EXPECT() *MockAppealStorageMockRecorder {
+	return m.recorder
+}
+
+// DeleteAppealImage mocks base method.
+func (m *MockAppealStorage) DeleteAppealImage(ctx context.Context, appealID int, imageKey string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAppealImage", ctx, appealID, imageKey)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAppealImage indicates an expected call of DeleteAppealImage.
+func (mr *MockAppealStorageMockRecorder) DeleteAppealImage(ctx, appealID, imageKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAppealImage", reflect.TypeOf((*MockAppealStorage)(nil).DeleteAppealImage), ctx, appealID, imageKey)
+}
+
+// GetAppealImageURL mocks base method.
+func (m *MockAppealStorage) GetAppealImageURL(imageKey string) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAppealImageURL", imageKey)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetAppealImageURL indicates an expected call of GetAppealImageURL.
+func (mr *MockAppealStorageMockRecorder) GetAppealImageURL(imageKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAppealImageURL", reflect.TypeOf((*MockAppealStorage)(nil).GetAppealImageURL), imageKey)
+}
+
+// UploadAppealImage mocks base method.
+func (m *MockAppealStorage) UploadAppealImage(ctx context.Context, appealID int, data []byte, ext, contentType string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UploadAppealImage", ctx, appealID, data, ext, contentType)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UploadAppealImage indicates an expected call of UploadAppealImage.
+func (mr *MockAppealStorageMockRecorder) UploadAppealImage(ctx, appealID, data, ext, contentType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadAppealImage", reflect.TypeOf((*MockAppealStorage)(nil).UploadAppealImage), ctx, appealID, data, ext, contentType)
+}
+
+// MockAdStorage is a mock of AdStorage interface.
+type MockAdStorage struct {
+	ctrl     *gomock.Controller
+	recorder *MockAdStorageMockRecorder
+	isgomock struct{}
+}
+
+// MockAdStorageMockRecorder is the mock recorder for MockAdStorage.
+type MockAdStorageMockRecorder struct {
+	mock *MockAdStorage
+}
+
+// NewMockAdStorage creates a new mock instance.
+func NewMockAdStorage(ctrl *gomock.Controller) *MockAdStorage {
+	mock := &MockAdStorage{ctrl: ctrl}
+	mock.recorder = &MockAdStorageMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAdStorage) EXPECT() *MockAdStorageMockRecorder {
+	return m.recorder
+}
+
+// DeleteAdImage mocks base method.
+func (m *MockAdStorage) DeleteAdImage(ctx context.Context, imageKey string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAdImage", ctx, imageKey)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAdImage indicates an expected call of DeleteAdImage.
+func (mr *MockAdStorageMockRecorder) DeleteAdImage(ctx, imageKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAdImage", reflect.TypeOf((*MockAdStorage)(nil).DeleteAdImage), ctx, imageKey)
+}
+
+// GetAdImageURL mocks base method.
+func (m *MockAdStorage) GetAdImageURL(imagKey string) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAdImageURL", imagKey)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetAdImageURL indicates an expected call of GetAdImageURL.
+func (mr *MockAdStorageMockRecorder) GetAdImageURL(imagKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdImageURL", reflect.TypeOf((*MockAdStorage)(nil).GetAdImageURL), imagKey)
+}
+
+// UploadAdImage mocks base method.
+func (m *MockAdStorage) UploadAdImage(ctx context.Context, data []byte, ext, contentType string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UploadAdImage", ctx, data, ext, contentType)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UploadAdImage indicates an expected call of UploadAdImage.
+func (mr *MockAdStorageMockRecorder) UploadAdImage(ctx, data, ext, contentType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadAdImage", reflect.TypeOf((*MockAdStorage)(nil).UploadAdImage), ctx, data, ext, contentType)
 }
 
 // MockAdActionRepository is a mock of AdActionRepository interface.
@@ -639,4 +1082,86 @@ func NewMockRegionRepository(ctrl *gomock.Controller) *MockRegionRepository {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRegionRepository) EXPECT() *MockRegionRepositoryMockRecorder {
 	return m.recorder
+}
+
+// MockAppealRepository is a mock of AppealRepository interface.
+type MockAppealRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockAppealRepositoryMockRecorder
+	isgomock struct{}
+}
+
+// MockAppealRepositoryMockRecorder is the mock recorder for MockAppealRepository.
+type MockAppealRepositoryMockRecorder struct {
+	mock *MockAppealRepository
+}
+
+// NewMockAppealRepository creates a new mock instance.
+func NewMockAppealRepository(ctrl *gomock.Controller) *MockAppealRepository {
+	mock := &MockAppealRepository{ctrl: ctrl}
+	mock.recorder = &MockAppealRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAppealRepository) EXPECT() *MockAppealRepositoryMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockAppealRepository) Create(ctx context.Context, appeal *models.Appeal) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, appeal)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockAppealRepositoryMockRecorder) Create(ctx, appeal any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAppealRepository)(nil).Create), ctx, appeal)
+}
+
+// GetByID mocks base method.
+func (m *MockAppealRepository) GetByID(ctx context.Context, appealID int) (*models.Appeal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", ctx, appealID)
+	ret0, _ := ret[0].(*models.Appeal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByID indicates an expected call of GetByID.
+func (mr *MockAppealRepositoryMockRecorder) GetByID(ctx, appealID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockAppealRepository)(nil).GetByID), ctx, appealID)
+}
+
+// ListByAdvertiserID mocks base method.
+func (m *MockAppealRepository) ListByAdvertiserID(ctx context.Context, advertiserID int) ([]*models.Appeal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListByAdvertiserID", ctx, advertiserID)
+	ret0, _ := ret[0].([]*models.Appeal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListByAdvertiserID indicates an expected call of ListByAdvertiserID.
+func (mr *MockAppealRepositoryMockRecorder) ListByAdvertiserID(ctx, advertiserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAdvertiserID", reflect.TypeOf((*MockAppealRepository)(nil).ListByAdvertiserID), ctx, advertiserID)
+}
+
+// UpdateImage mocks base method.
+func (m *MockAppealRepository) UpdateImage(ctx context.Context, appealID int, imageKey string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateImage", ctx, appealID, imageKey)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateImage indicates an expected call of UpdateImage.
+func (mr *MockAppealRepositoryMockRecorder) UpdateImage(ctx, appealID, imageKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateImage", reflect.TypeOf((*MockAppealRepository)(nil).UpdateImage), ctx, appealID, imageKey)
 }

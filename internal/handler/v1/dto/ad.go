@@ -110,3 +110,13 @@ func ToListAdsResponse(groupID int, ads []*models.Ad) ListAdsResponse {
 		Ads:     ToAdResponses(ads),
 	}
 }
+
+type AdRequest struct {
+	EmbedToken string `json:"embed_token" validate:"required"`
+}
+
+type AdRequestResponse struct {
+	RequestID string      `json:"request_id"`
+	Ad        *AdResponse `json:"ad"`
+	ClickURL  string      `json:"click_url"`
+}

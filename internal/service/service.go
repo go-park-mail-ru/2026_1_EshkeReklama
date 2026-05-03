@@ -63,6 +63,7 @@ type AdRepository interface {
 	GetByID(ctx context.Context, adID int) (*models.Ad, error)
 	ListByAdGroupID(ctx context.Context, adGroupID int) ([]*models.Ad, error)
 	ListByAdCampaignID(ctx context.Context, campaignID int) ([]*models.Ad, error)
+	GetRandomWorking(ctx context.Context) (*models.Ad, error)
 	UpdateImage(ctx context.Context, adID int, imageKey string) error
 	Update(ctx context.Context, ad *models.Ad) error
 	Delete(ctx context.Context, id int) error

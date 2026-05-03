@@ -427,15 +427,18 @@ func (s *Service) DeletePartnerBlock(ctx context.Context, partnerID, siteID, blo
 	return s.partnerBlockRepo.Delete(ctx, block.ID)
 }
 
-func (s *Service) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, string, error) {
+func (s *Service) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL, adSDKURL string) (string, string, string, string, error) {
 	block, _, err := s.GetPartnerBlock(ctx, partnerID, siteID, blockID)
 	if err != nil {
 		return "", "", "", "", err
 	}
 	base := strings.TrimRight(baseURL, "/")
-	scriptURL := fmt.Sprintf("%s/public/partner/blocks/%s.js", base, block.EmbedToken)
+	scriptURL := strings.TrimSpace(adSDKURL)
+	if scriptURL == "" {
+		scriptURL = fmt.Sprintf("%s/public/ad-sdk.js", base)
+	}
 	iframeURL := fmt.Sprintf("%s/public/partner/blocks/%s/frame", base, block.EmbedToken)
-	htmlSnippet := fmt.Sprintf("<script async src=\"%s\"></script>", scriptURL)
+	htmlSnippet := fmt.Sprintf("<div data-eshkere-ad=\"%s\"></div>\n<script async src=\"%s\"></script>", block.EmbedToken, scriptURL)
 	return block.EmbedToken, scriptURL, iframeURL, htmlSnippet, nil
 }
 

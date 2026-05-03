@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  eshkere_internal_handler_v1_dto.AdCampaignResponse:
+  dto.AdCampaignResponse:
     properties:
       daily_budget:
         type: integer
@@ -13,7 +13,7 @@ definitions:
       status:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.AdGroupResponse:
+  dto.AdGroupResponse:
     properties:
       age_from:
         type: integer
@@ -30,7 +30,23 @@ definitions:
       topic_id:
         type: integer
     type: object
-  eshkere_internal_handler_v1_dto.AdResponse:
+  dto.AdRequest:
+    properties:
+      embed_token:
+        type: string
+    required:
+    - embed_token
+    type: object
+  dto.AdRequestResponse:
+    properties:
+      ad:
+        $ref: '#/definitions/dto.AdResponse'
+      click_url:
+        type: string
+      request_id:
+        type: string
+    type: object
+  dto.AdResponse:
     properties:
       id:
         type: integer
@@ -45,7 +61,7 @@ definitions:
       title:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.AdvertiserProfileResponse:
+  dto.AdvertiserProfileResponse:
     properties:
       avatar_url:
         type: string
@@ -70,7 +86,7 @@ definitions:
       tariff:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.AppealResponse:
+  dto.AppealResponse:
     properties:
       category:
         type: string
@@ -87,12 +103,12 @@ definitions:
       title:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.BalanceResponse:
+  dto.BalanceResponse:
     properties:
       balance:
         type: integer
     type: object
-  eshkere_internal_handler_v1_dto.CreateAdCampaignRequest:
+  dto.CreateAdCampaignRequest:
     properties:
       main_action:
         type: string
@@ -101,12 +117,12 @@ definitions:
     required:
     - name
     type: object
-  eshkere_internal_handler_v1_dto.CreateAdCampaignResponse:
+  dto.CreateAdCampaignResponse:
     properties:
       id:
         type: integer
     type: object
-  eshkere_internal_handler_v1_dto.CreateAdGroupRequest:
+  dto.CreateAdGroupRequest:
     properties:
       age_from:
         type: integer
@@ -132,22 +148,22 @@ definitions:
     - region_id
     - topic_id
     type: object
-  eshkere_internal_handler_v1_dto.CreateAdGroupResponse:
+  dto.CreateAdGroupResponse:
     properties:
       id:
         type: integer
     type: object
-  eshkere_internal_handler_v1_dto.CreateAdResponse:
+  dto.CreateAdResponse:
     properties:
       id:
         type: integer
     type: object
-  eshkere_internal_handler_v1_dto.CreateAppealResponse:
+  dto.CreateAppealResponse:
     properties:
       id:
         type: integer
     type: object
-  eshkere_internal_handler_v1_dto.CreatePartnerBlockRequest:
+  dto.CreatePartnerBlockRequest:
     properties:
       block_type:
         enum:
@@ -164,7 +180,7 @@ definitions:
     - block_type
     - name
     type: object
-  eshkere_internal_handler_v1_dto.CreatePartnerSiteRequest:
+  dto.CreatePartnerSiteRequest:
     properties:
       domain:
         type: string
@@ -174,68 +190,68 @@ definitions:
     - domain
     - site_name
     type: object
-  eshkere_internal_handler_v1_dto.ListAdCampaignsResponse:
+  dto.ListAdCampaignsResponse:
     properties:
       advertiser_id:
         type: integer
       campaigns:
         items:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.AdCampaignResponse'
+          $ref: '#/definitions/dto.AdCampaignResponse'
         type: array
     type: object
-  eshkere_internal_handler_v1_dto.ListAdGroupsResponse:
+  dto.ListAdGroupsResponse:
     properties:
       ad_campaign_id:
         type: integer
       groups:
         items:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.AdGroupResponse'
+          $ref: '#/definitions/dto.AdGroupResponse'
         type: array
     type: object
-  eshkere_internal_handler_v1_dto.ListAdsResponse:
+  dto.ListAdsResponse:
     properties:
       ads:
         items:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.AdResponse'
+          $ref: '#/definitions/dto.AdResponse'
         type: array
       group_id:
         type: integer
     type: object
-  eshkere_internal_handler_v1_dto.ListAppealsResponse:
+  dto.ListAppealsResponse:
     properties:
       advertiser_id:
         type: integer
       appeals:
         items:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.AppealResponse'
+          $ref: '#/definitions/dto.AppealResponse'
         type: array
     type: object
-  eshkere_internal_handler_v1_dto.ListPartnerBlocksResponse:
+  dto.ListPartnerBlocksResponse:
     properties:
       blocks:
         items:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockResponse'
+          $ref: '#/definitions/dto.PartnerBlockResponse'
         type: array
       site_id:
         type: integer
     type: object
-  eshkere_internal_handler_v1_dto.ListPartnerSitesResponse:
+  dto.ListPartnerSitesResponse:
     properties:
       partner_id:
         type: integer
       sites:
         items:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerSiteResponse'
+          $ref: '#/definitions/dto.PartnerSiteResponse'
         type: array
     type: object
-  eshkere_internal_handler_v1_dto.LoginRequest:
+  dto.LoginRequest:
     properties:
       identifier:
         type: string
       password:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.LoginResponse:
+  dto.LoginResponse:
     properties:
       email:
         type: string
@@ -244,7 +260,7 @@ definitions:
       phone:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.PartnerAuthResponse:
+  dto.PartnerAuthResponse:
     properties:
       email:
         type: string
@@ -253,22 +269,22 @@ definitions:
       phone:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.PartnerBlockDetailsResponse:
+  dto.PartnerBlockDetailsResponse:
     properties:
       block_type:
         type: string
       created_at:
         type: string
       general_settings:
-        $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockGeneralSettingsResponse'
+        $ref: '#/definitions/dto.PartnerBlockGeneralSettingsResponse'
       geography_settings:
-        $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockGeographySettingsResponse'
+        $ref: '#/definitions/dto.PartnerBlockGeographySettingsResponse'
       id:
         type: integer
       name:
         type: string
       self_ad_settings:
-        $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockSelfAdSettingsResponse'
+        $ref: '#/definitions/dto.PartnerBlockSelfAdSettingsResponse'
       site_id:
         type: integer
       status:
@@ -280,7 +296,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.PartnerBlockEmbedResponse:
+  dto.PartnerBlockEmbedResponse:
     properties:
       block_id:
         type: integer
@@ -293,7 +309,7 @@ definitions:
       script_url:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.PartnerBlockGeneralSettingsResponse:
+  dto.PartnerBlockGeneralSettingsResponse:
     properties:
       amp_mode:
         type: string
@@ -312,7 +328,7 @@ definitions:
       theme:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.PartnerBlockGeoRuleResponse:
+  dto.PartnerBlockGeoRuleResponse:
     properties:
       cpmv:
         type: integer
@@ -321,7 +337,7 @@ definitions:
       is_enabled:
         type: boolean
     type: object
-  eshkere_internal_handler_v1_dto.PartnerBlockGeographySettingsResponse:
+  dto.PartnerBlockGeographySettingsResponse:
     properties:
       global_cpmv:
         type: integer
@@ -329,10 +345,10 @@ definitions:
         type: boolean
       rules:
         items:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockGeoRuleResponse'
+          $ref: '#/definitions/dto.PartnerBlockGeoRuleResponse'
         type: array
     type: object
-  eshkere_internal_handler_v1_dto.PartnerBlockResponse:
+  dto.PartnerBlockResponse:
     properties:
       block_type:
         type: string
@@ -347,12 +363,12 @@ definitions:
       updated_at:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.PartnerBlockSelfAdSettingsResponse:
+  dto.PartnerBlockSelfAdSettingsResponse:
     properties:
       reserved:
         type: boolean
     type: object
-  eshkere_internal_handler_v1_dto.PartnerLoginRequest:
+  dto.PartnerLoginRequest:
     properties:
       identifier:
         type: string
@@ -362,7 +378,7 @@ definitions:
     - identifier
     - password
     type: object
-  eshkere_internal_handler_v1_dto.PartnerProfileResponse:
+  dto.PartnerProfileResponse:
     properties:
       birth_date:
         type: string
@@ -389,7 +405,7 @@ definitions:
       registration_region_code:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.PartnerRegisterRequest:
+  dto.PartnerRegisterRequest:
     properties:
       birth_date:
         type: string
@@ -434,7 +450,7 @@ definitions:
     - phone
     - registration_region_code
     type: object
-  eshkere_internal_handler_v1_dto.PartnerSiteResponse:
+  dto.PartnerSiteResponse:
     properties:
       created_at:
         type: string
@@ -447,7 +463,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.RegisterRequest:
+  dto.RegisterRequest:
     properties:
       email:
         type: string
@@ -458,7 +474,7 @@ definitions:
       phone:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.RegisterResponse:
+  dto.RegisterResponse:
     properties:
       email:
         type: string
@@ -467,12 +483,12 @@ definitions:
       phone:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.TopUpBalanceRequest:
+  dto.TopUpBalanceRequest:
     properties:
       amount:
         type: integer
     type: object
-  eshkere_internal_handler_v1_dto.UpdateAdCampaignRequest:
+  dto.UpdateAdCampaignRequest:
     properties:
       main_action:
         minLength: 1
@@ -484,7 +500,7 @@ definitions:
         minLength: 1
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.UpdateAdGroupRequest:
+  dto.UpdateAdGroupRequest:
     properties:
       age_from:
         minimum: 1
@@ -509,7 +525,7 @@ definitions:
         minimum: 1
         type: integer
     type: object
-  eshkere_internal_handler_v1_dto.UpdateAdvertiserProfileRequest:
+  dto.UpdateAdvertiserProfileRequest:
     properties:
       city:
         type: string
@@ -526,7 +542,7 @@ definitions:
       tariff:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeneralRequest:
+  dto.UpdatePartnerBlockGeneralRequest:
     properties:
       amp_mode:
         enum:
@@ -567,7 +583,7 @@ definitions:
         - dark
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRequest:
+  dto.UpdatePartnerBlockGeographyRequest:
     properties:
       global_cpmv:
         type: integer
@@ -575,10 +591,10 @@ definitions:
         type: boolean
       rules:
         items:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRuleRequest'
+          $ref: '#/definitions/dto.UpdatePartnerBlockGeographyRuleRequest'
         type: array
     type: object
-  eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRuleRequest:
+  dto.UpdatePartnerBlockGeographyRuleRequest:
     properties:
       cpmv:
         type: integer
@@ -589,17 +605,17 @@ definitions:
     required:
     - geo_code
     type: object
-  eshkere_internal_handler_v1_dto.UpdatePartnerBlockMetaRequest:
+  dto.UpdatePartnerBlockMetaRequest:
     properties:
       name:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.UpdatePartnerBlockSelfAdRequest:
+  dto.UpdatePartnerBlockSelfAdRequest:
     properties:
       reserved:
         type: boolean
     type: object
-  eshkere_internal_handler_v1_dto.UpdatePartnerProfileRequest:
+  dto.UpdatePartnerProfileRequest:
     properties:
       birth_date:
         type: string
@@ -630,7 +646,7 @@ definitions:
       registration_region_code:
         type: string
     type: object
-  eshkere_internal_handler_v1_dto.UpdatePartnerSiteRequest:
+  dto.UpdatePartnerSiteRequest:
     properties:
       domain:
         type: string
@@ -653,6 +669,41 @@ info:
   title: Eshke Reklama API
   version: "1.0"
 paths:
+  /ad/request:
+    post:
+      consumes:
+      - application/json
+      description: Возвращает объявление для вставленного на сайт партнёра рекламного
+        блока по embed_token
+      parameters:
+      - description: Публичный токен рекламного блока
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AdRequestResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Запрос рекламы для публичного блока
+      tags:
+      - public_ads
   /ad_campaigns:
     get:
       description: Кампании рекламодателя из сессии
@@ -662,7 +713,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.ListAdCampaignsResponse'
+            $ref: '#/definitions/dto.ListAdCampaignsResponse'
         "401":
           description: Unauthorized
           schema:
@@ -686,14 +737,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreateAdCampaignRequest'
+          $ref: '#/definitions/dto.CreateAdCampaignRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreateAdCampaignResponse'
+            $ref: '#/definitions/dto.CreateAdCampaignResponse'
         "400":
           description: Bad Request
           schema:
@@ -758,7 +809,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdateAdCampaignRequest'
+          $ref: '#/definitions/dto.UpdateAdCampaignRequest'
       produces:
       - application/json
       responses:
@@ -797,7 +848,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.ListAdGroupsResponse'
+            $ref: '#/definitions/dto.ListAdGroupsResponse'
         "400":
           description: Bad Request
           schema:
@@ -829,14 +880,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreateAdGroupRequest'
+          $ref: '#/definitions/dto.CreateAdGroupRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreateAdGroupResponse'
+            $ref: '#/definitions/dto.CreateAdGroupResponse'
         "400":
           description: Bad Request
           schema:
@@ -910,7 +961,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdateAdGroupRequest'
+          $ref: '#/definitions/dto.UpdateAdGroupRequest'
       produces:
       - application/json
       responses:
@@ -954,7 +1005,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.ListAdsResponse'
+            $ref: '#/definitions/dto.ListAdsResponse'
         "400":
           description: Bad Request
           schema:
@@ -1011,7 +1062,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreateAdResponse'
+            $ref: '#/definitions/dto.CreateAdResponse'
         "400":
           description: Bad Request
           schema:
@@ -1179,7 +1230,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.BalanceResponse'
+            $ref: '#/definitions/dto.BalanceResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1208,14 +1259,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.TopUpBalanceRequest'
+          $ref: '#/definitions/dto.TopUpBalanceRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.BalanceResponse'
+            $ref: '#/definitions/dto.BalanceResponse'
         "400":
           description: Bad Request
           schema:
@@ -1244,14 +1295,14 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.LoginRequest'
+          $ref: '#/definitions/dto.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.LoginResponse'
+            $ref: '#/definitions/dto.LoginResponse'
         "400":
           description: Invalid identifier или password
           schema:
@@ -1295,7 +1346,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.AdvertiserProfileResponse'
+            $ref: '#/definitions/dto.AdvertiserProfileResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1323,14 +1374,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdateAdvertiserProfileRequest'
+          $ref: '#/definitions/dto.UpdateAdvertiserProfileRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.AdvertiserProfileResponse'
+            $ref: '#/definitions/dto.AdvertiserProfileResponse'
         "400":
           description: Bad Request
           schema:
@@ -1365,7 +1416,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.AdvertiserProfileResponse'
+            $ref: '#/definitions/dto.AdvertiserProfileResponse'
         "400":
           description: Bad Request
           schema:
@@ -1394,14 +1445,14 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.RegisterRequest'
+          $ref: '#/definitions/dto.RegisterRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.RegisterResponse'
+            $ref: '#/definitions/dto.RegisterResponse'
         "400":
           description: Invalid request или User already exists
           schema:
@@ -1422,7 +1473,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.ListAppealsResponse'
+            $ref: '#/definitions/dto.ListAppealsResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1481,7 +1532,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreateAppealResponse'
+            $ref: '#/definitions/dto.CreateAppealResponse'
         "400":
           description: Bad Request
           schema:
@@ -1508,7 +1559,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.AppealResponse'
+            $ref: '#/definitions/dto.AppealResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1656,14 +1707,14 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerLoginRequest'
+          $ref: '#/definitions/dto.PartnerLoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerAuthResponse'
+            $ref: '#/definitions/dto.PartnerAuthResponse'
         "400":
           description: Bad Request
           schema:
@@ -1707,7 +1758,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerProfileResponse'
+            $ref: '#/definitions/dto.PartnerProfileResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1735,14 +1786,14 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerProfileRequest'
+          $ref: '#/definitions/dto.UpdatePartnerProfileRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerProfileResponse'
+            $ref: '#/definitions/dto.PartnerProfileResponse'
         "400":
           description: Bad Request
           schema:
@@ -1775,14 +1826,14 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerRegisterRequest'
+          $ref: '#/definitions/dto.PartnerRegisterRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerAuthResponse'
+            $ref: '#/definitions/dto.PartnerAuthResponse'
         "400":
           description: Bad Request
           schema:
@@ -1807,7 +1858,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.ListPartnerSitesResponse'
+            $ref: '#/definitions/dto.ListPartnerSitesResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1831,7 +1882,7 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreatePartnerSiteRequest'
+          $ref: '#/definitions/dto.CreatePartnerSiteRequest'
       produces:
       - application/json
       responses:
@@ -1915,7 +1966,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerSiteResponse'
+            $ref: '#/definitions/dto.PartnerSiteResponse'
         "400":
           description: Bad Request
           schema:
@@ -1952,14 +2003,14 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerSiteRequest'
+          $ref: '#/definitions/dto.UpdatePartnerSiteRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerSiteResponse'
+            $ref: '#/definitions/dto.PartnerSiteResponse'
         "400":
           description: Bad Request
           schema:
@@ -2000,7 +2051,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.ListPartnerBlocksResponse'
+            $ref: '#/definitions/dto.ListPartnerBlocksResponse'
         "400":
           description: Bad Request
           schema:
@@ -2037,7 +2088,7 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.CreatePartnerBlockRequest'
+          $ref: '#/definitions/dto.CreatePartnerBlockRequest'
       produces:
       - application/json
       responses:
@@ -2130,7 +2181,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockDetailsResponse'
+            $ref: '#/definitions/dto.PartnerBlockDetailsResponse'
         "400":
           description: Bad Request
           schema:
@@ -2154,8 +2205,8 @@ paths:
       - partner_blocks
   /partners/sites/{site_id}/blocks/{block_id}/embed:
     get:
-      description: Возвращает script URL, iframe URL и HTML snippet для вставки блока
-        на сайт
+      description: Возвращает embed_token, URL фронтового ad-sdk.js, iframe fallback
+        URL и HTML snippet вида div data-eshkere-ad + script
       parameters:
       - description: ID сайта
         in: path
@@ -2173,7 +2224,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockEmbedResponse'
+            $ref: '#/definitions/dto.PartnerBlockEmbedResponse'
         "400":
           description: Bad Request
           schema:
@@ -2216,7 +2267,7 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeneralRequest'
+          $ref: '#/definitions/dto.UpdatePartnerBlockGeneralRequest'
       produces:
       - application/json
       responses:
@@ -2271,7 +2322,7 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRequest'
+          $ref: '#/definitions/dto.UpdatePartnerBlockGeographyRequest'
       produces:
       - application/json
       responses:
@@ -2322,7 +2373,7 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockMetaRequest'
+          $ref: '#/definitions/dto.UpdatePartnerBlockMetaRequest'
       produces:
       - application/json
       responses:
@@ -2373,7 +2424,7 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockSelfAdRequest'
+          $ref: '#/definitions/dto.UpdatePartnerBlockSelfAdRequest'
       produces:
       - application/json
       responses:

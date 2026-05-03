@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"strings"
 	"testing"
 
 	"eshkere/internal/models"
@@ -141,5 +142,41 @@ func TestGetAdsByFeedToken_NotFound(t *testing.T) {
 	}
 	if err == sql.ErrNoRows {
 		t.Fatalf("expected wrapped not-found error, got %v", err)
+	}
+}
+
+func TestGetPartnerBlockEmbedCode_ReturnsDivAndScriptSnippet(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	siteRepo := NewMockPartnerSiteRepository(ctrl)
+	blockRepo := NewMockPartnerBlockRepository(ctrl)
+	geoRepo := NewMockPartnerBlockGeoRuleRepository(ctrl)
+
+	svc, _ := NewService(&Config{
+		PartnerSiteRepo:         siteRepo,
+		PartnerBlockRepo:        blockRepo,
+		PartnerBlockGeoRuleRepo: geoRepo,
+	})
+
+	siteRepo.EXPECT().GetByID(gomock.Any(), 12).Return(&models.PartnerSite{ID: 12, PartnerID: 7}, nil)
+	blockRepo.EXPECT().GetByID(gomock.Any(), 34).Return(&models.PartnerBlock{ID: 34, PartnerSiteID: 12, EmbedToken: "pb_abc123"}, nil)
+	geoRepo.EXPECT().ListByBlockID(gomock.Any(), 34).Return([]*models.PartnerBlockGeoRule{}, nil)
+
+	embedToken, scriptURL, _, htmlSnippet, err := svc.GetPartnerBlockEmbedCode(context.Background(), 7, 12, 34, "https://ads.example.com/", "https://front.example.com/ad-sdk.js")
+	if err != nil {
+		t.Fatalf("GetPartnerBlockEmbedCode: %v", err)
+	}
+	if embedToken != "pb_abc123" {
+		t.Fatalf("unexpected embed token: %s", embedToken)
+	}
+	if scriptURL != "https://front.example.com/ad-sdk.js" {
+		t.Fatalf("unexpected script url: %s", scriptURL)
+	}
+	if !strings.Contains(htmlSnippet, `<div data-eshkere-ad="pb_abc123"></div>`) {
+		t.Fatalf("html snippet must contain data container, got: %s", htmlSnippet)
+	}
+	if !strings.Contains(htmlSnippet, `<script async src="https://front.example.com/ad-sdk.js"></script>`) {
+		t.Fatalf("html snippet must contain script url, got: %s", htmlSnippet)
 	}
 }

@@ -15,6 +15,58 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/ad/request": {
+            "post": {
+                "description": "Возвращает объявление для вставленного на сайт партнёра рекламного блока по embed_token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "public_ads"
+                ],
+                "summary": "Запрос рекламы для публичного блока",
+                "parameters": [
+                    {
+                        "description": "Публичный токен рекламного блока",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AdRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AdRequestResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/ad_campaigns": {
             "get": {
                 "security": [
@@ -34,7 +86,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.ListAdCampaignsResponse"
+                            "$ref": "#/definitions/dto.ListAdCampaignsResponse"
                         }
                     },
                     "401": {
@@ -75,7 +127,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreateAdCampaignRequest"
+                            "$ref": "#/definitions/dto.CreateAdCampaignRequest"
                         }
                     }
                 ],
@@ -83,7 +135,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreateAdCampaignResponse"
+                            "$ref": "#/definitions/dto.CreateAdCampaignResponse"
                         }
                     },
                     "400": {
@@ -139,7 +191,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdateAdCampaignRequest"
+                            "$ref": "#/definitions/dto.UpdateAdCampaignRequest"
                         }
                     }
                 ],
@@ -247,7 +299,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.ListAdGroupsResponse"
+                            "$ref": "#/definitions/dto.ListAdGroupsResponse"
                         }
                     },
                     "400": {
@@ -300,7 +352,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreateAdGroupRequest"
+                            "$ref": "#/definitions/dto.CreateAdGroupRequest"
                         }
                     }
                 ],
@@ -308,7 +360,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreateAdGroupResponse"
+                            "$ref": "#/definitions/dto.CreateAdGroupResponse"
                         }
                     },
                     "400": {
@@ -370,7 +422,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdateAdGroupRequest"
+                            "$ref": "#/definitions/dto.UpdateAdGroupRequest"
                         }
                     }
                 ],
@@ -492,7 +544,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.ListAdsResponse"
+                            "$ref": "#/definitions/dto.ListAdsResponse"
                         }
                     },
                     "400": {
@@ -578,7 +630,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreateAdResponse"
+                            "$ref": "#/definitions/dto.CreateAdResponse"
                         }
                     },
                     "400": {
@@ -834,7 +886,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.BalanceResponse"
+                            "$ref": "#/definitions/dto.BalanceResponse"
                         }
                     },
                     "401": {
@@ -883,7 +935,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.TopUpBalanceRequest"
+                            "$ref": "#/definitions/dto.TopUpBalanceRequest"
                         }
                     }
                 ],
@@ -891,7 +943,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.BalanceResponse"
+                            "$ref": "#/definitions/dto.BalanceResponse"
                         }
                     },
                     "400": {
@@ -935,7 +987,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.LoginRequest"
+                            "$ref": "#/definitions/dto.LoginRequest"
                         }
                     }
                 ],
@@ -943,7 +995,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.LoginResponse"
+                            "$ref": "#/definitions/dto.LoginResponse"
                         }
                     },
                     "400": {
@@ -1015,7 +1067,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AdvertiserProfileResponse"
+                            "$ref": "#/definitions/dto.AdvertiserProfileResponse"
                         }
                     },
                     "401": {
@@ -1062,7 +1114,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdateAdvertiserProfileRequest"
+                            "$ref": "#/definitions/dto.UpdateAdvertiserProfileRequest"
                         }
                     }
                 ],
@@ -1070,7 +1122,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AdvertiserProfileResponse"
+                            "$ref": "#/definitions/dto.AdvertiserProfileResponse"
                         }
                     },
                     "400": {
@@ -1125,7 +1177,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AdvertiserProfileResponse"
+                            "$ref": "#/definitions/dto.AdvertiserProfileResponse"
                         }
                     },
                     "400": {
@@ -1169,7 +1221,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.RegisterRequest"
+                            "$ref": "#/definitions/dto.RegisterRequest"
                         }
                     }
                 ],
@@ -1177,7 +1229,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.RegisterResponse"
+                            "$ref": "#/definitions/dto.RegisterResponse"
                         }
                     },
                     "400": {
@@ -1214,7 +1266,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.ListAppealsResponse"
+                            "$ref": "#/definitions/dto.ListAppealsResponse"
                         }
                     },
                     "401": {
@@ -1296,7 +1348,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreateAppealResponse"
+                            "$ref": "#/definitions/dto.CreateAppealResponse"
                         }
                     },
                     "400": {
@@ -1342,7 +1394,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AppealResponse"
+                            "$ref": "#/definitions/dto.AppealResponse"
                         }
                     },
                     "401": {
@@ -1563,7 +1615,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerLoginRequest"
+                            "$ref": "#/definitions/dto.PartnerLoginRequest"
                         }
                     }
                 ],
@@ -1571,7 +1623,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerAuthResponse"
+                            "$ref": "#/definitions/dto.PartnerAuthResponse"
                         }
                     },
                     "400": {
@@ -1643,7 +1695,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerProfileResponse"
+                            "$ref": "#/definitions/dto.PartnerProfileResponse"
                         }
                     },
                     "401": {
@@ -1690,7 +1742,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerProfileRequest"
+                            "$ref": "#/definitions/dto.UpdatePartnerProfileRequest"
                         }
                     }
                 ],
@@ -1698,7 +1750,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerProfileResponse"
+                            "$ref": "#/definitions/dto.PartnerProfileResponse"
                         }
                     },
                     "400": {
@@ -1748,7 +1800,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerRegisterRequest"
+                            "$ref": "#/definitions/dto.PartnerRegisterRequest"
                         }
                     }
                 ],
@@ -1756,7 +1808,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerAuthResponse"
+                            "$ref": "#/definitions/dto.PartnerAuthResponse"
                         }
                     },
                     "400": {
@@ -1799,7 +1851,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.ListPartnerSitesResponse"
+                            "$ref": "#/definitions/dto.ListPartnerSitesResponse"
                         }
                     },
                     "401": {
@@ -1840,7 +1892,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreatePartnerSiteRequest"
+                            "$ref": "#/definitions/dto.CreatePartnerSiteRequest"
                         }
                     }
                 ],
@@ -1909,7 +1961,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerSiteResponse"
+                            "$ref": "#/definitions/dto.PartnerSiteResponse"
                         }
                     },
                     "400": {
@@ -1969,7 +2021,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerSiteRequest"
+                            "$ref": "#/definitions/dto.UpdatePartnerSiteRequest"
                         }
                     }
                 ],
@@ -1977,7 +2029,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerSiteResponse"
+                            "$ref": "#/definitions/dto.PartnerSiteResponse"
                         }
                     },
                     "400": {
@@ -2100,7 +2152,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.ListPartnerBlocksResponse"
+                            "$ref": "#/definitions/dto.ListPartnerBlocksResponse"
                         }
                     },
                     "400": {
@@ -2160,7 +2212,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.CreatePartnerBlockRequest"
+                            "$ref": "#/definitions/dto.CreatePartnerBlockRequest"
                         }
                     }
                 ],
@@ -2234,7 +2286,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockDetailsResponse"
+                            "$ref": "#/definitions/dto.PartnerBlockDetailsResponse"
                         }
                     },
                     "400": {
@@ -2337,7 +2389,7 @@ const docTemplate = `{
                         "CookieAuth": []
                     }
                 ],
-                "description": "Возвращает script URL, iframe URL и HTML snippet для вставки блока на сайт",
+                "description": "Возвращает embed_token, URL фронтового ad-sdk.js, iframe fallback URL и HTML snippet вида div data-eshkere-ad + script",
                 "produces": [
                     "application/json"
                 ],
@@ -2365,7 +2417,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockEmbedResponse"
+                            "$ref": "#/definitions/dto.PartnerBlockEmbedResponse"
                         }
                     },
                     "400": {
@@ -2434,7 +2486,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeneralRequest"
+                            "$ref": "#/definitions/dto.UpdatePartnerBlockGeneralRequest"
                         }
                     }
                 ],
@@ -2518,7 +2570,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRequest"
+                            "$ref": "#/definitions/dto.UpdatePartnerBlockGeographyRequest"
                         }
                     }
                 ],
@@ -2596,7 +2648,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockMetaRequest"
+                            "$ref": "#/definitions/dto.UpdatePartnerBlockMetaRequest"
                         }
                     }
                 ],
@@ -2674,7 +2726,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockSelfAdRequest"
+                            "$ref": "#/definitions/dto.UpdatePartnerBlockSelfAdRequest"
                         }
                     }
                 ],
@@ -2715,7 +2767,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "eshkere_internal_handler_v1_dto.AdCampaignResponse": {
+        "dto.AdCampaignResponse": {
             "type": "object",
             "properties": {
                 "daily_budget": {
@@ -2735,7 +2787,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.AdGroupResponse": {
+        "dto.AdGroupResponse": {
             "type": "object",
             "properties": {
                 "age_from": {
@@ -2761,7 +2813,32 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.AdResponse": {
+        "dto.AdRequest": {
+            "type": "object",
+            "required": [
+                "embed_token"
+            ],
+            "properties": {
+                "embed_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AdRequestResponse": {
+            "type": "object",
+            "properties": {
+                "ad": {
+                    "$ref": "#/definitions/dto.AdResponse"
+                },
+                "click_url": {
+                    "type": "string"
+                },
+                "request_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AdResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -2784,7 +2861,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.AdvertiserProfileResponse": {
+        "dto.AdvertiserProfileResponse": {
             "type": "object",
             "properties": {
                 "avatar_url": {
@@ -2822,7 +2899,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.AppealResponse": {
+        "dto.AppealResponse": {
             "type": "object",
             "properties": {
                 "category": {
@@ -2848,7 +2925,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.BalanceResponse": {
+        "dto.BalanceResponse": {
             "type": "object",
             "properties": {
                 "balance": {
@@ -2856,7 +2933,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.CreateAdCampaignRequest": {
+        "dto.CreateAdCampaignRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -2870,7 +2947,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.CreateAdCampaignResponse": {
+        "dto.CreateAdCampaignResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -2878,7 +2955,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.CreateAdGroupRequest": {
+        "dto.CreateAdGroupRequest": {
             "type": "object",
             "required": [
                 "age_from",
@@ -2914,7 +2991,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.CreateAdGroupResponse": {
+        "dto.CreateAdGroupResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -2922,7 +2999,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.CreateAdResponse": {
+        "dto.CreateAdResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -2930,7 +3007,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.CreateAppealResponse": {
+        "dto.CreateAppealResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -2938,7 +3015,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.CreatePartnerBlockRequest": {
+        "dto.CreatePartnerBlockRequest": {
             "type": "object",
             "required": [
                 "block_type",
@@ -2961,7 +3038,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.CreatePartnerSiteRequest": {
+        "dto.CreatePartnerSiteRequest": {
             "type": "object",
             "required": [
                 "domain",
@@ -2976,7 +3053,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.ListAdCampaignsResponse": {
+        "dto.ListAdCampaignsResponse": {
             "type": "object",
             "properties": {
                 "advertiser_id": {
@@ -2985,12 +3062,12 @@ const docTemplate = `{
                 "campaigns": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AdCampaignResponse"
+                        "$ref": "#/definitions/dto.AdCampaignResponse"
                     }
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.ListAdGroupsResponse": {
+        "dto.ListAdGroupsResponse": {
             "type": "object",
             "properties": {
                 "ad_campaign_id": {
@@ -2999,18 +3076,18 @@ const docTemplate = `{
                 "groups": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AdGroupResponse"
+                        "$ref": "#/definitions/dto.AdGroupResponse"
                     }
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.ListAdsResponse": {
+        "dto.ListAdsResponse": {
             "type": "object",
             "properties": {
                 "ads": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AdResponse"
+                        "$ref": "#/definitions/dto.AdResponse"
                     }
                 },
                 "group_id": {
@@ -3018,7 +3095,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.ListAppealsResponse": {
+        "dto.ListAppealsResponse": {
             "type": "object",
             "properties": {
                 "advertiser_id": {
@@ -3027,18 +3104,18 @@ const docTemplate = `{
                 "appeals": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.AppealResponse"
+                        "$ref": "#/definitions/dto.AppealResponse"
                     }
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.ListPartnerBlocksResponse": {
+        "dto.ListPartnerBlocksResponse": {
             "type": "object",
             "properties": {
                 "blocks": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockResponse"
+                        "$ref": "#/definitions/dto.PartnerBlockResponse"
                     }
                 },
                 "site_id": {
@@ -3046,7 +3123,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.ListPartnerSitesResponse": {
+        "dto.ListPartnerSitesResponse": {
             "type": "object",
             "properties": {
                 "partner_id": {
@@ -3055,12 +3132,12 @@ const docTemplate = `{
                 "sites": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerSiteResponse"
+                        "$ref": "#/definitions/dto.PartnerSiteResponse"
                     }
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.LoginRequest": {
+        "dto.LoginRequest": {
             "type": "object",
             "properties": {
                 "identifier": {
@@ -3071,7 +3148,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.LoginResponse": {
+        "dto.LoginResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -3085,7 +3162,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.PartnerAuthResponse": {
+        "dto.PartnerAuthResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -3099,7 +3176,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.PartnerBlockDetailsResponse": {
+        "dto.PartnerBlockDetailsResponse": {
             "type": "object",
             "properties": {
                 "block_type": {
@@ -3109,10 +3186,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "general_settings": {
-                    "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockGeneralSettingsResponse"
+                    "$ref": "#/definitions/dto.PartnerBlockGeneralSettingsResponse"
                 },
                 "geography_settings": {
-                    "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockGeographySettingsResponse"
+                    "$ref": "#/definitions/dto.PartnerBlockGeographySettingsResponse"
                 },
                 "id": {
                     "type": "integer"
@@ -3121,7 +3198,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "self_ad_settings": {
-                    "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockSelfAdSettingsResponse"
+                    "$ref": "#/definitions/dto.PartnerBlockSelfAdSettingsResponse"
                 },
                 "site_id": {
                     "type": "integer"
@@ -3140,7 +3217,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.PartnerBlockEmbedResponse": {
+        "dto.PartnerBlockEmbedResponse": {
             "type": "object",
             "properties": {
                 "block_id": {
@@ -3160,7 +3237,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.PartnerBlockGeneralSettingsResponse": {
+        "dto.PartnerBlockGeneralSettingsResponse": {
             "type": "object",
             "properties": {
                 "amp_mode": {
@@ -3189,7 +3266,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.PartnerBlockGeoRuleResponse": {
+        "dto.PartnerBlockGeoRuleResponse": {
             "type": "object",
             "properties": {
                 "cpmv": {
@@ -3203,7 +3280,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.PartnerBlockGeographySettingsResponse": {
+        "dto.PartnerBlockGeographySettingsResponse": {
             "type": "object",
             "properties": {
                 "global_cpmv": {
@@ -3215,12 +3292,12 @@ const docTemplate = `{
                 "rules": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.PartnerBlockGeoRuleResponse"
+                        "$ref": "#/definitions/dto.PartnerBlockGeoRuleResponse"
                     }
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.PartnerBlockResponse": {
+        "dto.PartnerBlockResponse": {
             "type": "object",
             "properties": {
                 "block_type": {
@@ -3243,7 +3320,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.PartnerBlockSelfAdSettingsResponse": {
+        "dto.PartnerBlockSelfAdSettingsResponse": {
             "type": "object",
             "properties": {
                 "reserved": {
@@ -3251,7 +3328,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.PartnerLoginRequest": {
+        "dto.PartnerLoginRequest": {
             "type": "object",
             "required": [
                 "identifier",
@@ -3266,7 +3343,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.PartnerProfileResponse": {
+        "dto.PartnerProfileResponse": {
             "type": "object",
             "properties": {
                 "birth_date": {
@@ -3307,7 +3384,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.PartnerRegisterRequest": {
+        "dto.PartnerRegisterRequest": {
             "type": "object",
             "required": [
                 "birth_date",
@@ -3368,7 +3445,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.PartnerSiteResponse": {
+        "dto.PartnerSiteResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -3388,7 +3465,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.RegisterRequest": {
+        "dto.RegisterRequest": {
             "type": "object",
             "properties": {
                 "email": {
@@ -3405,7 +3482,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.RegisterResponse": {
+        "dto.RegisterResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -3419,7 +3496,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.TopUpBalanceRequest": {
+        "dto.TopUpBalanceRequest": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -3427,7 +3504,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.UpdateAdCampaignRequest": {
+        "dto.UpdateAdCampaignRequest": {
             "type": "object",
             "properties": {
                 "main_action": {
@@ -3444,7 +3521,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.UpdateAdGroupRequest": {
+        "dto.UpdateAdGroupRequest": {
             "type": "object",
             "properties": {
                 "age_from": {
@@ -3478,7 +3555,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.UpdateAdvertiserProfileRequest": {
+        "dto.UpdateAdvertiserProfileRequest": {
             "type": "object",
             "properties": {
                 "city": {
@@ -3504,7 +3581,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeneralRequest": {
+        "dto.UpdatePartnerBlockGeneralRequest": {
             "type": "object",
             "properties": {
                 "amp_mode": {
@@ -3562,7 +3639,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRequest": {
+        "dto.UpdatePartnerBlockGeographyRequest": {
             "type": "object",
             "properties": {
                 "global_cpmv": {
@@ -3574,12 +3651,12 @@ const docTemplate = `{
                 "rules": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRuleRequest"
+                        "$ref": "#/definitions/dto.UpdatePartnerBlockGeographyRuleRequest"
                     }
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.UpdatePartnerBlockGeographyRuleRequest": {
+        "dto.UpdatePartnerBlockGeographyRuleRequest": {
             "type": "object",
             "required": [
                 "geo_code"
@@ -3596,7 +3673,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.UpdatePartnerBlockMetaRequest": {
+        "dto.UpdatePartnerBlockMetaRequest": {
             "type": "object",
             "properties": {
                 "name": {
@@ -3604,7 +3681,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.UpdatePartnerBlockSelfAdRequest": {
+        "dto.UpdatePartnerBlockSelfAdRequest": {
             "type": "object",
             "properties": {
                 "reserved": {
@@ -3612,7 +3689,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.UpdatePartnerProfileRequest": {
+        "dto.UpdatePartnerProfileRequest": {
             "type": "object",
             "properties": {
                 "birth_date": {
@@ -3657,7 +3734,7 @@ const docTemplate = `{
                 }
             }
         },
-        "eshkere_internal_handler_v1_dto.UpdatePartnerSiteRequest": {
+        "dto.UpdatePartnerSiteRequest": {
             "type": "object",
             "properties": {
                 "domain": {

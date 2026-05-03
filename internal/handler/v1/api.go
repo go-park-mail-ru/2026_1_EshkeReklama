@@ -27,6 +27,7 @@ type Service interface {
 
 	GenerateFeedLink(ctx context.Context, campaignID int) (string, error)
 	GetAdByFeedToken(ctx context.Context, token string) (*models.Ad, error)
+	RequestAd(ctx context.Context, embedToken string) (*service.AdRequestResult, error)
 
 	CreateAdCampaign(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error)
 	UpdateAdCampaign(ctx context.Context, in *serviceinput.UpdateAdCampaign) error
@@ -63,7 +64,7 @@ type Service interface {
 	UpdatePartnerBlockGeographySettings(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockGeography) ([]*models.PartnerBlockGeoRule, error)
 	UpdatePartnerBlockSelfAdSettings(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockSelfAd) (*models.PartnerBlock, error)
 	DeletePartnerBlock(ctx context.Context, partnerID, siteID, blockID int) error
-	GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, string, error)
+	GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL, adSDKURL string) (string, string, string, string, error)
 	ListPartnerCountries(ctx context.Context) []service.DictionaryItem
 	ListPartnerRegistrationRegions(ctx context.Context, countryCode string) []service.DictionaryItem
 	ListPartnerCooperationForms(ctx context.Context) []service.DictionaryItem
@@ -84,6 +85,7 @@ type APIConfig struct {
 	Service             Service
 	CookieConfig        CookieConfig
 	PartnerCookieConfig CookieConfig
+	AdSDKURL            string
 }
 
 type API struct {
@@ -91,6 +93,7 @@ type API struct {
 	service             Service
 	cookieConfig        CookieConfig
 	partnerCookieConfig CookieConfig
+	adSDKURL            string
 }
 
 func NewAPI(config APIConfig) *API {
@@ -99,6 +102,7 @@ func NewAPI(config APIConfig) *API {
 		service:             config.Service,
 		cookieConfig:        config.CookieConfig,
 		partnerCookieConfig: resolvePartnerCookieConfig(config.CookieConfig, config.PartnerCookieConfig),
+		adSDKURL:            config.AdSDKURL,
 	}
 }
 
@@ -118,6 +122,7 @@ func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterPartnerDictionaryHandlers(r)
 	a.RegisterPartnerSiteHandlers(r)
 	a.RegisterPartnerBlockHandlers(r)
+	a.RegisterAdRequestHandlers(r)
 	a.RegisterAdCampaignHandlers(r)
 	a.RegisterAdGroupHandlers(r)
 	a.RegisterAdsHandlers(r)

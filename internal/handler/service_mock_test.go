@@ -276,6 +276,19 @@ func (mr *MockServiceMockRecorder) GetAdByFeedToken(ctx, token any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdByFeedToken", reflect.TypeOf((*MockService)(nil).GetAdByFeedToken), ctx, token)
 }
 
+func (m *MockService) RequestAd(ctx context.Context, embedToken string) (*service.AdRequestResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RequestAd", ctx, embedToken)
+	ret0, _ := ret[0].(*service.AdRequestResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (mr *MockServiceMockRecorder) RequestAd(ctx, embedToken any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequestAd", reflect.TypeOf((*MockService)(nil).RequestAd), ctx, embedToken)
+}
+
 func (m *MockService) CreatePartnerProfile(ctx context.Context, in *input.CreatePartnerProfile) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreatePartnerProfile", ctx, in)
@@ -402,9 +415,9 @@ func (m *MockService) DeletePartnerBlock(ctx context.Context, partnerID, siteID,
 	return ret0
 }
 
-func (m *MockService) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, string, error) {
+func (m *MockService) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL, adSDKURL string) (string, string, string, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPartnerBlockEmbedCode", ctx, partnerID, siteID, blockID, baseURL)
+	ret := m.ctrl.Call(m, "GetPartnerBlockEmbedCode", ctx, partnerID, siteID, blockID, baseURL, adSDKURL)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(string)

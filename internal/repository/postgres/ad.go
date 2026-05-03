@@ -40,6 +40,15 @@ const (
 	WHERE ag.ad_campaign_id = $1
 	ORDER BY a.created_at DESC, a.id DESC`
 
+	selectRandomWorkingAd = `SELECT
+		a.id, a.ad_group_id, a.status, a.title, a.short_desc, a.image_url, a.target_url, a.created_at, a.updated_at
+	FROM eshkere.ad a
+	JOIN eshkere.ad_group ag ON a.ad_group_id = ag.id
+	JOIN eshkere.ad_campaign ac ON ag.ad_campaign_id = ac.id
+	WHERE a.status = 'working' AND ac.status = 'working'
+	ORDER BY RANDOM()
+	LIMIT 1`
+
 	updateAd = `UPDATE eshkere.ad SET
 		ad_group_id = $1, status = $2, title = $3, short_desc = $4, image_url = $5, target_url = $6, updated_at = $7
 	WHERE id = $8`
@@ -161,6 +170,31 @@ func (r *AdRepository) ListByAdCampaignID(ctx context.Context, campaignID int) (
 	}
 
 	return ads, nil
+}
+
+func (r *AdRepository) GetRandomWorking(ctx context.Context) (*models.Ad, error) {
+	logger.GetLoggerFromCtx(ctx).Debug("db: get random working ad")
+
+	var ad models.Ad
+	err := r.db.QueryRowContext(ctx, selectRandomWorkingAd).Scan(
+		&ad.ID,
+		&ad.AdGroupID,
+		&ad.Status,
+		&ad.Title,
+		&ad.ShortDesc,
+		&ad.ImageURL,
+		&ad.TargetURL,
+		&ad.CreatedAt,
+		&ad.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("working ad not found: %w", err)
+		}
+		return nil, fmt.Errorf("get random working ad: %w", err)
+	}
+
+	return &ad, nil
 }
 
 func (r *AdRepository) Update(ctx context.Context, ad *models.Ad) error {

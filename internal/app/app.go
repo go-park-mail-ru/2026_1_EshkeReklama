@@ -129,6 +129,7 @@ func (a *App) Run() error {
 		CookieName: "csrf_token",
 		HeaderName: "X-CSRF-Token",
 		Secure:     a.cfg.Session.CookieSecure,
+		SkipPaths:  []string{"/ad/request"},
 	}))
 
 	handler.Register(router, v1.NewAPI(v1.APIConfig{
@@ -140,6 +141,7 @@ func (a *App) Run() error {
 			HTTPOnly: true,
 			Secure:   a.cfg.Session.CookieSecure,
 		},
+		AdSDKURL: a.cfg.AdSDK.URL,
 	}))
 
 	server := &http.Server{

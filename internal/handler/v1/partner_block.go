@@ -27,7 +27,6 @@ func (a *API) RegisterPartnerBlockHandlers(r *mux.Router) {
 	group.HandleFunc("/{block_id}", a.DeletePartnerBlock).Methods(http.MethodDelete)
 	group.HandleFunc("/{block_id}/embed", a.GetPartnerBlockEmbed).Methods(http.MethodGet)
 
-	r.HandleFunc("/public/partner/blocks/{embed_token}.js", a.GetPartnerBlockScript).Methods(http.MethodGet)
 	r.HandleFunc("/public/partner/blocks/{embed_token}/frame", a.GetPartnerBlockFrame).Methods(http.MethodGet)
 }
 
@@ -411,7 +410,7 @@ func (a *API) DeletePartnerBlock(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary      Embed-код блока
-// @Description  Возвращает script URL, iframe URL и HTML snippet для вставки блока на сайт
+// @Description  Возвращает embed_token, URL фронтового ad-sdk.js, iframe fallback URL и HTML snippet вида div data-eshkere-ad + script
 // @Tags         partner_blocks
 // @Produce      json
 // @Param        site_id   path      int                           true  "ID сайта"
@@ -434,7 +433,7 @@ func (a *API) GetPartnerBlockEmbed(w http.ResponseWriter, r *http.Request) {
 		httpx.BadRequest(w, "invalid id")
 		return
 	}
-	embedToken, scriptURL, iframeURL, htmlSnippet, err := a.service.GetPartnerBlockEmbedCode(r.Context(), partnerID, siteID, blockID, requestBaseURL(r))
+	embedToken, scriptURL, iframeURL, htmlSnippet, err := a.service.GetPartnerBlockEmbedCode(r.Context(), partnerID, siteID, blockID, requestBaseURL(r), a.adSDKURL)
 	if err != nil {
 		handler.HandleError(w, r, "get partner block embed", err)
 		return
@@ -446,12 +445,6 @@ func (a *API) GetPartnerBlockEmbed(w http.ResponseWriter, r *http.Request) {
 		IframeURL:   iframeURL,
 		HTMLSnippet: htmlSnippet,
 	})
-}
-
-func (a *API) GetPartnerBlockScript(w http.ResponseWriter, r *http.Request) {
-	embedToken := mux.Vars(r)["embed_token"]
-	w.Header().Set("Content-Type", "application/javascript")
-	_, _ = w.Write([]byte(`(function(){var i=document.createElement('iframe');i.src='` + requestBaseURL(r) + `/public/partner/blocks/` + embedToken + `/frame';i.style.width='100%';i.style.border='0';i.loading='lazy';document.currentScript.parentNode.insertBefore(i, document.currentScript);})();`))
 }
 
 func (a *API) GetPartnerBlockFrame(w http.ResponseWriter, r *http.Request) {

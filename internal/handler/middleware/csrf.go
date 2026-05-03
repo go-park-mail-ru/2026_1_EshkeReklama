@@ -13,6 +13,7 @@ type CSRFConfig struct {
 	CookieName string
 	HeaderName string
 	Secure     bool
+	SkipPaths  []string
 }
 
 func CSRF(cfg CSRFConfig) func(http.Handler) http.Handler {
@@ -27,6 +28,11 @@ func CSRF(cfg CSRFConfig) func(http.Handler) http.Handler {
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if shouldSkipCSRF(r.URL.Path, cfg.SkipPaths) {
+				next.ServeHTTP(w, r)
+				return
+			}
+
 			token, hasToken := readCSRFCookie(r, cookieName)
 			if !hasToken {
 				token = generateCSRFToken()
@@ -63,6 +69,15 @@ func CSRF(cfg CSRFConfig) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func shouldSkipCSRF(path string, skipPaths []string) bool {
+	for _, skipPath := range skipPaths {
+		if path == skipPath {
+			return true
+		}
+	}
+	return false
 }
 
 func readCSRFCookie(r *http.Request, cookieName string) (string, bool) {

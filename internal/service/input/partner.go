@@ -37,6 +37,7 @@ type UpdatePartnerSite struct {
 	PartnerID int
 	Domain    *string
 	SiteName  *string
+	Status    *models.PartnerSiteStatus
 }
 
 type CreatePartnerBlock struct {

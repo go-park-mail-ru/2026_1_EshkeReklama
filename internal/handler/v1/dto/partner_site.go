@@ -22,14 +22,21 @@ func (r *CreatePartnerSiteRequest) ToInput(partnerID int) *serviceinput.CreatePa
 type UpdatePartnerSiteRequest struct {
 	Domain   *string `json:"domain"`
 	SiteName *string `json:"site_name"`
+	Status   *string `json:"status"`
 }
 
 func (r *UpdatePartnerSiteRequest) ToInput(partnerID, siteID int) *serviceinput.UpdatePartnerSite {
+	var status *models.PartnerSiteStatus
+	if r.Status != nil {
+		value := models.PartnerSiteStatus(*r.Status)
+		status = &value
+	}
 	return &serviceinput.UpdatePartnerSite{
 		ID:        siteID,
 		PartnerID: partnerID,
 		Domain:    r.Domain,
 		SiteName:  r.SiteName,
+		Status:    status,
 	}
 }
 
@@ -37,6 +44,7 @@ type PartnerSiteResponse struct {
 	ID        int    `json:"id"`
 	Domain    string `json:"domain"`
 	SiteName  string `json:"site_name"`
+	Status    string `json:"status"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at,omitempty"`
 }
@@ -49,6 +57,7 @@ func ToPartnerSiteResponse(site *models.PartnerSite) *PartnerSiteResponse {
 		ID:        site.ID,
 		Domain:    site.Domain,
 		SiteName:  site.SiteName,
+		Status:    string(site.Status),
 		CreatedAt: site.CreatedAt.Format(time.RFC3339),
 	}
 	if site.UpdatedAt.Valid {

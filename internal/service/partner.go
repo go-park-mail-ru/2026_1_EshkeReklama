@@ -139,6 +139,7 @@ func (s *Service) CreatePartnerSite(ctx context.Context, in *serviceinput.Create
 		PartnerID: in.PartnerID,
 		Domain:    domain,
 		SiteName:  strings.TrimSpace(in.SiteName),
+		Status:    models.PartnerSiteStatusDraft,
 	}
 	if site.SiteName == "" {
 		return nil, fmt.Errorf("%w: empty site_name", errs.BadRequestError)
@@ -194,6 +195,12 @@ func (s *Service) UpdatePartnerSite(ctx context.Context, in *serviceinput.Update
 	}
 	if in.SiteName != nil {
 		site.SiteName = strings.TrimSpace(*in.SiteName)
+	}
+	if in.Status != nil {
+		if !in.Status.IsValid() {
+			return nil, fmt.Errorf("%w: invalid site status", errs.BadRequestError)
+		}
+		site.Status = *in.Status
 	}
 
 	if err := s.partnerSiteRepo.Update(ctx, site); err != nil {

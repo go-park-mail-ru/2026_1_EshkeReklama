@@ -18,23 +18,23 @@ func NewPartnerSiteRepository(db *sql.DB) *PartnerSiteRepository {
 
 const (
 	insertPartnerSite = `INSERT INTO eshkere.partner_site (
-		partner_id, domain, site_name, created_at
-	) VALUES ($1, $2, $3, NOW()) RETURNING id`
+		partner_id, domain, site_name, status, created_at
+	) VALUES ($1, $2, $3, $4, NOW()) RETURNING id`
 
 	selectPartnerSiteByID = `SELECT
-		id, partner_id, domain, site_name, created_at, updated_at
+		id, partner_id, domain, site_name, status, created_at, updated_at
 	FROM eshkere.partner_site
 	WHERE id = $1`
 
 	selectPartnerSitesByPartnerID = `SELECT
-		id, partner_id, domain, site_name, created_at, updated_at
+		id, partner_id, domain, site_name, status, created_at, updated_at
 	FROM eshkere.partner_site
 	WHERE partner_id = $1
 	ORDER BY created_at DESC, id DESC`
 
 	updatePartnerSite = `UPDATE eshkere.partner_site SET
-		domain = $1, site_name = $2
-	WHERE id = $3`
+		domain = $1, site_name = $2, status = $3
+	WHERE id = $4`
 
 	deletePartnerSite               = `DELETE FROM eshkere.partner_site WHERE id = $1`
 	selectPartnerSiteExistsByDomain = `SELECT EXISTS(SELECT 1 FROM eshkere.partner_site WHERE domain = $1)`
@@ -44,7 +44,7 @@ func (r *PartnerSiteRepository) Create(ctx context.Context, site *models.Partner
 	if site == nil {
 		return fmt.Errorf("partner site cannot be nil")
 	}
-	if err := r.db.QueryRowContext(ctx, insertPartnerSite, site.PartnerID, site.Domain, site.SiteName).Scan(&site.ID); err != nil {
+	if err := r.db.QueryRowContext(ctx, insertPartnerSite, site.PartnerID, site.Domain, site.SiteName, site.Status).Scan(&site.ID); err != nil {
 		return fmt.Errorf("insert partner site: %w", err)
 	}
 	return nil
@@ -57,6 +57,7 @@ func (r *PartnerSiteRepository) GetByID(ctx context.Context, siteID int) (*model
 		&site.PartnerID,
 		&site.Domain,
 		&site.SiteName,
+		&site.Status,
 		&site.CreatedAt,
 		&site.UpdatedAt,
 	)
@@ -79,7 +80,7 @@ func (r *PartnerSiteRepository) ListByPartnerID(ctx context.Context, partnerID i
 	sites := make([]*models.PartnerSite, 0)
 	for rows.Next() {
 		var site models.PartnerSite
-		if err := rows.Scan(&site.ID, &site.PartnerID, &site.Domain, &site.SiteName, &site.CreatedAt, &site.UpdatedAt); err != nil {
+		if err := rows.Scan(&site.ID, &site.PartnerID, &site.Domain, &site.SiteName, &site.Status, &site.CreatedAt, &site.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("scan partner site: %w", err)
 		}
 		sites = append(sites, &site)
@@ -94,7 +95,7 @@ func (r *PartnerSiteRepository) Update(ctx context.Context, site *models.Partner
 	if site == nil {
 		return fmt.Errorf("partner site cannot be nil")
 	}
-	_, err := r.db.ExecContext(ctx, updatePartnerSite, site.Domain, site.SiteName, site.ID)
+	_, err := r.db.ExecContext(ctx, updatePartnerSite, site.Domain, site.SiteName, site.Status, site.ID)
 	if err != nil {
 		return fmt.Errorf("update partner site: %w", err)
 	}

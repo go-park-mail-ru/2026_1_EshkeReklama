@@ -23,7 +23,7 @@ func TestPartner_CreateSite_And_Block(t *testing.T) {
 		if in.PartnerID != 44 || in.Domain != "example.com" {
 			t.Fatalf("unexpected create site input: %+v", in)
 		}
-		return &models.PartnerSite{ID: 101, PartnerID: 44, Domain: "example.com", SiteName: "Example"}, nil
+		return &models.PartnerSite{ID: 101, PartnerID: 44, Domain: "example.com", SiteName: "Example", Status: models.PartnerSiteStatusDraft}, nil
 	}
 	svc.createPartnerBlockFn = func(_ context.Context, partnerID int, in *serviceinput.CreatePartnerBlock) (*models.PartnerBlock, error) {
 		if partnerID != 44 || in.PartnerSiteID != 101 || in.BlockType != models.PartnerBlockTypeBanner {

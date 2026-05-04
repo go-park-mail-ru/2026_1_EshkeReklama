@@ -472,6 +472,8 @@ definitions:
         type: integer
       site_name:
         type: string
+      status:
+        type: string
       updated_at:
         type: string
     type: object
@@ -673,6 +675,8 @@ definitions:
       domain:
         type: string
       site_name:
+        type: string
+      status:
         type: string
     type: object
   httpx.Error:

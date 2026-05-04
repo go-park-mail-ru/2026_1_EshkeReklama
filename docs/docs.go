@@ -3477,6 +3477,9 @@ const docTemplate = `{
                 "site_name": {
                     "type": "string"
                 },
+                "status": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "string"
                 }
@@ -3771,6 +3774,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "site_name": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }

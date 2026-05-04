@@ -243,7 +243,7 @@ func defaultPartnerBlock(blockType models.PartnerBlockType) *models.PartnerBlock
 	background := sql.NullString{}
 	return &models.PartnerBlock{
 		BlockType:                    blockType,
-		Status:                       models.PartnerBlockStatusDraft,
+		Status:                       models.PartnerBlockStatusInactive,
 		EmbedToken:                   generatePartnerEmbedToken("pb"),
 		CPMStrategy:                  models.CPMStrategyMaxIncome,
 		AmpMode:                      models.AmpModeDisabled,
@@ -324,6 +324,12 @@ func (s *Service) UpdatePartnerBlockMeta(ctx context.Context, partnerID, siteID 
 	}
 	if in.Name != nil {
 		block.Name = strings.TrimSpace(*in.Name)
+	}
+	if in.Status != nil {
+		if !in.Status.IsValid() {
+			return nil, fmt.Errorf("%w: invalid block status", errs.BadRequestError)
+		}
+		block.Status = *in.Status
 	}
 	if err := s.partnerBlockRepo.Update(ctx, block); err != nil {
 		return nil, err

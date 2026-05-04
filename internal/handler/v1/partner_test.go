@@ -29,7 +29,7 @@ func TestPartner_CreateSite_And_Block(t *testing.T) {
 		if partnerID != 44 || in.PartnerSiteID != 101 || in.BlockType != models.PartnerBlockTypeBanner {
 			t.Fatalf("unexpected create block input: partnerID=%d in=%+v", partnerID, in)
 		}
-		return &models.PartnerBlock{ID: 9001, PartnerSiteID: 101, Name: in.Name, BlockType: in.BlockType, Status: models.PartnerBlockStatusDraft}, nil
+		return &models.PartnerBlock{ID: 9001, PartnerSiteID: 101, Name: in.Name, BlockType: in.BlockType, Status: models.PartnerBlockStatusInactive}, nil
 	}
 
 	siteReq := httptest.NewRequest(http.MethodPost, "/partners/sites", bytes.NewBufferString(`{"domain":"example.com","site_name":"Example"}`))

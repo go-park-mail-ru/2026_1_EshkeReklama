@@ -22,11 +22,17 @@ func (r *CreatePartnerBlockRequest) ToInput(siteID int) *serviceinput.CreatePart
 }
 
 type UpdatePartnerBlockMetaRequest struct {
-	Name *string `json:"name"`
+	Name   *string `json:"name"`
+	Status *string `json:"status" validate:"omitempty,oneof=active inactive"`
 }
 
 func (r *UpdatePartnerBlockMetaRequest) ToInput(blockID int) *serviceinput.UpdatePartnerBlockMeta {
-	return &serviceinput.UpdatePartnerBlockMeta{ID: blockID, Name: r.Name}
+	input := &serviceinput.UpdatePartnerBlockMeta{ID: blockID, Name: r.Name}
+	if r.Status != nil {
+		v := models.PartnerBlockStatus(*r.Status)
+		input.Status = &v
+	}
+	return input
 }
 
 type UpdatePartnerBlockGeneralRequest struct {

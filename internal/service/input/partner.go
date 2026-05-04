@@ -47,8 +47,9 @@ type CreatePartnerBlock struct {
 }
 
 type UpdatePartnerBlockMeta struct {
-	ID   int
-	Name *string
+	ID     int
+	Name   *string
+	Status *models.PartnerBlockStatus
 }
 
 type UpdatePartnerBlockGeneral struct {

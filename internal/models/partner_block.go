@@ -24,9 +24,8 @@ const (
 	PartnerBlockTypeFeed       PartnerBlockType = "feed"
 	PartnerBlockTypeInImage    PartnerBlockType = "in_image"
 
-	PartnerBlockStatusDraft    PartnerBlockStatus = "draft"
+	PartnerBlockStatusInactive PartnerBlockStatus = "inactive"
 	PartnerBlockStatusActive   PartnerBlockStatus = "active"
-	PartnerBlockStatusArchived PartnerBlockStatus = "archived"
 
 	CPMStrategyMaxIncome CPMStrategy = "max_income"
 
@@ -50,6 +49,15 @@ const (
 	InterscrollerModeEnabled  InterscrollerMode = "enabled"
 	InterscrollerModeDisabled InterscrollerMode = "disabled"
 )
+
+func (s PartnerBlockStatus) IsValid() bool {
+	switch s {
+	case PartnerBlockStatusInactive, PartnerBlockStatusActive:
+		return true
+	default:
+		return false
+	}
+}
 
 type PartnerBlock struct {
 	ID                           int                `db:"id"`

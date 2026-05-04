@@ -633,6 +633,11 @@ definitions:
     properties:
       name:
         type: string
+      status:
+        enum:
+        - active
+        - inactive
+        type: string
     type: object
   dto.UpdatePartnerBlockSelfAdRequest:
     properties:

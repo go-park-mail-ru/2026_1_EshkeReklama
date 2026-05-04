@@ -3711,6 +3711,13 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "active",
+                        "inactive"
+                    ]
                 }
             }
         },

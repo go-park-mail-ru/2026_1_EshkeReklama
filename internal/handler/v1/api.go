@@ -12,6 +12,7 @@ import (
 type AuthClient interface {
 	Register(ctx context.Context, email, phone, password string) (advertiserID int64, sessionID string, expiresAt int64, err error)
 	Login(ctx context.Context, identifier, password string) (advertiserID int64, sessionID string, expiresAt int64, err error)
+	LoginVKID(ctx context.Context, code, deviceID, codeVerifier string) (advertiserID int64, sessionID string, expiresAt int64, err error)
 	ValidateSession(ctx context.Context, sessionID string) (advertiserID int64, err error)
 	Logout(ctx context.Context, sessionID string) error
 	GetCredentials(ctx context.Context, advertiserID int64) (email, phone string, err error)
@@ -80,11 +81,22 @@ type CookieConfig struct {
 	Secure   bool
 }
 
+type VKIDConfig struct {
+	ClientID           int64
+	RedirectURI        string
+	AuthDomain         string
+	Scope              string
+	DefaultRedirectURL string
+	ErrorRedirectURL   string
+}
+
 type APIConfig struct {
 	AuthClient          AuthClient
 	Service             Service
 	CookieConfig        CookieConfig
 	PartnerCookieConfig CookieConfig
+	AdSDKURL            string
+	VKIDConfig          VKIDConfig
 }
 
 type API struct {
@@ -92,6 +104,8 @@ type API struct {
 	service             Service
 	cookieConfig        CookieConfig
 	partnerCookieConfig CookieConfig
+	adSDKURL            string
+	vkidConfig          VKIDConfig
 }
 
 func NewAPI(config APIConfig) *API {
@@ -100,6 +114,8 @@ func NewAPI(config APIConfig) *API {
 		service:             config.Service,
 		cookieConfig:        config.CookieConfig,
 		partnerCookieConfig: resolvePartnerCookieConfig(config.CookieConfig, config.PartnerCookieConfig),
+		adSDKURL:            config.AdSDKURL,
+		vkidConfig:          config.VKIDConfig,
 	}
 }
 

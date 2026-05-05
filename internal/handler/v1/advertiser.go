@@ -2,6 +2,8 @@ package v1
 
 import (
 	"context"
+	"errors"
+	errs "eshkere/internal/errors"
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
@@ -18,7 +20,10 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 	groups := r.PathPrefix("/advertisers").Subrouter()
 
 	groups.HandleFunc("/register", a.Register).Methods(http.MethodPost)
+	groups.HandleFunc("/login/vk", a.BeginVKIDLogin).Methods(http.MethodGet)
 	groups.HandleFunc("/login", a.Login).Methods(http.MethodPost)
+	groups.HandleFunc("/login/vk", a.LoginVKID).Methods(http.MethodPost)
+	groups.HandleFunc("/login/vk/callback", a.LoginVKIDCallback).Methods(http.MethodGet)
 	groups.HandleFunc("/logout", a.Logout).Methods(http.MethodPost)
 	groups.Handle("/balance", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.GetBalance))).Methods(http.MethodGet)
 	groups.Handle("/balance/topup", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.TopUpBalance))).Methods(http.MethodPost)
@@ -98,6 +103,54 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 	email, phone, err := a.authClient.GetCredentials(ctx, advID)
 	if err != nil {
 		handler.HandleError(w, r, "get advertiser credentials", err)
+		return
+	}
+
+	a.setSessionCookie(w, sessionID, time.Unix(expiresAt, 0))
+
+	httpx.JSON(w, http.StatusOK, dto.LoginResponse{
+		ID:    int(advID),
+		Email: email,
+		Phone: phone,
+	})
+}
+
+// @Summary      Вход рекламодателя через VK ID
+// @Description  Аутентифицирует рекламодателя по VK ID authorization code и открывает сессию
+// @Tags         advertiser
+// @Accept       json
+// @Produce      json
+// @Param        input body      dto.VKIDLoginRequest  true  "code, device_id и code_verifier от VK ID"
+// @Success      200   {object}  dto.LoginResponse
+// @Failure      400   {object}  httpx.Error
+// @Failure      401   {object}  httpx.Error
+// @Failure      409   {object}  httpx.Error
+// @Failure      500   {object}  httpx.Error
+// @Router       /advertisers/login/vk [post]
+func (a *API) LoginVKID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	req, err := newJSONRequest[dto.VKIDLoginRequest](r)
+	if err != nil {
+		httpx.BadRequest(w, "invalid request")
+		return
+	}
+
+	advID, sessionID, expiresAt, err := a.authClient.LoginVKID(ctx, req.Code, req.DeviceID, req.CodeVerifier)
+	if err != nil {
+		handler.HandleError(w, r, "auth advertiser via vk id", err)
+		return
+	}
+
+	email, phone, err := a.authClient.GetCredentials(ctx, advID)
+	if err != nil {
+		handler.HandleError(w, r, "get advertiser credentials", err)
+		return
+	}
+
+	if err := a.ensureAdvertiserProfile(ctx, advID, email); err != nil {
+		_ = a.authClient.Logout(ctx, sessionID)
+		handler.HandleError(w, r, "ensure advertiser profile", err)
 		return
 	}
 
@@ -221,6 +274,16 @@ func (a *API) resolveUpdatedContacts(
 	}
 
 	return a.authClient.UpdateCredentials(ctx, advertiserID, email, phone)
+}
+
+func (a *API) ensureAdvertiserProfile(ctx context.Context, advertiserID int64, email string) error {
+	if _, err := a.service.GetAdvertiserByID(ctx, int(advertiserID)); err == nil {
+		return nil
+	} else if !errors.Is(err, errs.NotFoundError) {
+		return err
+	}
+
+	return a.service.CreateAdvertiserProfile(ctx, advertiserID, "", email)
 }
 
 // @Summary      Выход рекламодателя

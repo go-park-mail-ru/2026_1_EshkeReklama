@@ -24,6 +24,12 @@ type LoginRequest struct {
 	Password   string `json:"password"`
 }
 
+type VKIDLoginRequest struct {
+	Code         string `json:"code"`
+	DeviceID     string `json:"device_id"`
+	CodeVerifier string `json:"code_verifier"`
+}
+
 type LoginResponse struct {
 	ID    int    `json:"id"`
 	Email string `json:"email"`

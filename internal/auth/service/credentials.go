@@ -8,25 +8,34 @@ import (
 	"strings"
 
 	authrepo "eshkere/internal/auth/repository/postgres"
+	"eshkere/internal/auth/vkid"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type CredentialsRepo interface {
 	Create(ctx context.Context, email, phone, hash string) (int64, error)
+	CreateVK(ctx context.Context, email, phone string, vkUserID int64) (int64, error)
 	GetByEmail(ctx context.Context, email string) (*authrepo.Credential, error)
 	GetByPhone(ctx context.Context, phone string) (*authrepo.Credential, error)
+	GetByVKUserID(ctx context.Context, vkUserID int64) (*authrepo.Credential, error)
 	GetByID(ctx context.Context, id int64) (*authrepo.Credential, error)
+	LinkVKUserID(ctx context.Context, id, vkUserID int64) error
 	Update(ctx context.Context, id int64, email, phone string) error
 	Delete(ctx context.Context, id int64) error
 }
 
-type CredentialsService struct {
-	repo CredentialsRepo
+type VKIDAuthenticator interface {
+	ExchangeUser(ctx context.Context, code, deviceID, codeVerifier string) (*vkid.Identity, error)
 }
 
-func NewCredentialsService(repo CredentialsRepo) *CredentialsService {
-	return &CredentialsService{repo: repo}
+type CredentialsService struct {
+	repo     CredentialsRepo
+	vkidAuth VKIDAuthenticator
+}
+
+func NewCredentialsService(repo CredentialsRepo, vkidAuth VKIDAuthenticator) *CredentialsService {
+	return &CredentialsService{repo: repo, vkidAuth: vkidAuth}
 }
 
 var (
@@ -34,6 +43,8 @@ var (
 	ErrPhoneTaken         = errors.New("phone already registered")
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrInvalidArg         = errors.New("invalid argument")
+	ErrVKIDConflict       = errors.New("vk credentials conflict")
+	ErrVKIDUnavailable    = errors.New("vk id auth is not configured")
 )
 
 func (s *CredentialsService) Register(ctx context.Context, email, phone, password string) (id int64, err error) {
@@ -105,6 +116,63 @@ func (s *CredentialsService) Authenticate(ctx context.Context, identifier, passw
 	}
 
 	return cred.ID, nil
+}
+
+func (s *CredentialsService) AuthenticateVKID(ctx context.Context, code, deviceID, codeVerifier string) (int64, error) {
+	if strings.TrimSpace(code) == "" || strings.TrimSpace(deviceID) == "" || strings.TrimSpace(codeVerifier) == "" {
+		return 0, fmt.Errorf("%w: code, device_id and code_verifier are required", ErrInvalidArg)
+	}
+	if s.vkidAuth == nil {
+		return 0, ErrVKIDUnavailable
+	}
+
+	identity, err := s.vkidAuth.ExchangeUser(ctx, strings.TrimSpace(code), strings.TrimSpace(deviceID), strings.TrimSpace(codeVerifier))
+	if err != nil {
+		if errors.Is(err, vkid.ErrUnauthorized) {
+			return 0, ErrInvalidCredentials
+		}
+		return 0, err
+	}
+
+	if cred, getErr := s.repo.GetByVKUserID(ctx, identity.UserID); getErr == nil {
+		return cred.ID, nil
+	} else if !errors.Is(getErr, sql.ErrNoRows) {
+		return 0, getErr
+	}
+
+	email := strings.ToLower(strings.TrimSpace(identity.Email))
+	phone := ""
+	if strings.TrimSpace(identity.Phone) != "" {
+		phone, err = normalizePhone(identity.Phone)
+		if err != nil {
+			return 0, fmt.Errorf("%w: %v", ErrInvalidArg, err)
+		}
+	}
+
+	emailCred, err := s.lookupByEmail(ctx, email)
+	if err != nil {
+		return 0, err
+	}
+	phoneCred, err := s.lookupByPhone(ctx, phone)
+	if err != nil {
+		return 0, err
+	}
+
+	targetCred, err := resolveVKIDTarget(identity.UserID, emailCred, phoneCred)
+	if err != nil {
+		return 0, err
+	}
+
+	if targetCred != nil {
+		if !targetCred.VKUserID.Valid {
+			if err := s.repo.LinkVKUserID(ctx, targetCred.ID, identity.UserID); err != nil {
+				return 0, err
+			}
+		}
+		return targetCred.ID, nil
+	}
+
+	return s.repo.CreateVK(ctx, email, phone, identity.UserID)
 }
 
 func (s *CredentialsService) GetByID(ctx context.Context, id int64) (*authrepo.Credential, error) {
@@ -179,4 +247,56 @@ func normalizePhone(raw string) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("phone must be 10 digits (e.g. 9001234567 or +7 900 123-45-67)")
+}
+
+func (s *CredentialsService) lookupByEmail(ctx context.Context, email string) (*authrepo.Credential, error) {
+	if email == "" {
+		return nil, nil
+	}
+
+	cred, err := s.repo.GetByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return cred, nil
+}
+
+func (s *CredentialsService) lookupByPhone(ctx context.Context, phone string) (*authrepo.Credential, error) {
+	if phone == "" {
+		return nil, nil
+	}
+
+	cred, err := s.repo.GetByPhone(ctx, phone)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return cred, nil
+}
+
+func resolveVKIDTarget(vkUserID int64, emailCred, phoneCred *authrepo.Credential) (*authrepo.Credential, error) {
+	if emailCred != nil && phoneCred != nil && emailCred.ID != phoneCred.ID {
+		return nil, ErrVKIDConflict
+	}
+
+	target := emailCred
+	if target == nil {
+		target = phoneCred
+	}
+	if target == nil {
+		return nil, nil
+	}
+
+	if target.VKUserID.Valid && target.VKUserID.Int64 != vkUserID {
+		return nil, ErrVKIDConflict
+	}
+
+	return target, nil
 }

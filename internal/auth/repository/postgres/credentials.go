@@ -12,6 +12,7 @@ type Credential struct {
 	Email        string
 	Phone        string
 	PasswordHash string
+	VKUserID     sql.NullInt64
 	CreatedAt    time.Time
 }
 
@@ -35,12 +36,28 @@ func (r *CredentialsRepository) Create(ctx context.Context, email, phone, hash s
 	return id, nil
 }
 
+func (r *CredentialsRepository) CreateVK(ctx context.Context, email, phone string, vkUserID int64) (int64, error) {
+	var id int64
+	err := r.db.QueryRowContext(ctx,
+		`INSERT INTO auth.credentials (email, phone, password_hash, vk_user_id)
+		 VALUES ($1, $2, NULL, $3)
+		 RETURNING id`,
+		nullableText(email), nullableText(phone), vkUserID,
+	).Scan(&id)
+	if err != nil {
+		return 0, fmt.Errorf("create vk credentials: %w", err)
+	}
+	return id, nil
+}
+
 func (r *CredentialsRepository) GetByEmail(ctx context.Context, email string) (*Credential, error) {
 	c := &Credential{}
 	err := r.db.QueryRowContext(ctx,
-		`SELECT id, email, phone, password_hash, created_at FROM auth.credentials WHERE email = $1`,
+		`SELECT id, COALESCE(email, ''), COALESCE(phone, ''), COALESCE(password_hash, ''), vk_user_id, created_at
+		 FROM auth.credentials
+		 WHERE email = $1`,
 		email,
-	).Scan(&c.ID, &c.Email, &c.Phone, &c.PasswordHash, &c.CreatedAt)
+	).Scan(&c.ID, &c.Email, &c.Phone, &c.PasswordHash, &c.VKUserID, &c.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("get by email: %w", err)
 	}
@@ -50,11 +67,27 @@ func (r *CredentialsRepository) GetByEmail(ctx context.Context, email string) (*
 func (r *CredentialsRepository) GetByPhone(ctx context.Context, phone string) (*Credential, error) {
 	c := &Credential{}
 	err := r.db.QueryRowContext(ctx,
-		`SELECT id, email, phone, password_hash, created_at FROM auth.credentials WHERE phone = $1`,
+		`SELECT id, COALESCE(email, ''), COALESCE(phone, ''), COALESCE(password_hash, ''), vk_user_id, created_at
+		 FROM auth.credentials
+		 WHERE phone = $1`,
 		phone,
-	).Scan(&c.ID, &c.Email, &c.Phone, &c.PasswordHash, &c.CreatedAt)
+	).Scan(&c.ID, &c.Email, &c.Phone, &c.PasswordHash, &c.VKUserID, &c.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("get by phone: %w", err)
+	}
+	return c, nil
+}
+
+func (r *CredentialsRepository) GetByVKUserID(ctx context.Context, vkUserID int64) (*Credential, error) {
+	c := &Credential{}
+	err := r.db.QueryRowContext(ctx,
+		`SELECT id, COALESCE(email, ''), COALESCE(phone, ''), COALESCE(password_hash, ''), vk_user_id, created_at
+		 FROM auth.credentials
+		 WHERE vk_user_id = $1`,
+		vkUserID,
+	).Scan(&c.ID, &c.Email, &c.Phone, &c.PasswordHash, &c.VKUserID, &c.CreatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("get by vk user id: %w", err)
 	}
 	return c, nil
 }
@@ -62,13 +95,28 @@ func (r *CredentialsRepository) GetByPhone(ctx context.Context, phone string) (*
 func (r *CredentialsRepository) GetByID(ctx context.Context, id int64) (*Credential, error) {
 	c := &Credential{}
 	err := r.db.QueryRowContext(ctx,
-		`SELECT id, email, phone, password_hash, created_at FROM auth.credentials WHERE id = $1`,
+		`SELECT id, COALESCE(email, ''), COALESCE(phone, ''), COALESCE(password_hash, ''), vk_user_id, created_at
+		 FROM auth.credentials
+		 WHERE id = $1`,
 		id,
-	).Scan(&c.ID, &c.Email, &c.Phone, &c.PasswordHash, &c.CreatedAt)
+	).Scan(&c.ID, &c.Email, &c.Phone, &c.PasswordHash, &c.VKUserID, &c.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("get by id: %w", err)
 	}
 	return c, nil
+}
+
+func (r *CredentialsRepository) LinkVKUserID(ctx context.Context, id, vkUserID int64) error {
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE auth.credentials
+		 SET vk_user_id = $2, updated_at = NOW()
+		 WHERE id = $1`,
+		id, vkUserID,
+	)
+	if err != nil {
+		return fmt.Errorf("link vk user id: %w", err)
+	}
+	return nil
 }
 
 func (r *CredentialsRepository) Update(ctx context.Context, id int64, email, phone string) error {
@@ -91,4 +139,11 @@ func (r *CredentialsRepository) Delete(ctx context.Context, id int64) error {
 		return fmt.Errorf("delete credentials: %w", err)
 	}
 	return nil
+}
+
+func nullableText(v string) any {
+	if v == "" {
+		return nil
+	}
+	return v
 }

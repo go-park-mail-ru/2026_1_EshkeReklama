@@ -60,6 +60,24 @@ func (s *Server) Login(ctx context.Context, req *authv1.LoginRequest) (*authv1.L
 	}, nil
 }
 
+func (s *Server) LoginVKID(ctx context.Context, req *authv1.LoginVKIDRequest) (*authv1.LoginResponse, error) {
+	id, err := s.creds.AuthenticateVKID(ctx, req.Code, req.DeviceId, req.CodeVerifier)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+
+	sessionID, expiresAt, err := s.session.Create(ctx, id)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "create session")
+	}
+
+	return &authv1.LoginResponse{
+		AdvertiserId: id,
+		SessionId:    sessionID,
+		ExpiresAt:    expiresAt.Unix(),
+	}, nil
+}
+
 func (s *Server) ValidateSession(ctx context.Context, req *authv1.ValidateSessionRequest) (*authv1.ValidateSessionResponse, error) {
 	sess, err := s.session.Get(ctx, req.SessionId)
 	if err != nil {
@@ -114,10 +132,14 @@ func mapErr(err error) error {
 		return status.Error(codes.AlreadyExists, "email taken")
 	case errors.Is(err, authsvc.ErrPhoneTaken):
 		return status.Error(codes.AlreadyExists, "phone taken")
+	case errors.Is(err, authsvc.ErrVKIDConflict):
+		return status.Error(codes.AlreadyExists, "vk credentials conflict")
 	case errors.Is(err, authsvc.ErrInvalidCredentials):
 		return status.Error(codes.Unauthenticated, "invalid credentials")
 	case errors.Is(err, authsvc.ErrInvalidArg):
 		return status.Error(codes.InvalidArgument, err.Error())
+	case errors.Is(err, authsvc.ErrVKIDUnavailable):
+		return status.Error(codes.FailedPrecondition, "vk id auth is not configured")
 	case errors.Is(err, sql.ErrNoRows):
 		return status.Error(codes.NotFound, "credentials not found")
 	default:

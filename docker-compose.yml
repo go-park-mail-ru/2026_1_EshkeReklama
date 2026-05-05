@@ -15,6 +15,10 @@ services:
       AUTH_PG_DSN: postgres://${POSTGRES_USER:-eshkere}:${POSTGRES_PASSWORD:-eshkere}@postgres:5432/${POSTGRES_DB:-eshkere}?sslmode=disable
       AUTH_REDIS_ADDR: redis:6379
       AUTH_REDIS_PASSWORD: ${REDIS_PASSWORD:-password}
+      AUTH_VKID_CLIENT_ID: ${AUTH_VKID_CLIENT_ID:-}
+      AUTH_VKID_REDIRECT_URI: ${AUTH_VKID_REDIRECT_URI:-}
+      AUTH_VKID_DOMAIN: ${AUTH_VKID_DOMAIN:-id.vk.ru}
+      AUTH_VKID_TIMEOUT: ${AUTH_VKID_TIMEOUT:-5s}
     ports:
       - "50051:50051"
 
@@ -49,6 +53,13 @@ services:
       S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
       S3_PUBLIC_BASE_URL: ${S3_PUBLIC_BASE_URL:-http://localhost:9000/eshkere}
       AUTH_GRPC_ADDR: auth:50051
+      AUTH_VKID_CLIENT_ID: ${AUTH_VKID_CLIENT_ID:-}
+      AUTH_VKID_REDIRECT_URI: ${AUTH_VKID_REDIRECT_URI:-}
+      AUTH_VKID_DOMAIN: ${AUTH_VKID_DOMAIN:-id.vk.ru}
+      VKID_SCOPE: ${VKID_SCOPE:-email phone}
+      VKID_DEFAULT_REDIRECT_URL: ${VKID_DEFAULT_REDIRECT_URL:-http://localhost:8080/}
+      VKID_ERROR_REDIRECT_URL: ${VKID_ERROR_REDIRECT_URL:-http://localhost:8080/login}
+      AD_SDK_URL: ${AD_SDK_URL:-http://localhost:8080/ad-sdk.js}
     ports:
       - "8000:8000"
 

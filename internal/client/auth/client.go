@@ -18,6 +18,7 @@ import (
 var _ interface {
 	Register(ctx context.Context, email, phone, password string) (int64, string, int64, error)
 	Login(ctx context.Context, identifier, password string) (int64, string, int64, error)
+	LoginVKID(ctx context.Context, code, deviceID, codeVerifier string) (int64, string, int64, error)
 	ValidateSession(ctx context.Context, sessionID string) (int64, error)
 	Logout(ctx context.Context, sessionID string) error
 	GetCredentials(ctx context.Context, advertiserID int64) (string, string, error)
@@ -60,6 +61,21 @@ func (c *Client) Login(ctx context.Context, identifier, password string) (int64,
 
 	resp, err := c.rpc.Login(ctx, &authv1.LoginRequest{
 		Identifier: identifier, Password: password,
+	})
+	if err != nil {
+		return 0, "", 0, mapErr(err)
+	}
+	return resp.AdvertiserId, resp.SessionId, resp.ExpiresAt, nil
+}
+
+func (c *Client) LoginVKID(ctx context.Context, code, deviceID, codeVerifier string) (int64, string, int64, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	resp, err := c.rpc.LoginVKID(ctx, &authv1.LoginVKIDRequest{
+		Code:         code,
+		DeviceId:     deviceID,
+		CodeVerifier: codeVerifier,
 	})
 	if err != nil {
 		return 0, "", 0, mapErr(err)
@@ -126,12 +142,17 @@ func mapErr(err error) error {
 	}
 	switch st.Code() {
 	case codes.AlreadyExists:
+		if st.Message() == "vk credentials conflict" {
+			return errs.ErrVKIDConflict
+		}
 		if st.Message() == "phone taken" {
 			return errs.ErrPhoneTaken
 		}
 		return errs.ErrEmailTaken
 	case codes.Unauthenticated:
 		return errs.ErrInvalidCredentials
+	case codes.FailedPrecondition:
+		return errs.NotImplementedError
 	case codes.NotFound:
 		if st.Message() == "credentials not found" {
 			return errs.NotFoundError

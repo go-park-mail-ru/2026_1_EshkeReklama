@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	errs "eshkere/internal/errors"
 	"eshkere/internal/models"
 	"eshkere/pkg/logger"
 	"fmt"
@@ -54,7 +55,7 @@ func (r *AdvertiserRepository) GetByID(ctx context.Context, id int) (*models.Adv
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("advertiser not found: %w", err)
+			return nil, fmt.Errorf("%w: advertiser not found", errs.NotFoundError)
 		}
 		return nil, fmt.Errorf("get advertiser by id: %w", err)
 	}

@@ -32,7 +32,8 @@ func HandleError(w http.ResponseWriter, r *http.Request, desc string, err error)
 	// 409 Conflict: Дубликаты (email, телефон и т.д.)
 	case errors.Is(err, errs.AlreadyExistsError),
 		errors.Is(err, errs.ErrEmailTaken),
-		errors.Is(err, errs.ErrPhoneTaken):
+		errors.Is(err, errs.ErrPhoneTaken),
+		errors.Is(err, errs.ErrVKIDConflict):
 		logger.Debugf("resource conflict during %s: %v", desc, err)
 		httpx.AlreadyExists(w, err.Error())
 

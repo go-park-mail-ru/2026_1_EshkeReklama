@@ -193,6 +193,66 @@ func (x *LoginRequest) GetPassword() string {
 	return ""
 }
 
+type LoginVKIDRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
+	DeviceId      string                 `protobuf:"bytes,2,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
+	CodeVerifier  string                 `protobuf:"bytes,3,opt,name=code_verifier,json=codeVerifier,proto3" json:"code_verifier,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LoginVKIDRequest) Reset() {
+	*x = LoginVKIDRequest{}
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LoginVKIDRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoginVKIDRequest) ProtoMessage() {}
+
+func (x *LoginVKIDRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoginVKIDRequest.ProtoReflect.Descriptor instead.
+func (*LoginVKIDRequest) Descriptor() ([]byte, []int) {
+	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *LoginVKIDRequest) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *LoginVKIDRequest) GetDeviceId() string {
+	if x != nil {
+		return x.DeviceId
+	}
+	return ""
+}
+
+func (x *LoginVKIDRequest) GetCodeVerifier() string {
+	if x != nil {
+		return x.CodeVerifier
+	}
+	return ""
+}
+
 type LoginResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AdvertiserId  int64                  `protobuf:"varint,1,opt,name=advertiser_id,json=advertiserId,proto3" json:"advertiser_id,omitempty"`
@@ -204,7 +264,7 @@ type LoginResponse struct {
 
 func (x *LoginResponse) Reset() {
 	*x = LoginResponse{}
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[3]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -216,7 +276,7 @@ func (x *LoginResponse) String() string {
 func (*LoginResponse) ProtoMessage() {}
 
 func (x *LoginResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[3]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -229,7 +289,7 @@ func (x *LoginResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginResponse.ProtoReflect.Descriptor instead.
 func (*LoginResponse) Descriptor() ([]byte, []int) {
-	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{3}
+	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *LoginResponse) GetAdvertiserId() int64 {
@@ -262,7 +322,7 @@ type ValidateSessionRequest struct {
 
 func (x *ValidateSessionRequest) Reset() {
 	*x = ValidateSessionRequest{}
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[4]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -274,7 +334,7 @@ func (x *ValidateSessionRequest) String() string {
 func (*ValidateSessionRequest) ProtoMessage() {}
 
 func (x *ValidateSessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[4]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -287,7 +347,7 @@ func (x *ValidateSessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidateSessionRequest.ProtoReflect.Descriptor instead.
 func (*ValidateSessionRequest) Descriptor() ([]byte, []int) {
-	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{4}
+	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ValidateSessionRequest) GetSessionId() string {
@@ -307,7 +367,7 @@ type ValidateSessionResponse struct {
 
 func (x *ValidateSessionResponse) Reset() {
 	*x = ValidateSessionResponse{}
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[5]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -319,7 +379,7 @@ func (x *ValidateSessionResponse) String() string {
 func (*ValidateSessionResponse) ProtoMessage() {}
 
 func (x *ValidateSessionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[5]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -332,7 +392,7 @@ func (x *ValidateSessionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidateSessionResponse.ProtoReflect.Descriptor instead.
 func (*ValidateSessionResponse) Descriptor() ([]byte, []int) {
-	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{5}
+	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ValidateSessionResponse) GetAdvertiserId() int64 {
@@ -358,7 +418,7 @@ type LogoutRequest struct {
 
 func (x *LogoutRequest) Reset() {
 	*x = LogoutRequest{}
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[6]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -370,7 +430,7 @@ func (x *LogoutRequest) String() string {
 func (*LogoutRequest) ProtoMessage() {}
 
 func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[6]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -383,7 +443,7 @@ func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutRequest.ProtoReflect.Descriptor instead.
 func (*LogoutRequest) Descriptor() ([]byte, []int) {
-	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{6}
+	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *LogoutRequest) GetSessionId() string {
@@ -401,7 +461,7 @@ type LogoutResponse struct {
 
 func (x *LogoutResponse) Reset() {
 	*x = LogoutResponse{}
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[7]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -413,7 +473,7 @@ func (x *LogoutResponse) String() string {
 func (*LogoutResponse) ProtoMessage() {}
 
 func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[7]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -426,7 +486,7 @@ func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutResponse.ProtoReflect.Descriptor instead.
 func (*LogoutResponse) Descriptor() ([]byte, []int) {
-	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{7}
+	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{8}
 }
 
 type GetCredentialsRequest struct {
@@ -438,7 +498,7 @@ type GetCredentialsRequest struct {
 
 func (x *GetCredentialsRequest) Reset() {
 	*x = GetCredentialsRequest{}
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[8]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -450,7 +510,7 @@ func (x *GetCredentialsRequest) String() string {
 func (*GetCredentialsRequest) ProtoMessage() {}
 
 func (x *GetCredentialsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[8]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -463,7 +523,7 @@ func (x *GetCredentialsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCredentialsRequest.ProtoReflect.Descriptor instead.
 func (*GetCredentialsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{8}
+	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetCredentialsRequest) GetAdvertiserId() int64 {
@@ -484,7 +544,7 @@ type GetCredentialsResponse struct {
 
 func (x *GetCredentialsResponse) Reset() {
 	*x = GetCredentialsResponse{}
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[9]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -496,7 +556,7 @@ func (x *GetCredentialsResponse) String() string {
 func (*GetCredentialsResponse) ProtoMessage() {}
 
 func (x *GetCredentialsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[9]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -509,7 +569,7 @@ func (x *GetCredentialsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCredentialsResponse.ProtoReflect.Descriptor instead.
 func (*GetCredentialsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{9}
+	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetCredentialsResponse) GetAdvertiserId() int64 {
@@ -544,7 +604,7 @@ type UpdateCredentialsRequest struct {
 
 func (x *UpdateCredentialsRequest) Reset() {
 	*x = UpdateCredentialsRequest{}
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[10]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -556,7 +616,7 @@ func (x *UpdateCredentialsRequest) String() string {
 func (*UpdateCredentialsRequest) ProtoMessage() {}
 
 func (x *UpdateCredentialsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[10]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -569,7 +629,7 @@ func (x *UpdateCredentialsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateCredentialsRequest.ProtoReflect.Descriptor instead.
 func (*UpdateCredentialsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{10}
+	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *UpdateCredentialsRequest) GetAdvertiserId() int64 {
@@ -604,7 +664,7 @@ type UpdateCredentialsResponse struct {
 
 func (x *UpdateCredentialsResponse) Reset() {
 	*x = UpdateCredentialsResponse{}
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[11]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -616,7 +676,7 @@ func (x *UpdateCredentialsResponse) String() string {
 func (*UpdateCredentialsResponse) ProtoMessage() {}
 
 func (x *UpdateCredentialsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_auth_v1_auth_proto_msgTypes[11]
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -629,7 +689,7 @@ func (x *UpdateCredentialsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateCredentialsResponse.ProtoReflect.Descriptor instead.
 func (*UpdateCredentialsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{11}
+	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *UpdateCredentialsResponse) GetAdvertiserId() int64 {
@@ -672,7 +732,11 @@ const file_proto_auth_v1_auth_proto_rawDesc = "" +
 	"\n" +
 	"identifier\x18\x01 \x01(\tR\n" +
 	"identifier\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"r\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"h\n" +
+	"\x10LoginVKIDRequest\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\tR\x04code\x12\x1b\n" +
+	"\tdevice_id\x18\x02 \x01(\tR\bdeviceId\x12#\n" +
+	"\rcode_verifier\x18\x03 \x01(\tR\fcodeVerifier\"r\n" +
 	"\rLoginResponse\x12#\n" +
 	"\radvertiser_id\x18\x01 \x01(\x03R\fadvertiserId\x12\x1d\n" +
 	"\n" +
@@ -703,10 +767,11 @@ const file_proto_auth_v1_auth_proto_rawDesc = "" +
 	"\x19UpdateCredentialsResponse\x12#\n" +
 	"\radvertiser_id\x18\x01 \x01(\x03R\fadvertiserId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x14\n" +
-	"\x05phone\x18\x03 \x01(\tR\x05phone2\xa6\x04\n" +
+	"\x05phone\x18\x03 \x01(\tR\x05phone2\xf6\x04\n" +
 	"\vAuthService\x12O\n" +
 	"\bRegister\x12 .eshkere.auth.v1.RegisterRequest\x1a!.eshkere.auth.v1.RegisterResponse\x12F\n" +
-	"\x05Login\x12\x1d.eshkere.auth.v1.LoginRequest\x1a\x1e.eshkere.auth.v1.LoginResponse\x12d\n" +
+	"\x05Login\x12\x1d.eshkere.auth.v1.LoginRequest\x1a\x1e.eshkere.auth.v1.LoginResponse\x12N\n" +
+	"\tLoginVKID\x12!.eshkere.auth.v1.LoginVKIDRequest\x1a\x1e.eshkere.auth.v1.LoginResponse\x12d\n" +
 	"\x0fValidateSession\x12'.eshkere.auth.v1.ValidateSessionRequest\x1a(.eshkere.auth.v1.ValidateSessionResponse\x12I\n" +
 	"\x06Logout\x12\x1e.eshkere.auth.v1.LogoutRequest\x1a\x1f.eshkere.auth.v1.LogoutResponse\x12a\n" +
 	"\x0eGetCredentials\x12&.eshkere.auth.v1.GetCredentialsRequest\x1a'.eshkere.auth.v1.GetCredentialsResponse\x12j\n" +
@@ -724,36 +789,39 @@ func file_proto_auth_v1_auth_proto_rawDescGZIP() []byte {
 	return file_proto_auth_v1_auth_proto_rawDescData
 }
 
-var file_proto_auth_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_proto_auth_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_proto_auth_v1_auth_proto_goTypes = []any{
 	(*RegisterRequest)(nil),           // 0: eshkere.auth.v1.RegisterRequest
 	(*RegisterResponse)(nil),          // 1: eshkere.auth.v1.RegisterResponse
 	(*LoginRequest)(nil),              // 2: eshkere.auth.v1.LoginRequest
-	(*LoginResponse)(nil),             // 3: eshkere.auth.v1.LoginResponse
-	(*ValidateSessionRequest)(nil),    // 4: eshkere.auth.v1.ValidateSessionRequest
-	(*ValidateSessionResponse)(nil),   // 5: eshkere.auth.v1.ValidateSessionResponse
-	(*LogoutRequest)(nil),             // 6: eshkere.auth.v1.LogoutRequest
-	(*LogoutResponse)(nil),            // 7: eshkere.auth.v1.LogoutResponse
-	(*GetCredentialsRequest)(nil),     // 8: eshkere.auth.v1.GetCredentialsRequest
-	(*GetCredentialsResponse)(nil),    // 9: eshkere.auth.v1.GetCredentialsResponse
-	(*UpdateCredentialsRequest)(nil),  // 10: eshkere.auth.v1.UpdateCredentialsRequest
-	(*UpdateCredentialsResponse)(nil), // 11: eshkere.auth.v1.UpdateCredentialsResponse
+	(*LoginVKIDRequest)(nil),          // 3: eshkere.auth.v1.LoginVKIDRequest
+	(*LoginResponse)(nil),             // 4: eshkere.auth.v1.LoginResponse
+	(*ValidateSessionRequest)(nil),    // 5: eshkere.auth.v1.ValidateSessionRequest
+	(*ValidateSessionResponse)(nil),   // 6: eshkere.auth.v1.ValidateSessionResponse
+	(*LogoutRequest)(nil),             // 7: eshkere.auth.v1.LogoutRequest
+	(*LogoutResponse)(nil),            // 8: eshkere.auth.v1.LogoutResponse
+	(*GetCredentialsRequest)(nil),     // 9: eshkere.auth.v1.GetCredentialsRequest
+	(*GetCredentialsResponse)(nil),    // 10: eshkere.auth.v1.GetCredentialsResponse
+	(*UpdateCredentialsRequest)(nil),  // 11: eshkere.auth.v1.UpdateCredentialsRequest
+	(*UpdateCredentialsResponse)(nil), // 12: eshkere.auth.v1.UpdateCredentialsResponse
 }
 var file_proto_auth_v1_auth_proto_depIdxs = []int32{
 	0,  // 0: eshkere.auth.v1.AuthService.Register:input_type -> eshkere.auth.v1.RegisterRequest
 	2,  // 1: eshkere.auth.v1.AuthService.Login:input_type -> eshkere.auth.v1.LoginRequest
-	4,  // 2: eshkere.auth.v1.AuthService.ValidateSession:input_type -> eshkere.auth.v1.ValidateSessionRequest
-	6,  // 3: eshkere.auth.v1.AuthService.Logout:input_type -> eshkere.auth.v1.LogoutRequest
-	8,  // 4: eshkere.auth.v1.AuthService.GetCredentials:input_type -> eshkere.auth.v1.GetCredentialsRequest
-	10, // 5: eshkere.auth.v1.AuthService.UpdateCredentials:input_type -> eshkere.auth.v1.UpdateCredentialsRequest
-	1,  // 6: eshkere.auth.v1.AuthService.Register:output_type -> eshkere.auth.v1.RegisterResponse
-	3,  // 7: eshkere.auth.v1.AuthService.Login:output_type -> eshkere.auth.v1.LoginResponse
-	5,  // 8: eshkere.auth.v1.AuthService.ValidateSession:output_type -> eshkere.auth.v1.ValidateSessionResponse
-	7,  // 9: eshkere.auth.v1.AuthService.Logout:output_type -> eshkere.auth.v1.LogoutResponse
-	9,  // 10: eshkere.auth.v1.AuthService.GetCredentials:output_type -> eshkere.auth.v1.GetCredentialsResponse
-	11, // 11: eshkere.auth.v1.AuthService.UpdateCredentials:output_type -> eshkere.auth.v1.UpdateCredentialsResponse
-	6,  // [6:12] is the sub-list for method output_type
-	0,  // [0:6] is the sub-list for method input_type
+	3,  // 2: eshkere.auth.v1.AuthService.LoginVKID:input_type -> eshkere.auth.v1.LoginVKIDRequest
+	5,  // 3: eshkere.auth.v1.AuthService.ValidateSession:input_type -> eshkere.auth.v1.ValidateSessionRequest
+	7,  // 4: eshkere.auth.v1.AuthService.Logout:input_type -> eshkere.auth.v1.LogoutRequest
+	9,  // 5: eshkere.auth.v1.AuthService.GetCredentials:input_type -> eshkere.auth.v1.GetCredentialsRequest
+	11, // 6: eshkere.auth.v1.AuthService.UpdateCredentials:input_type -> eshkere.auth.v1.UpdateCredentialsRequest
+	1,  // 7: eshkere.auth.v1.AuthService.Register:output_type -> eshkere.auth.v1.RegisterResponse
+	4,  // 8: eshkere.auth.v1.AuthService.Login:output_type -> eshkere.auth.v1.LoginResponse
+	4,  // 9: eshkere.auth.v1.AuthService.LoginVKID:output_type -> eshkere.auth.v1.LoginResponse
+	6,  // 10: eshkere.auth.v1.AuthService.ValidateSession:output_type -> eshkere.auth.v1.ValidateSessionResponse
+	8,  // 11: eshkere.auth.v1.AuthService.Logout:output_type -> eshkere.auth.v1.LogoutResponse
+	10, // 12: eshkere.auth.v1.AuthService.GetCredentials:output_type -> eshkere.auth.v1.GetCredentialsResponse
+	12, // 13: eshkere.auth.v1.AuthService.UpdateCredentials:output_type -> eshkere.auth.v1.UpdateCredentialsResponse
+	7,  // [7:14] is the sub-list for method output_type
+	0,  // [0:7] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name
@@ -770,7 +838,7 @@ func file_proto_auth_v1_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_auth_v1_auth_proto_rawDesc), len(file_proto_auth_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

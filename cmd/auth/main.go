@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
+	"eshkere/internal/auth/vkid"
 	redis "github.com/gomodule/redigo/redis"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"google.golang.org/grpc"
@@ -27,6 +30,10 @@ func main() {
 	redisAddr := envOr("AUTH_REDIS_ADDR", "localhost:6379")
 	redisPassword := envOr("AUTH_REDIS_PASSWORD", "")
 	sessionTTL := envDuration("AUTH_SESSION_TTL", 24*time.Hour)
+	vkIDClientID := envInt64("AUTH_VKID_CLIENT_ID", 0)
+	vkIDRedirectURI := envOr("AUTH_VKID_REDIRECT_URI", "")
+	vkIDDomain := envOr("AUTH_VKID_DOMAIN", "id.vk.ru")
+	vkIDTimeout := envDuration("AUTH_VKID_TIMEOUT", 5*time.Second)
 
 	db, err := initPostgres(pgDSN)
 	if err != nil {
@@ -41,7 +48,7 @@ func main() {
 	defer redisPool.Close()
 
 	credsRepo := authrepo.NewCredentialsRepository(db)
-	credsSvc := authsvc.NewCredentialsService(credsRepo)
+	credsSvc := authsvc.NewCredentialsService(credsRepo, initVKIDClient(vkIDClientID, vkIDRedirectURI, vkIDDomain, vkIDTimeout))
 
 	store := authsession.NewRedisStore(redisPool)
 	sessionMgr := authsession.NewManager(store, sessionTTL)
@@ -125,4 +132,27 @@ func envDuration(key string, def time.Duration) time.Duration {
 		return def
 	}
 	return d
+}
+
+func envInt64(key string, def int64) int64 {
+	v := os.Getenv(key)
+	if v == "" {
+		return def
+	}
+	n, err := strconv.ParseInt(v, 10, 64)
+	if err != nil {
+		return def
+	}
+	return n
+}
+
+func initVKIDClient(clientID int64, redirectURI, domain string, timeout time.Duration) *vkid.Client {
+	if clientID <= 0 || redirectURI == "" {
+		return nil
+	}
+	if _, err := url.ParseRequestURI(redirectURI); err != nil {
+		log.Printf("vk id disabled: invalid redirect uri: %v", err)
+		return nil
+	}
+	return vkid.New(clientID, redirectURI, domain, timeout)
 }

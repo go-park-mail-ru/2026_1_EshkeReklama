@@ -7,6 +7,7 @@ option go_package = "eshkere/pkg/pb/auth/v1;authv1";
 service AuthService {
   rpc Register(RegisterRequest) returns (RegisterResponse);
   rpc Login(LoginRequest) returns (LoginResponse);
+  rpc LoginVKID(LoginVKIDRequest) returns (LoginResponse);
   rpc ValidateSession(ValidateSessionRequest) returns (ValidateSessionResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc GetCredentials(GetCredentialsRequest) returns (GetCredentialsResponse);
@@ -28,6 +29,12 @@ message RegisterResponse {
 message LoginRequest {
   string identifier = 1;
   string password   = 2;
+}
+
+message LoginVKIDRequest {
+  string code          = 1;
+  string device_id     = 2;
+  string code_verifier = 3;
 }
 
 message LoginResponse {

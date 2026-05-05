@@ -15,6 +15,7 @@ var (
 	ErrInvalidCredentials   = errors.New("invalid credentials")
 	ErrEmailTaken           = errors.New("email already registered")
 	ErrPhoneTaken           = errors.New("phone already registered")
+	ErrVKIDConflict         = errors.New("vk id account conflict")
 	ErrInvalidAdvertiserArg = errors.New("invalid advertiser argument")
 	ErrSessionNotFound      = errors.New("session not found")
 )

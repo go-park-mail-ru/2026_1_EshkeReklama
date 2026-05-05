@@ -12,6 +12,7 @@ services:
         condition: service_started
     environment:
       AUTH_GRPC_ADDR: :50051
+      AUTH_METRICS_ADDR: :9101
       AUTH_PG_DSN: postgres://${POSTGRES_USER:-eshkere}:${POSTGRES_PASSWORD:-eshkere}@postgres:5432/${POSTGRES_DB:-eshkere}?sslmode=disable
       AUTH_REDIS_ADDR: redis:6379
       AUTH_REDIS_PASSWORD: ${REDIS_PASSWORD:-password}
@@ -33,6 +34,7 @@ services:
         condition: service_started
     environment:
       PROFILE_GRPC_ADDR: :50052
+      PROFILE_METRICS_ADDR: :9102
       PROFILE_REDIS_ADDR: redis:6379
       PROFILE_REDIS_PASSWORD: ${REDIS_PASSWORD:-password}
     ports:
@@ -58,6 +60,7 @@ services:
       profile:
         condition: service_started
     environment:
+      APP_METRICS_ADDR: :9100
       POSTGRES_HOST: postgres
       POSTGRES_DB: ${POSTGRES_DB:-eshkere}
       POSTGRES_USER: ${POSTGRES_USER:-eshkere}
@@ -80,6 +83,53 @@ services:
       VKID_ERROR_REDIRECT_URL: ${VKID_ERROR_REDIRECT_URL:-http://localhost:8080/login}
     ports:
       - "8000:8000"
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    restart: unless-stopped
+    depends_on:
+      - app
+      - auth
+      - profile
+      - node-exporter
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:12.1.1
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    restart: unless-stopped
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/rootfs
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/.+)($|/)
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
 
   postgres:
     image: postgres:16-alpine
@@ -156,3 +206,5 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  prometheus_data:
+  grafana_data:

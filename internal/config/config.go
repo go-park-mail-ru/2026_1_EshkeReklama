@@ -74,6 +74,10 @@ type ProfileServiceConfig struct {
 	GRPCAddr string `yaml:"grpc_addr"`
 }
 
+type ObservabilityConfig struct {
+	MetricsAddr string `yaml:"metrics_addr"`
+}
+
 type Config struct {
 	HTTPServer      HTTPServerConfig     `yaml:"http_server"`
 	Postgres        PostgresConfig       `yaml:"postgres"`
@@ -84,6 +88,7 @@ type Config struct {
 	VKID            VKIDConfig           `yaml:"vkid"`
 	S3              S3Config             `yaml:"s3"`
 	CORS            CORSConfig           `yaml:"cors"`
+	Observability   ObservabilityConfig  `yaml:"observability"`
 	GracefulTimeout time.Duration        `yaml:"graceful_timeout"`
 }
 

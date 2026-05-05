@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
+	"eshkere/internal/observability"
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -22,6 +25,7 @@ func main() {
 	addr := envOr("PROFILE_GRPC_ADDR", ":50052")
 	redisAddr := envOr("PROFILE_REDIS_ADDR", "localhost:6379")
 	redisPassword := envOr("PROFILE_REDIS_PASSWORD", "")
+	metricsAddr := envOr("PROFILE_METRICS_ADDR", "")
 
 	redisPool, err := initRedis(redisAddr, redisPassword)
 	if err != nil {
@@ -35,8 +39,10 @@ func main() {
 		log.Fatalf("profile service: %v", err)
 	}
 
-	grpcServer := grpc.NewServer()
+	metrics := observability.NewMetrics("profile")
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(metrics.UnaryServerInterceptor()))
 	profilev1.RegisterProfileServiceServer(grpcServer, profileserver.New(svc))
+	metricsServer := observability.NewMetricsServer(metricsAddr, metrics)
 
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -50,7 +56,23 @@ func main() {
 		<-quit
 		log.Println("shutting down profile gRPC server...")
 		grpcServer.GracefulStop()
+		if metricsServer != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if err := metricsServer.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
+				log.Printf("shutdown profile metrics server: %v", err)
+			}
+		}
 	}()
+
+	if metricsServer != nil {
+		go func() {
+			log.Printf("profile metrics listening on %s", metricsAddr)
+			if err := metricsServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Fatalf("metrics serve: %v", err)
+			}
+		}()
+	}
 
 	log.Printf("profile gRPC listening on %s", addr)
 	if err := grpcServer.Serve(lis); err != nil {

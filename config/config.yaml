@@ -61,3 +61,6 @@ cors:
     - "http://localhost:8080"
     - "http://127.0.0.1:8080"
     - "http://212.233.96.112:8080"
+
+observability:
+  metrics_addr: ${APP_METRICS_ADDR}

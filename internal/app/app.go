@@ -8,6 +8,7 @@ import (
 	"eshkere/internal/handler"
 	middleware2 "eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1"
+	"eshkere/internal/observability"
 	"eshkere/internal/repository/postgres"
 	redisrepo "eshkere/internal/repository/redis"
 	"eshkere/internal/service"
@@ -31,6 +32,7 @@ type App struct {
 	service       *service.Service
 	authClient    *authclient.Client
 	profileClient *profileclient.Client
+	metrics       *observability.Metrics
 }
 
 func New(configPath string) *App {
@@ -44,6 +46,7 @@ func New(configPath string) *App {
 		panic(err)
 	}
 	logger := baseLogger.Sugar()
+	metrics := observability.NewMetrics("app")
 
 	cfg, err := config.ReadConfig(configPath)
 	if err != nil {
@@ -138,12 +141,16 @@ func New(configPath string) *App {
 		service:       svc,
 		authClient:    ac,
 		profileClient: pc,
+		metrics:       metrics,
 	}
 }
 
 func (a *App) Run() error {
 	router := mux.NewRouter().StrictSlash(true)
 	router.Use(middleware2.RequestContext(a.logger))
+	router.Use(a.metrics.HTTPMiddleware(observability.HTTPMiddlewareConfig{
+		SkipPaths: []string{"/metrics", "/healthz"},
+	}))
 	router.Use(middleware2.AccessLog())
 	router.Use(middleware2.CSRF(middleware2.CSRFConfig{
 		CookieName: "csrf_token",
@@ -171,24 +178,33 @@ func (a *App) Run() error {
 		},
 	}))
 
-	server := &http.Server{
+	apiServer := &http.Server{
 		Addr:         a.cfg.HTTPServer.Listen,
 		Handler:      middleware2.CORS(a.cfg.CORS.AllowedOrigins)(router),
 		ReadTimeout:  a.cfg.HTTPServer.ReadTimeout,
 		WriteTimeout: a.cfg.HTTPServer.WriteTimeout,
 	}
+	metricsServer := observability.NewMetricsServer(a.cfg.Observability.MetricsAddr, a.metrics)
 
-	serverErr := make(chan error, 1)
+	servers := []*http.Server{apiServer}
+	serverErr := make(chan error, 2)
 
 	go func() {
-		a.logger.Infow("server started", "addr", server.Addr)
-		serverErr <- server.ListenAndServe()
+		a.logger.Infow("http server started", "addr", apiServer.Addr)
+		serverErr <- apiServer.ListenAndServe()
 	}()
+	if metricsServer != nil {
+		servers = append(servers, metricsServer)
+		go func() {
+			a.logger.Infow("metrics server started", "addr", metricsServer.Addr)
+			serverErr <- metricsServer.ListenAndServe()
+		}()
+	}
 
-	return a.waitShutdown(server, serverErr)
+	return a.waitShutdown(servers, serverErr)
 }
 
-func (a *App) waitShutdown(server *http.Server, serverErr <-chan error) error {
+func (a *App) waitShutdown(servers []*http.Server, serverErr <-chan error) error {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	defer signal.Stop(stop)
@@ -196,21 +212,26 @@ func (a *App) waitShutdown(server *http.Server, serverErr <-chan error) error {
 	select {
 	case err := <-serverErr:
 		if err != nil && err != http.ErrServerClosed {
-			return fmt.Errorf("http server failed: %w", err)
+			return fmt.Errorf("server failed: %w", err)
 		}
 		return nil
 
 	case <-stop:
-		return a.shutdown(server)
+		return a.shutdown(servers)
 	}
 }
 
-func (a *App) shutdown(server *http.Server) error {
+func (a *App) shutdown(servers []*http.Server) error {
 	ctx, cancel := context.WithTimeout(context.Background(), a.cfg.GracefulTimeout)
 	defer cancel()
 
-	if err := server.Shutdown(ctx); err != nil {
-		return fmt.Errorf("shutdown server: %w", err)
+	for _, server := range servers {
+		if server == nil {
+			continue
+		}
+		if err := server.Shutdown(ctx); err != nil {
+			return fmt.Errorf("shutdown server on %s: %w", server.Addr, err)
+		}
 	}
 
 	for _, c := range a.closers {

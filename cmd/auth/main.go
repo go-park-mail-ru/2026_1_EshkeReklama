@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"eshkere/internal/observability"
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
@@ -34,6 +37,7 @@ func main() {
 	vkIDRedirectURI := envOr("AUTH_VKID_REDIRECT_URI", "")
 	vkIDDomain := envOr("AUTH_VKID_DOMAIN", "id.vk.ru")
 	vkIDTimeout := envDuration("AUTH_VKID_TIMEOUT", 5*time.Second)
+	metricsAddr := envOr("AUTH_METRICS_ADDR", "")
 
 	db, err := initPostgres(pgDSN)
 	if err != nil {
@@ -53,8 +57,10 @@ func main() {
 	store := authsession.NewRedisStore(redisPool)
 	sessionMgr := authsession.NewManager(store, sessionTTL)
 
-	grpcServer := grpc.NewServer()
+	metrics := observability.NewMetrics("auth")
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(metrics.UnaryServerInterceptor()))
 	authv1.RegisterAuthServiceServer(grpcServer, authserver.New(credsSvc, sessionMgr))
+	metricsServer := observability.NewMetricsServer(metricsAddr, metrics)
 
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -68,7 +74,23 @@ func main() {
 		<-quit
 		log.Println("shutting down auth gRPC server...")
 		grpcServer.GracefulStop()
+		if metricsServer != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if err := metricsServer.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
+				log.Printf("shutdown auth metrics server: %v", err)
+			}
+		}
 	}()
+
+	if metricsServer != nil {
+		go func() {
+			log.Printf("auth metrics listening on %s", metricsAddr)
+			if err := metricsServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Fatalf("metrics serve: %v", err)
+			}
+		}()
+	}
 
 	log.Printf("auth gRPC listening on %s", addr)
 	if err := grpcServer.Serve(lis); err != nil {

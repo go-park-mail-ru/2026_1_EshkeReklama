@@ -59,6 +59,8 @@ func (s *Service) RequestAd(ctx context.Context, embedToken, visitorID string) (
 		return nil, err
 	}
 
+	s.decorateAdImageURL(selection.ad)
+
 	return &AdRequestResult{
 		RequestID: requestID,
 		Ad:        selection.ad,

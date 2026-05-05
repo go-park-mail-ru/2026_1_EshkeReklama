@@ -3000,16 +3000,17 @@ const docTemplate = `{
         "dto.CreateAdCampaignRequest": {
             "type": "object",
             "required": [
+                "cpm_price",
+                "daily_budget",
+                "main_action",
                 "name"
             ],
             "properties": {
                 "cpm_price": {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "integer"
                 },
                 "daily_budget": {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "integer"
                 },
                 "main_action": {
                     "type": "string"

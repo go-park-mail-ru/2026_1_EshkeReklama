@@ -7,6 +7,7 @@ import (
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -113,6 +114,9 @@ func (s *Service) DeleteAd(ctx context.Context, adID int) error {
 
 func (s *Service) decorateAdImageURL(ad *models.Ad) {
 	if s == nil || s.adStorage == nil || ad == nil {
+		return
+	}
+	if ad.ImageURL == "" || strings.HasPrefix(ad.ImageURL, "http://") || strings.HasPrefix(ad.ImageURL, "https://") {
 		return
 	}
 

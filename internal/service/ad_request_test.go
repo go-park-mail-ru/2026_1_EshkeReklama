@@ -170,6 +170,45 @@ func TestRequestAdSavesClickContext(t *testing.T) {
 	}
 }
 
+func TestRequestAdDecoratesStoredImageURL(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	blockRepo := NewMockPartnerBlockRepository(ctrl)
+	adRepo := NewMockAdRepository(ctrl)
+	svc, _ := NewService(&Config{
+		PartnerBlockRepo: blockRepo,
+		AdRepo:           adRepo,
+		AdStorage:        fakeAdStorage{baseURL: "https://cdn.example.com"},
+	})
+
+	blockRepo.EXPECT().
+		GetByEmbedToken(gomock.Any(), "pb").
+		Return(&models.PartnerBlock{ID: 7, EmbedToken: "pb", RevenueShareBPS: 0}, nil)
+	adRepo.EXPECT().
+		ListAdCandidates(gomock.Any(), gomock.Any()).
+		Return([]*models.AdCandidate{
+			{
+				CampaignID:        3,
+				AdvertiserID:      4,
+				DailyBudget:       1000,
+				CPMPrice:          20000,
+				SpentToday:        0,
+				AdvertiserBalance: 1000,
+				Ad:                &models.Ad{ID: 9, ImageURL: "ads/banner.png"},
+			},
+		}, nil)
+	adRepo.EXPECT().ReserveImpression(gomock.Any(), gomock.Any()).Return(true, nil)
+
+	result, err := svc.RequestAd(context.Background(), "pb", "")
+	if err != nil {
+		t.Fatalf("RequestAd: %v", err)
+	}
+	if result.Ad.ImageURL != "https://cdn.example.com/ads/banner.png" {
+		t.Fatalf("unexpected image url: %s", result.Ad.ImageURL)
+	}
+}
+
 func TestClickAdTracksProfileAndReturnsTarget(t *testing.T) {
 	store := &fakeAdRequestStore{record: &AdRequestRecord{
 		RequestID: "req",
@@ -228,3 +267,19 @@ func (c *fakeProfileClient) TrackEvent(_ context.Context, visitorID string, topi
 }
 
 var errNotFoundForTest = context.Canceled
+
+type fakeAdStorage struct {
+	baseURL string
+}
+
+func (s fakeAdStorage) UploadAdImage(context.Context, []byte, string, string) (string, error) {
+	return "", nil
+}
+
+func (s fakeAdStorage) DeleteAdImage(context.Context, string) error {
+	return nil
+}
+
+func (s fakeAdStorage) GetAdImageURL(imageKey string) string {
+	return s.baseURL + "/" + imageKey
+}

@@ -69,8 +69,8 @@ const (
 
 	upsertCampaignDailySpend = `INSERT INTO eshkere.ad_campaign_daily_spend (
 		campaign_id, spend_date, advertiser_spend, partner_reward, platform_revenue, impressions
-	) SELECT $1, $2, $3, $4, $5, 1
-	WHERE $3 <= $6
+	) SELECT $1::INT, $2::DATE, $3::BIGINT, $4::BIGINT, $5::BIGINT, 1
+	WHERE $3::BIGINT <= $6::BIGINT
 	ON CONFLICT (campaign_id, spend_date)
 	DO UPDATE SET
 		advertiser_spend = eshkere.ad_campaign_daily_spend.advertiser_spend + EXCLUDED.advertiser_spend,
@@ -78,7 +78,7 @@ const (
 		platform_revenue = eshkere.ad_campaign_daily_spend.platform_revenue + EXCLUDED.platform_revenue,
 		impressions = eshkere.ad_campaign_daily_spend.impressions + 1,
 		updated_at = NOW()
-	WHERE eshkere.ad_campaign_daily_spend.advertiser_spend + EXCLUDED.advertiser_spend <= $6`
+	WHERE eshkere.ad_campaign_daily_spend.advertiser_spend + EXCLUDED.advertiser_spend <= $6::BIGINT`
 
 	upsertPartnerBlockDailyEarning = `INSERT INTO eshkere.partner_block_daily_earning (
 		partner_block_id, earning_date, reward, impressions

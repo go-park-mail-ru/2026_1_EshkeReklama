@@ -7,9 +7,9 @@ import (
 
 type CreateAdCampaignRequest struct {
 	Name        string `json:"name" validate:"required"`
-	DailyBudget int64  `json:"daily_budget" validate:"omitempty,gte=0"`
-	CPMPrice    int64  `json:"cpm_price" validate:"omitempty,gte=0"`
-	MainAction  string `json:"main_action" validate:"omitempty"`
+	DailyBudget int64  `json:"daily_budget" validate:"required,gt=0"`
+	CPMPrice    int64  `json:"cpm_price" validate:"required,gt=0"`
+	MainAction  string `json:"main_action" validate:"required"`
 }
 
 func (c *CreateAdCampaignRequest) ToInput(advertiserID int) *serviceinput.CreateAdCampaign {

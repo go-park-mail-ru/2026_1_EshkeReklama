@@ -475,83 +475,123 @@ var partnerBlockFrameTemplate = template.Must(template.New("partner-block-frame"
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <base target="_blank">
   <style>
-    * { box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; margin: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; }
     body {
-      font-family: Arial, sans-serif;
-      color: #171a1f;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
       background: #fff;
       overflow: hidden;
     }
     .ad {
       display: flex;
+      flex-direction: column;
       width: 100%;
       height: 100vh;
-      min-height: 120px;
-      gap: 10px;
-      padding: 10px;
-      border: 1px solid #dfe3ea;
       text-decoration: none;
       color: inherit;
       background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #e8eaf0;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      transition: box-shadow .15s ease;
     }
-    .ad:hover .title { text-decoration: underline; }
-    .image {
-      flex: 0 0 38%;
-      min-width: 88px;
-      border-radius: 6px;
-      object-fit: cover;
+    .ad:hover { box-shadow: 0 4px 20px rgba(0,0,0,.12); }
+    .image-wrap {
+      width: 100%;
+      flex: 0 0 52%;
       background: #eef1f6;
+      overflow: hidden;
+    }
+    .image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .image-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #e8eaf0 0%, #d0d4e0 100%);
     }
     .content {
       display: flex;
-      min-width: 0;
-      flex: 1;
       flex-direction: column;
-      justify-content: center;
+      flex: 1;
+      padding: 12px 14px 10px;
       gap: 6px;
+      min-height: 0;
     }
-    .label {
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .domain {
       font-size: 11px;
-      line-height: 1.2;
-      color: #697386;
+      font-weight: 600;
+      color: #5b6aff;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 60%;
+    }
+    .ad-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #8c96a8;
+      background: #f0f2f5;
+      border-radius: 4px;
+      padding: 2px 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
       text-transform: uppercase;
+      letter-spacing: .3px;
     }
     .title {
-      display: -webkit-box;
-      overflow: hidden;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
-      line-height: 1.2;
+      line-height: 1.25;
+      color: #111827;
+      display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
+      overflow: hidden;
     }
     .desc {
+      font-size: 12px;
+      line-height: 1.4;
+      color: #6b7280;
       display: -webkit-box;
-      overflow: hidden;
-      font-size: 13px;
-      line-height: 1.3;
-      color: #4f5b6b;
-      -webkit-line-clamp: 3;
+      -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
+      overflow: hidden;
+      flex: 1;
     }
+    .btn {
+      display: inline-block;
+      margin-top: auto;
+      padding: 7px 14px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+      align-self: flex-start;
+      transition: background .15s ease;
+    }
+    .ad:hover .btn { background: #e5e7eb; }
     .placeholder {
       display: grid;
       width: 100%;
       height: 100vh;
-      min-height: 120px;
       place-items: center;
-      border: 1px solid #dfe3ea;
-      color: #697386;
+      color: #9ca3af;
       font-size: 13px;
-      text-align: center;
-      background: #f7f8fa;
-    }
-    @media (max-width: 220px) {
-      .ad { flex-direction: column; }
-      .image { flex: 0 0 45%; width: 100%; min-width: 0; }
-      .title { font-size: 14px; }
-      .desc { font-size: 12px; -webkit-line-clamp: 2; }
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: #f9fafb;
+      border-radius: 16px;
+      border: 1px solid #e8eaf0;
     }
   </style>
 </head>
@@ -573,13 +613,14 @@ var partnerBlockFrameTemplate = template.Must(template.New("partner-block-frame"
             window.localStorage.setItem(visitorKey, id);
           }
           return id;
-        } catch (err) {
-          return "";
-        }
+        } catch (e) { return ""; }
       }
 
-      function text(value) {
-        return value == null ? "" : String(value);
+      function text(v) { return v == null ? "" : String(v); }
+
+      function extractDomain(url) {
+        try { return new URL(url).hostname.replace(/^www\./, ""); }
+        catch (e) { return ""; }
       }
 
       function renderFallback() {
@@ -589,10 +630,7 @@ var partnerBlockFrameTemplate = template.Must(template.New("partner-block-frame"
 
       function renderAd(payload) {
         const ad = payload && payload.ad;
-        if (!ad || !payload.click_url) {
-          renderFallback();
-          return;
-        }
+        if (!ad || !payload.click_url) { renderFallback(); return; }
 
         root.className = "";
         root.textContent = "";
@@ -602,34 +640,62 @@ var partnerBlockFrameTemplate = template.Must(template.New("partner-block-frame"
         link.href = text(payload.click_url);
         link.rel = "noopener sponsored";
 
+        // Картинка сверху
+        const imageWrap = document.createElement("div");
+        imageWrap.className = "image-wrap";
         if (ad.image_url) {
           const img = document.createElement("img");
           img.className = "image";
           img.src = text(ad.image_url);
           img.alt = "";
           img.loading = "lazy";
-          link.appendChild(img);
+          imageWrap.appendChild(img);
+        } else {
+          const ph = document.createElement("div");
+          ph.className = "image-placeholder";
+          imageWrap.appendChild(ph);
         }
+        link.appendChild(imageWrap);
 
+        // Контент
         const content = document.createElement("div");
         content.className = "content";
 
-        const label = document.createElement("div");
-        label.className = "label";
-        label.textContent = "Реклама";
-        content.appendChild(label);
+        // Домен + лейбл «Реклама»
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        const domain = extractDomain(text(ad.target_url));
+        if (domain) {
+          const domainEl = document.createElement("span");
+          domainEl.className = "domain";
+          domainEl.textContent = domain;
+          meta.appendChild(domainEl);
+        }
+        const adLabel = document.createElement("span");
+        adLabel.className = "ad-label";
+        adLabel.textContent = "Реклама";
+        meta.appendChild(adLabel);
+        content.appendChild(meta);
 
+        // Заголовок
         const title = document.createElement("div");
         title.className = "title";
         title.textContent = text(ad.title);
         content.appendChild(title);
 
+        // Описание
         if (ad.short_desc) {
           const desc = document.createElement("div");
           desc.className = "desc";
           desc.textContent = text(ad.short_desc);
           content.appendChild(desc);
         }
+
+        // Кнопка
+        const btn = document.createElement("span");
+        btn.className = "btn";
+        btn.textContent = "Узнать подробнее";
+        content.appendChild(btn);
 
         link.appendChild(content);
         root.appendChild(link);
@@ -640,15 +706,8 @@ var partnerBlockFrameTemplate = template.Must(template.New("partner-block-frame"
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ embed_token: embedToken, visitor_id: visitorId() })
       })
-        .then(function (response) {
-          if (!response.ok) {
-            throw new Error("ad request failed");
-          }
-          return response.json();
-        })
-        .then(function (envelope) {
-          renderAd(envelope && envelope.data);
-        })
+        .then(function(r) { if (!r.ok) throw new Error(); return r.json(); })
+        .then(function(envelope) { renderAd(envelope && envelope.data); })
         .catch(renderFallback);
     })();
   </script>

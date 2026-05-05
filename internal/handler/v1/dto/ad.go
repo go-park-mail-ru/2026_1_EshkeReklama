@@ -113,6 +113,7 @@ func ToListAdsResponse(groupID int, ads []*models.Ad) ListAdsResponse {
 
 type AdRequest struct {
 	EmbedToken string `json:"embed_token" validate:"required"`
+	VisitorID  string `json:"visitor_id"`
 }
 
 type AdRequestResponse struct {

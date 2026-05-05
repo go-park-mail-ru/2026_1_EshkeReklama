@@ -254,8 +254,6 @@ func ToPartnerBlockDetailsResponse(block *models.PartnerBlock, rules []*models.P
 }
 
 type PartnerBlockEmbedResponse struct {
-	BlockID     int    `json:"block_id"`
 	EmbedToken  string `json:"embed_token"`
-	IframeURL   string `json:"iframe_url"`
 	HTMLSnippet string `json:"html_snippet"`
 }

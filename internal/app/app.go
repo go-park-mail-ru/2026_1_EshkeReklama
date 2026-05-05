@@ -3,11 +3,13 @@ package app
 import (
 	"context"
 	authclient "eshkere/internal/client/auth"
+	profileclient "eshkere/internal/client/profile"
 	"eshkere/internal/config"
 	"eshkere/internal/handler"
 	middleware2 "eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1"
 	"eshkere/internal/repository/postgres"
+	redisrepo "eshkere/internal/repository/redis"
 	"eshkere/internal/service"
 	"fmt"
 	"io"
@@ -23,11 +25,12 @@ import (
 )
 
 type App struct {
-	cfg        *config.Config
-	logger     *zap.SugaredLogger
-	closers    []io.Closer
-	service    *service.Service
-	authClient *authclient.Client
+	cfg           *config.Config
+	logger        *zap.SugaredLogger
+	closers       []io.Closer
+	service       *service.Service
+	authClient    *authclient.Client
+	profileClient *profileclient.Client
 }
 
 func New(configPath string) *App {
@@ -54,6 +57,12 @@ func New(configPath string) *App {
 
 	closers = append([]io.Closer{db}, closers...)
 
+	redisPool, err := initRedis(cfg.Redis)
+	if err != nil {
+		logger.Fatalf("Failed to init Redis: %v", err)
+	}
+	closers = append(closers, redisPool)
+
 	advertiserRepo := postgres.NewAdvertiserRepository(db)
 	partnerRepo := postgres.NewPartnerRepository(db)
 	partnerSiteRepo := postgres.NewPartnerSiteRepository(db)
@@ -64,6 +73,7 @@ func New(configPath string) *App {
 	adCampaignRepo := postgres.NewAdCampaignRepository(db)
 	feedLinkRepo := postgres.NewFeedLinkRepository(db)
 	appealRepo := postgres.NewAppealRepository(db)
+	adRequestStore := redisrepo.NewAdRequestStore(redisPool)
 
 	s3Client, err := s3.NewClient(context.Background(), s3.Config{
 		Region:          cfg.S3.Region,
@@ -99,6 +109,8 @@ func New(configPath string) *App {
 		AdActionRepo:            nil,
 		TopicRepo:               nil,
 		RegionRepo:              nil,
+		ProfileClient:           nil,
+		AdRequestStore:          adRequestStore,
 	})
 	if err != nil {
 		logger.Fatalf("Failed to init service: %v", err)
@@ -112,12 +124,20 @@ func New(configPath string) *App {
 	}
 	closers = append(closers, ac)
 
+	pc, err := profileclient.New(cfg.ProfileService.GRPCAddr)
+	if err != nil {
+		logger.Fatalf("Failed to connect to profile service: %v", err)
+	}
+	closers = append(closers, pc)
+	svc.SetProfileClient(pc)
+
 	return &App{
-		cfg:        cfg,
-		logger:     logger,
-		closers:    closers,
-		service:    svc,
-		authClient: ac,
+		cfg:           cfg,
+		logger:        logger,
+		closers:       closers,
+		service:       svc,
+		authClient:    ac,
+		profileClient: pc,
 	}
 }
 
@@ -141,7 +161,6 @@ func (a *App) Run() error {
 			HTTPOnly: true,
 			Secure:   a.cfg.Session.CookieSecure,
 		},
-		AdSDKURL: a.cfg.AdSDK.URL,
 		VKIDConfig: v1.VKIDConfig{
 			ClientID:           a.cfg.VKID.ClientID,
 			RedirectURI:        a.cfg.VKID.RedirectURI,

@@ -1019,6 +1019,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/advertisers/login/vk": {
+            "post": {
+                "description": "Аутентифицирует рекламодателя по VK ID authorization code и открывает сессию",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "advertiser"
+                ],
+                "summary": "Вход рекламодателя через VK ID",
+                "parameters": [
+                    {
+                        "description": "code, device_id и code_verifier от VK ID",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.VKIDLoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/advertisers/logout": {
             "post": {
                 "description": "Завершает сессию текущего рекламодателя",
@@ -2824,6 +2882,9 @@ const docTemplate = `{
             "properties": {
                 "embed_token": {
                     "type": "string"
+                },
+                "visitor_id": {
+                    "type": "string"
                 }
             }
         },
@@ -3231,16 +3292,10 @@ const docTemplate = `{
         "dto.PartnerBlockEmbedResponse": {
             "type": "object",
             "properties": {
-                "block_id": {
-                    "type": "integer"
-                },
                 "embed_token": {
                     "type": "string"
                 },
                 "html_snippet": {
-                    "type": "string"
-                },
-                "iframe_url": {
                     "type": "string"
                 }
             }
@@ -3781,6 +3836,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VKIDLoginRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "code_verifier": {
+                    "type": "string"
+                },
+                "device_id": {
                     "type": "string"
                 }
             }

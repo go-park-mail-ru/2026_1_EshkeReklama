@@ -276,17 +276,30 @@ func (mr *MockServiceMockRecorder) GetAdByFeedToken(ctx, token any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdByFeedToken", reflect.TypeOf((*MockService)(nil).GetAdByFeedToken), ctx, token)
 }
 
-func (m *MockService) RequestAd(ctx context.Context, embedToken string) (*service.AdRequestResult, error) {
+func (m *MockService) RequestAd(ctx context.Context, embedToken, visitorID string) (*service.AdRequestResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RequestAd", ctx, embedToken)
+	ret := m.ctrl.Call(m, "RequestAd", ctx, embedToken, visitorID)
 	ret0, _ := ret[0].(*service.AdRequestResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (mr *MockServiceMockRecorder) RequestAd(ctx, embedToken any) *gomock.Call {
+func (mr *MockServiceMockRecorder) RequestAd(ctx, embedToken, visitorID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequestAd", reflect.TypeOf((*MockService)(nil).RequestAd), ctx, embedToken)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequestAd", reflect.TypeOf((*MockService)(nil).RequestAd), ctx, embedToken, visitorID)
+}
+
+func (m *MockService) ClickAd(ctx context.Context, requestID string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ClickAd", ctx, requestID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (mr *MockServiceMockRecorder) ClickAd(ctx, requestID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClickAd", reflect.TypeOf((*MockService)(nil).ClickAd), ctx, requestID)
 }
 
 func (m *MockService) CreatePartnerProfile(ctx context.Context, in *input.CreatePartnerProfile) error {
@@ -415,14 +428,13 @@ func (m *MockService) DeletePartnerBlock(ctx context.Context, partnerID, siteID,
 	return ret0
 }
 
-func (m *MockService) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, error) {
+func (m *MockService) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPartnerBlockEmbedCode", ctx, partnerID, siteID, blockID, baseURL)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(string)
-	ret3, _ := ret[3].(error)
-	return ret0, ret1, ret2, ret3
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 func (m *MockService) ListPartnerCountries(ctx context.Context) []service.DictionaryItem {

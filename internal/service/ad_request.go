@@ -8,8 +8,14 @@ import (
 	errs "eshkere/internal/errors"
 	"eshkere/internal/models"
 	"fmt"
+	"math"
 	"math/big"
 	"time"
+)
+
+const (
+	adRequestTTL   = 24 * time.Hour
+	EventTypeClick = "click"
 )
 
 type AdRequestResult struct {
@@ -17,7 +23,12 @@ type AdRequestResult struct {
 	Ad        *models.Ad
 }
 
-func (s *Service) RequestAd(ctx context.Context, embedToken string) (*AdRequestResult, error) {
+type adSelection struct {
+	ad      *models.Ad
+	topicID int
+}
+
+func (s *Service) RequestAd(ctx context.Context, embedToken, visitorID string) (*AdRequestResult, error) {
 	if embedToken == "" {
 		return nil, fmt.Errorf("%w: empty embed token", errs.BadRequestError)
 	}
@@ -29,7 +40,9 @@ func (s *Service) RequestAd(ctx context.Context, embedToken string) (*AdRequestR
 		}
 		return nil, err
 	}
-	ad, err := s.selectAndReserveAd(ctx, block)
+
+	topicScores := s.profileTopicScores(ctx, visitorID)
+	selection, err := s.selectAndReserveAd(ctx, block, topicScores)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("%w: eligible ad not found", errs.NotFoundError)
@@ -42,10 +55,69 @@ func (s *Service) RequestAd(ctx context.Context, embedToken string) (*AdRequestR
 		return nil, fmt.Errorf("generate request id: %w", err)
 	}
 
+	if err := s.saveAdRequest(ctx, requestID, visitorID, selection); err != nil {
+		return nil, err
+	}
+
 	return &AdRequestResult{
 		RequestID: requestID,
-		Ad:        ad,
+		Ad:        selection.ad,
 	}, nil
+}
+
+func (s *Service) ClickAd(ctx context.Context, requestID string) (string, error) {
+	if requestID == "" {
+		return "", fmt.Errorf("%w: empty request id", errs.BadRequestError)
+	}
+	if s.adRequestStore == nil {
+		return "", fmt.Errorf("%w: ad request store is not configured", errs.NotFoundError)
+	}
+
+	record, err := s.adRequestStore.Get(ctx, requestID)
+	if err != nil {
+		return "", fmt.Errorf("%w: ad request not found", errs.NotFoundError)
+	}
+	if record.TargetURL == "" {
+		return "", fmt.Errorf("%w: empty target url", errs.NotFoundError)
+	}
+
+	if s.profileClient != nil && record.VisitorID != "" && record.TopicID > 0 {
+		_ = s.profileClient.TrackEvent(ctx, record.VisitorID, record.TopicID, EventTypeClick)
+	}
+
+	return record.TargetURL, nil
+}
+
+func (s *Service) profileTopicScores(ctx context.Context, visitorID string) map[int]float64 {
+	if visitorID == "" || s.profileClient == nil {
+		return nil
+	}
+
+	topics, found, err := s.profileClient.GetProfile(ctx, visitorID)
+	if err != nil || !found || len(topics) == 0 {
+		return nil
+	}
+
+	out := make(map[int]float64, len(topics))
+	for _, topic := range topics {
+		if topic.TopicID > 0 && topic.Score > 0 {
+			out[topic.TopicID] = topic.Score
+		}
+	}
+	return out
+}
+
+func (s *Service) saveAdRequest(ctx context.Context, requestID, visitorID string, selection *adSelection) error {
+	if s.adRequestStore == nil || selection == nil || selection.ad == nil {
+		return nil
+	}
+	return s.adRequestStore.Save(ctx, AdRequestRecord{
+		RequestID: requestID,
+		VisitorID: visitorID,
+		AdID:      selection.ad.ID,
+		TopicID:   selection.topicID,
+		TargetURL: selection.ad.TargetURL,
+	}, adRequestTTL)
 }
 
 type campaignCandidate struct {
@@ -57,17 +129,23 @@ type campaignCandidate struct {
 	advertiserBalance int64
 	impressionPrice   int64
 	weight            int64
-	ads               []*models.Ad
+	ads               []adOption
 }
 
-func (s *Service) selectAndReserveAd(ctx context.Context, block *models.PartnerBlock) (*models.Ad, error) {
+type adOption struct {
+	ad      *models.Ad
+	topicID int
+	score   float64
+}
+
+func (s *Service) selectAndReserveAd(ctx context.Context, block *models.PartnerBlock, topicScores map[int]float64) (*adSelection, error) {
 	spendDate := dateOnly(time.Now().UTC())
 	rawCandidates, err := s.adRepo.ListAdCandidates(ctx, spendDate)
 	if err != nil {
 		return nil, err
 	}
 
-	candidates := groupEligibleCandidates(rawCandidates)
+	candidates := groupEligibleCandidates(rawCandidates, topicScores)
 	for len(candidates) > 0 {
 		index, err := weightedCampaignIndex(candidates)
 		if err != nil {
@@ -75,7 +153,7 @@ func (s *Service) selectAndReserveAd(ctx context.Context, block *models.PartnerB
 		}
 
 		candidate := candidates[index]
-		ad, err := randomAd(candidate.ads)
+		option, err := randomAd(candidate.ads)
 		if err != nil {
 			return nil, err
 		}
@@ -95,7 +173,7 @@ func (s *Service) selectAndReserveAd(ctx context.Context, block *models.PartnerB
 			return nil, err
 		}
 		if reserved {
-			return ad, nil
+			return &adSelection{ad: option.ad, topicID: option.topicID}, nil
 		}
 
 		candidates = append(candidates[:index], candidates[index+1:]...)
@@ -104,7 +182,7 @@ func (s *Service) selectAndReserveAd(ctx context.Context, block *models.PartnerB
 	return nil, sql.ErrNoRows
 }
 
-func groupEligibleCandidates(rawCandidates []*models.AdCandidate) []*campaignCandidate {
+func groupEligibleCandidates(rawCandidates []*models.AdCandidate, topicScores map[int]float64) []*campaignCandidate {
 	byCampaign := make(map[int]*campaignCandidate)
 	for _, raw := range rawCandidates {
 		if raw == nil || raw.Ad == nil {
@@ -120,8 +198,10 @@ func groupEligibleCandidates(rawCandidates []*models.AdCandidate) []*campaignCan
 			continue
 		}
 
+		topicScore := topicScores[raw.TopicID]
 		candidate, ok := byCampaign[raw.CampaignID]
 		if !ok {
+			baseWeight := raw.DailyBudget - raw.SpentToday
 			candidate = &campaignCandidate{
 				campaignID:        raw.CampaignID,
 				advertiserID:      raw.AdvertiserID,
@@ -130,12 +210,17 @@ func groupEligibleCandidates(rawCandidates []*models.AdCandidate) []*campaignCan
 				spentToday:        raw.SpentToday,
 				advertiserBalance: raw.AdvertiserBalance,
 				impressionPrice:   price,
-				weight:            raw.DailyBudget - raw.SpentToday,
-				ads:               make([]*models.Ad, 0, 1),
+				weight:            personalizedWeight(baseWeight, topicScore),
+				ads:               make([]adOption, 0, 1),
 			}
 			byCampaign[raw.CampaignID] = candidate
+		} else if topicScore > 0 {
+			baseWeight := raw.DailyBudget - raw.SpentToday
+			if weight := personalizedWeight(baseWeight, topicScore); weight > candidate.weight {
+				candidate.weight = weight
+			}
 		}
-		candidate.ads = append(candidate.ads, raw.Ad)
+		candidate.ads = append(candidate.ads, adOption{ad: raw.Ad, topicID: raw.TopicID, score: topicScore})
 	}
 
 	out := make([]*campaignCandidate, 0, len(byCampaign))
@@ -145,6 +230,17 @@ func groupEligibleCandidates(rawCandidates []*models.AdCandidate) []*campaignCan
 		}
 	}
 	return out
+}
+
+func personalizedWeight(baseWeight int64, topicScore float64) int64 {
+	if baseWeight <= 0 {
+		return 0
+	}
+	if topicScore <= 0 {
+		return baseWeight
+	}
+	multiplier := 1 + math.Min(topicScore, 20)/10
+	return int64(float64(baseWeight) * multiplier)
 }
 
 func ImpressionPrice(cpmPrice int64) int64 {
@@ -179,15 +275,26 @@ func weightedCampaignIndex(candidates []*campaignCandidate) (int, error) {
 	return len(candidates) - 1, nil
 }
 
-func randomAd(ads []*models.Ad) (*models.Ad, error) {
+func randomAd(ads []adOption) (*adOption, error) {
 	if len(ads) == 0 {
 		return nil, sql.ErrNoRows
 	}
+
+	preferred := make([]adOption, 0, len(ads))
+	for _, ad := range ads {
+		if ad.score > 0 {
+			preferred = append(preferred, ad)
+		}
+	}
+	if len(preferred) > 0 {
+		ads = preferred
+	}
+
 	n, err := rand.Int(rand.Reader, big.NewInt(int64(len(ads))))
 	if err != nil {
 		return nil, fmt.Errorf("select random ad: %w", err)
 	}
-	return ads[n.Int64()], nil
+	return &ads[n.Int64()], nil
 }
 
 func dateOnly(t time.Time) time.Time {

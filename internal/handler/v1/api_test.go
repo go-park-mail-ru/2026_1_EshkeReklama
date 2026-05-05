@@ -120,7 +120,8 @@ type stubService struct {
 	topUpAdvertiserBalanceFn    func(ctx context.Context, advertiserID int, amount int64) (int64, error)
 	generateFeedLinkFn          func(ctx context.Context, campaignID int) (string, error)
 	getAdsByFeedTokenFn         func(ctx context.Context, token string) ([]*models.Ad, error)
-	requestAdFn                 func(ctx context.Context, embedToken string) (*service.AdRequestResult, error)
+	requestAdFn                 func(ctx context.Context, embedToken, visitorID string) (*service.AdRequestResult, error)
+	clickAdFn                   func(ctx context.Context, requestID string) (string, error)
 	createAdCampaignFn          func(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error)
 	updateAdCampaignFn          func(ctx context.Context, in *serviceinput.UpdateAdCampaign) error
 	listAdCampaignsFn           func(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
@@ -152,7 +153,7 @@ type stubService struct {
 	updatePartnerBlockGeoFn     func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockGeography) ([]*models.PartnerBlockGeoRule, error)
 	updatePartnerBlockSelfAdFn  func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockSelfAd) (*models.PartnerBlock, error)
 	deletePartnerBlockFn        func(ctx context.Context, partnerID, siteID, blockID int) error
-	getPartnerBlockEmbedCodeFn  func(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, error)
+	getPartnerBlockEmbedCodeFn  func(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, error)
 }
 
 func (s *stubService) CreateAdvertiserProfile(ctx context.Context, id int64, name, email string) error {
@@ -218,11 +219,18 @@ func (s *stubService) GetAdsByFeedToken(ctx context.Context, token string) ([]*m
 	return nil, nil
 }
 
-func (s *stubService) RequestAd(ctx context.Context, embedToken string) (*service.AdRequestResult, error) {
+func (s *stubService) RequestAd(ctx context.Context, embedToken, visitorID string) (*service.AdRequestResult, error) {
 	if s.requestAdFn != nil {
-		return s.requestAdFn(ctx, embedToken)
+		return s.requestAdFn(ctx, embedToken, visitorID)
 	}
 	return nil, nil
+}
+
+func (s *stubService) ClickAd(ctx context.Context, requestID string) (string, error) {
+	if s.clickAdFn != nil {
+		return s.clickAdFn(ctx, requestID)
+	}
+	return "", nil
 }
 
 func (s *stubService) CreateAdCampaign(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error) {
@@ -442,11 +450,11 @@ func (s *stubService) DeletePartnerBlock(ctx context.Context, partnerID, siteID,
 	return nil
 }
 
-func (s *stubService) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, error) {
+func (s *stubService) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, error) {
 	if s.getPartnerBlockEmbedCodeFn != nil {
 		return s.getPartnerBlockEmbedCodeFn(ctx, partnerID, siteID, blockID, baseURL)
 	}
-	return "", "", "", nil
+	return "", "", nil
 }
 
 func (s *stubService) ListPartnerCountries(ctx context.Context) []service.DictionaryItem { return nil }

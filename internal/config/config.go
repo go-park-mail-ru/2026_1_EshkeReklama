@@ -61,10 +61,6 @@ type AuthServiceConfig struct {
 	GRPCAddr string `yaml:"grpc_addr"`
 }
 
-type AdSDKConfig struct {
-	URL string `yaml:"url"`
-}
-
 type VKIDConfig struct {
 	ClientID           int64  `yaml:"client_id"`
 	RedirectURI        string `yaml:"redirect_uri"`
@@ -74,17 +70,21 @@ type VKIDConfig struct {
 	ErrorRedirectURL   string `yaml:"error_redirect_url"`
 }
 
+type ProfileServiceConfig struct {
+	GRPCAddr string `yaml:"grpc_addr"`
+}
+
 type Config struct {
-	HTTPServer      HTTPServerConfig  `yaml:"http_server"`
-	Postgres        PostgresConfig    `yaml:"postgres"`
-	Redis           RedisConfig       `yaml:"redis"`
-	Session         SessionConfig     `yaml:"session"`
-	AuthService     AuthServiceConfig `yaml:"auth_service"`
-	VKID            VKIDConfig        `yaml:"vkid"`
-	AdSDK           AdSDKConfig       `yaml:"ad_sdk"`
-	S3              S3Config          `yaml:"s3"`
-	CORS            CORSConfig        `yaml:"cors"`
-	GracefulTimeout time.Duration     `yaml:"graceful_timeout"`
+	HTTPServer      HTTPServerConfig     `yaml:"http_server"`
+	Postgres        PostgresConfig       `yaml:"postgres"`
+	Redis           RedisConfig          `yaml:"redis"`
+	Session         SessionConfig        `yaml:"session"`
+	AuthService     AuthServiceConfig    `yaml:"auth_service"`
+	ProfileService  ProfileServiceConfig `yaml:"profile_service"`
+	VKID            VKIDConfig           `yaml:"vkid"`
+	S3              S3Config             `yaml:"s3"`
+	CORS            CORSConfig           `yaml:"cors"`
+	GracefulTimeout time.Duration        `yaml:"graceful_timeout"`
 }
 
 func ReadConfig(path string) (*Config, error) {

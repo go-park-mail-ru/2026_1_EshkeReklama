@@ -22,6 +22,22 @@ services:
     ports:
       - "50051:50051"
 
+  profile:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: profile
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_started
+    environment:
+      PROFILE_GRPC_ADDR: :50052
+      PROFILE_REDIS_ADDR: redis:6379
+      PROFILE_REDIS_PASSWORD: ${REDIS_PASSWORD:-password}
+    ports:
+      - "50052:50052"
+
   app:
     build:
       context: .
@@ -39,6 +55,8 @@ services:
         condition: service_started
       auth:
         condition: service_started
+      profile:
+        condition: service_started
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_DB: ${POSTGRES_DB:-eshkere}
@@ -53,13 +71,13 @@ services:
       S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
       S3_PUBLIC_BASE_URL: ${S3_PUBLIC_BASE_URL:-http://localhost:9000/eshkere}
       AUTH_GRPC_ADDR: auth:50051
+      PROFILE_GRPC_ADDR: profile:50052
       AUTH_VKID_CLIENT_ID: ${AUTH_VKID_CLIENT_ID:-}
       AUTH_VKID_REDIRECT_URI: ${AUTH_VKID_REDIRECT_URI:-}
       AUTH_VKID_DOMAIN: ${AUTH_VKID_DOMAIN:-id.vk.ru}
       VKID_SCOPE: ${VKID_SCOPE:-email phone}
       VKID_DEFAULT_REDIRECT_URL: ${VKID_DEFAULT_REDIRECT_URL:-http://localhost:8080/}
       VKID_ERROR_REDIRECT_URL: ${VKID_ERROR_REDIRECT_URL:-http://localhost:8080/login}
-      AD_SDK_URL: ${AD_SDK_URL:-http://localhost:8080/ad-sdk.js}
     ports:
       - "8000:8000"
 

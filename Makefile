@@ -6,7 +6,8 @@ proto:
 		--go_opt=module=eshkere \
 		--go-grpc_out=. \
 		--go-grpc_opt=module=eshkere \
-		proto/auth/v1/auth.proto
+		proto/auth/v1/auth.proto \
+		proto/profile/v1/profile.proto
 
 up:
 	docker compose up -d --build

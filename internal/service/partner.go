@@ -451,15 +451,15 @@ func (s *Service) SettlePartnerDailyEarnings(ctx context.Context, earningDate ti
 	return s.partnerRepo.SettleDailyEarnings(ctx, dateOnly(earningDate.UTC()))
 }
 
-func (s *Service) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, error) {
+func (s *Service) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, error) {
 	block, _, err := s.GetPartnerBlock(ctx, partnerID, siteID, blockID)
 	if err != nil {
-		return "", "", "", err
+		return "", "", err
 	}
 	base := strings.TrimRight(baseURL, "/")
 	iframeURL := fmt.Sprintf("%s/public/partner/blocks/%s/frame", base, block.EmbedToken)
 	htmlSnippet := fmt.Sprintf(`<iframe src="%s" width="300" height="250" style="border:0;overflow:hidden" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`, iframeURL)
-	return block.EmbedToken, iframeURL, htmlSnippet, nil
+	return block.EmbedToken, htmlSnippet, nil
 }
 
 func (s *Service) ListPartnerCountries(_ context.Context) []DictionaryItem {

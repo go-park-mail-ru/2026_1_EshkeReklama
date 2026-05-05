@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"testing"
+	"time"
 
 	"eshkere/internal/models"
 
@@ -27,6 +28,18 @@ func TestImpressionPrice(t *testing.T) {
 				t.Fatalf("ImpressionPrice(%d)=%d want %d", tt.cpm, got, tt.want)
 			}
 		})
+	}
+}
+
+func TestPersonalizedWeight(t *testing.T) {
+	if got := personalizedWeight(100, 0); got != 100 {
+		t.Fatalf("score 0 weight=%d want 100", got)
+	}
+	if got := personalizedWeight(100, 10); got != 200 {
+		t.Fatalf("score 10 weight=%d want 200", got)
+	}
+	if got := personalizedWeight(100, 50); got != 300 {
+		t.Fatalf("capped score weight=%d want 300", got)
 	}
 }
 
@@ -59,7 +72,7 @@ func TestGroupEligibleCandidates(t *testing.T) {
 			AdvertiserBalance: 1000,
 			Ad:                &models.Ad{ID: 3},
 		},
-	})
+	}, nil)
 
 	if len(candidates) != 1 {
 		t.Fatalf("expected one eligible campaign, got %d", len(candidates))
@@ -109,7 +122,7 @@ func TestRequestAdReservesImpression(t *testing.T) {
 			return true, nil
 		})
 
-	result, err := svc.RequestAd(context.Background(), "pb")
+	result, err := svc.RequestAd(context.Background(), "pb", "")
 	if err != nil {
 		t.Fatalf("RequestAd: %v", err)
 	}
@@ -117,3 +130,101 @@ func TestRequestAdReservesImpression(t *testing.T) {
 		t.Fatalf("unexpected result: %+v", result)
 	}
 }
+
+func TestRequestAdSavesClickContext(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	blockRepo := NewMockPartnerBlockRepository(ctrl)
+	adRepo := NewMockAdRepository(ctrl)
+	store := &fakeAdRequestStore{}
+	svc, _ := NewService(&Config{PartnerBlockRepo: blockRepo, AdRepo: adRepo, AdRequestStore: store})
+
+	blockRepo.EXPECT().
+		GetByEmbedToken(gomock.Any(), "pb").
+		Return(&models.PartnerBlock{ID: 7, EmbedToken: "pb", RevenueShareBPS: 0}, nil)
+	adRepo.EXPECT().
+		ListAdCandidates(gomock.Any(), gomock.Any()).
+		Return([]*models.AdCandidate{
+			{
+				CampaignID:        3,
+				AdvertiserID:      4,
+				TopicID:           12,
+				DailyBudget:       1000,
+				CPMPrice:          20000,
+				SpentToday:        0,
+				AdvertiserBalance: 1000,
+				Ad:                &models.Ad{ID: 9, TargetURL: "https://target.example"},
+			},
+		}, nil)
+	adRepo.EXPECT().ReserveImpression(gomock.Any(), gomock.Any()).Return(true, nil)
+
+	result, err := svc.RequestAd(context.Background(), "pb", "visitor-1")
+	if err != nil {
+		t.Fatalf("RequestAd: %v", err)
+	}
+	if store.record == nil || store.record.RequestID != result.RequestID || store.record.VisitorID != "visitor-1" ||
+		store.record.AdID != 9 || store.record.TopicID != 12 || store.record.TargetURL != "https://target.example" ||
+		store.ttl != adRequestTTL {
+		t.Fatalf("unexpected saved record: record=%+v ttl=%s", store.record, store.ttl)
+	}
+}
+
+func TestClickAdTracksProfileAndReturnsTarget(t *testing.T) {
+	store := &fakeAdRequestStore{record: &AdRequestRecord{
+		RequestID: "req",
+		VisitorID: "visitor-1",
+		TopicID:   12,
+		TargetURL: "https://target.example",
+	}}
+	profile := &fakeProfileClient{}
+	svc, _ := NewService(&Config{AdRequestStore: store, ProfileClient: profile})
+
+	targetURL, err := svc.ClickAd(context.Background(), "req")
+	if err != nil {
+		t.Fatalf("ClickAd: %v", err)
+	}
+	if targetURL != "https://target.example" {
+		t.Fatalf("unexpected target url: %s", targetURL)
+	}
+	if profile.visitorID != "visitor-1" || profile.topicID != 12 || profile.eventType != EventTypeClick {
+		t.Fatalf("unexpected tracked event: %+v", profile)
+	}
+}
+
+type fakeAdRequestStore struct {
+	record *AdRequestRecord
+	ttl    time.Duration
+}
+
+func (s *fakeAdRequestStore) Save(_ context.Context, record AdRequestRecord, ttl time.Duration) error {
+	s.record = &record
+	s.ttl = ttl
+	return nil
+}
+
+func (s *fakeAdRequestStore) Get(_ context.Context, requestID string) (*AdRequestRecord, error) {
+	if s.record == nil {
+		return nil, errNotFoundForTest
+	}
+	return s.record, nil
+}
+
+type fakeProfileClient struct {
+	visitorID string
+	topicID   int
+	eventType string
+}
+
+func (c *fakeProfileClient) GetProfile(context.Context, string) ([]TopicScore, bool, error) {
+	return nil, false, nil
+}
+
+func (c *fakeProfileClient) TrackEvent(_ context.Context, visitorID string, topicID int, eventType string) error {
+	c.visitorID = visitorID
+	c.topicID = topicID
+	c.eventType = eventType
+	return nil
+}
+
+var errNotFoundForTest = context.Canceled

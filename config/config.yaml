@@ -45,6 +45,9 @@ s3:
 auth_service:
   grpc_addr: ${AUTH_GRPC_ADDR}
 
+profile_service:
+  grpc_addr: ${PROFILE_GRPC_ADDR}
+
 vkid:
   client_id: ${AUTH_VKID_CLIENT_ID}
   redirect_uri: ${AUTH_VKID_REDIRECT_URI}
@@ -52,9 +55,6 @@ vkid:
   scope: ${VKID_SCOPE}
   default_redirect_url: ${VKID_DEFAULT_REDIRECT_URL}
   error_redirect_url: ${VKID_ERROR_REDIRECT_URL}
-
-ad_sdk:
-  url: ${AD_SDK_URL}
 
 cors:
   allowed_origins:

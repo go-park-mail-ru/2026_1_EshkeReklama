@@ -8,6 +8,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/eshkere ./cmd/eshkere
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/auth ./cmd/auth
+RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/profile ./cmd/profile
 
 FROM alpine:3.22 AS auth
 RUN adduser -D appuser
@@ -19,6 +20,17 @@ COPY --from=build /bin/auth /app/auth
 EXPOSE 50051
 
 CMD ["/app/auth"]
+
+FROM alpine:3.22 AS profile
+RUN adduser -D appuser
+USER appuser
+WORKDIR /app
+
+COPY --from=build /bin/profile /app/profile
+
+EXPOSE 50052
+
+CMD ["/app/profile"]
 
 FROM alpine:3.22 AS eshkere
 RUN adduser -D appuser

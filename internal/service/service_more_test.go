@@ -163,15 +163,12 @@ func TestGetPartnerBlockEmbedCode_ReturnsIframeSnippet(t *testing.T) {
 	blockRepo.EXPECT().GetByID(gomock.Any(), 34).Return(&models.PartnerBlock{ID: 34, PartnerSiteID: 12, EmbedToken: "pb_abc123"}, nil)
 	geoRepo.EXPECT().ListByBlockID(gomock.Any(), 34).Return([]*models.PartnerBlockGeoRule{}, nil)
 
-	embedToken, iframeURL, htmlSnippet, err := svc.GetPartnerBlockEmbedCode(context.Background(), 7, 12, 34, "https://ads.example.com/")
+	embedToken, htmlSnippet, err := svc.GetPartnerBlockEmbedCode(context.Background(), 7, 12, 34, "https://ads.example.com/")
 	if err != nil {
 		t.Fatalf("GetPartnerBlockEmbedCode: %v", err)
 	}
 	if embedToken != "pb_abc123" {
 		t.Fatalf("unexpected embed token: %s", embedToken)
-	}
-	if iframeURL != "https://ads.example.com/public/partner/blocks/pb_abc123/frame" {
-		t.Fatalf("unexpected iframe url: %s", iframeURL)
 	}
 	if !strings.Contains(htmlSnippet, `<iframe src="https://ads.example.com/public/partner/blocks/pb_abc123/frame"`) {
 		t.Fatalf("html snippet must contain iframe url, got: %s", htmlSnippet)

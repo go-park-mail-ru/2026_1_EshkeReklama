@@ -36,6 +36,8 @@ definitions:
     properties:
       embed_token:
         type: string
+      visitor_id:
+        type: string
     required:
     - embed_token
     type: object
@@ -306,13 +308,9 @@ definitions:
     type: object
   dto.PartnerBlockEmbedResponse:
     properties:
-      block_id:
-        type: integer
       embed_token:
         type: string
       html_snippet:
-        type: string
-      iframe_url:
         type: string
     type: object
   dto.PartnerBlockGeneralSettingsResponse:
@@ -680,6 +678,15 @@ definitions:
       site_name:
         type: string
       status:
+        type: string
+    type: object
+  dto.VKIDLoginRequest:
+    properties:
+      code:
+        type: string
+      code_verifier:
+        type: string
+      device_id:
         type: string
     type: object
   httpx.Error:
@@ -1345,6 +1352,45 @@ paths:
           schema:
             $ref: '#/definitions/httpx.Error'
       summary: Вход рекламодателя
+      tags:
+      - advertiser
+  /advertisers/login/vk:
+    post:
+      consumes:
+      - application/json
+      description: Аутентифицирует рекламодателя по VK ID authorization code и открывает
+        сессию
+      parameters:
+      - description: code, device_id и code_verifier от VK ID
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VKIDLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Вход рекламодателя через VK ID
       tags:
       - advertiser
   /advertisers/logout:

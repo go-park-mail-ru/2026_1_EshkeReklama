@@ -435,15 +435,13 @@ func (a *API) GetPartnerBlockEmbed(w http.ResponseWriter, r *http.Request) {
 		httpx.BadRequest(w, "invalid id")
 		return
 	}
-	embedToken, iframeURL, htmlSnippet, err := a.service.GetPartnerBlockEmbedCode(r.Context(), partnerID, siteID, blockID, requestBaseURL(r))
+	embedToken, htmlSnippet, err := a.service.GetPartnerBlockEmbedCode(r.Context(), partnerID, siteID, blockID, requestBaseURL(r))
 	if err != nil {
 		handler.HandleError(w, r, "get partner block embed", err)
 		return
 	}
 	httpx.JSON(w, http.StatusOK, dto.PartnerBlockEmbedResponse{
-		BlockID:     blockID,
 		EmbedToken:  embedToken,
-		IframeURL:   iframeURL,
 		HTMLSnippet: htmlSnippet,
 	})
 }
@@ -562,7 +560,23 @@ var partnerBlockFrameTemplate = template.Must(template.New("partner-block-frame"
   <script>
     (function () {
       const embedToken = {{jsString .EmbedToken}};
+      const visitorKey = "eshkere_visitor_id";
       const root = document.getElementById("root");
+
+      function visitorId() {
+        try {
+          let id = window.localStorage.getItem(visitorKey);
+          if (!id) {
+            id = window.crypto && window.crypto.randomUUID
+              ? window.crypto.randomUUID()
+              : String(Date.now()) + "-" + Math.random().toString(16).slice(2);
+            window.localStorage.setItem(visitorKey, id);
+          }
+          return id;
+        } catch (err) {
+          return "";
+        }
+      }
 
       function text(value) {
         return value == null ? "" : String(value);
@@ -624,7 +638,7 @@ var partnerBlockFrameTemplate = template.Must(template.New("partner-block-frame"
       fetch("/ad/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ embed_token: embedToken })
+        body: JSON.stringify({ embed_token: embedToken, visitor_id: visitorId() })
       })
         .then(function (response) {
           if (!response.ok) {

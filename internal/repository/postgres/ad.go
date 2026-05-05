@@ -51,7 +51,7 @@ const (
 	LIMIT 1`
 
 	selectAdCandidates = `SELECT
-		ac.id, ac.advertiser_id, ac.daily_budget, ac.cpm_price, adv.balance,
+		ac.id, ac.advertiser_id, ag.topic_id, ac.daily_budget, ac.cpm_price, adv.balance,
 		COALESCE(ds.advertiser_spend, 0),
 		a.id, a.ad_group_id, a.status, a.title, a.short_desc, a.image_url, a.target_url, a.created_at, a.updated_at
 	FROM eshkere.ad a
@@ -252,6 +252,7 @@ func (r *AdRepository) ListAdCandidates(ctx context.Context, spendDate time.Time
 		if err := rows.Scan(
 			&candidate.CampaignID,
 			&candidate.AdvertiserID,
+			&candidate.TopicID,
 			&candidate.DailyBudget,
 			&candidate.CPMPrice,
 			&candidate.AdvertiserBalance,

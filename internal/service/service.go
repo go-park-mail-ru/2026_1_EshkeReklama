@@ -109,6 +109,29 @@ type AppealRepository interface {
 	UpdateImage(ctx context.Context, appealID int, imageKey string) error
 }
 
+type TopicScore struct {
+	TopicID int
+	Score   float64
+}
+
+type ProfileClient interface {
+	GetProfile(ctx context.Context, visitorID string) ([]TopicScore, bool, error)
+	TrackEvent(ctx context.Context, visitorID string, topicID int, eventType string) error
+}
+
+type AdRequestRecord struct {
+	RequestID string
+	VisitorID string
+	AdID      int
+	TopicID   int
+	TargetURL string
+}
+
+type AdRequestStore interface {
+	Save(ctx context.Context, record AdRequestRecord, ttl time.Duration) error
+	Get(ctx context.Context, requestID string) (*AdRequestRecord, error)
+}
+
 type Config struct {
 	AdvertiserRepo          AdvertiserRepository
 	PartnerRepo             PartnerRepository
@@ -126,6 +149,8 @@ type Config struct {
 	TopicRepo               TopicRepository
 	RegionRepo              RegionRepository
 	AppealRepo              AppealRepository
+	ProfileClient           ProfileClient
+	AdRequestStore          AdRequestStore
 }
 
 type Service struct {
@@ -145,6 +170,8 @@ type Service struct {
 	topicRepo               TopicRepository
 	regionRepo              RegionRepository
 	appealRepo              AppealRepository
+	profileClient           ProfileClient
+	adRequestStore          AdRequestStore
 }
 
 func NewService(cfg *Config) (*Service, error) {
@@ -169,7 +196,13 @@ func NewService(cfg *Config) (*Service, error) {
 		topicRepo:               cfg.TopicRepo,
 		regionRepo:              cfg.RegionRepo,
 		appealRepo:              cfg.AppealRepo,
+		profileClient:           cfg.ProfileClient,
+		adRequestStore:          cfg.AdRequestStore,
 	}, nil
+}
+
+func (s *Service) SetProfileClient(client ProfileClient) {
+	s.profileClient = client
 }
 
 type DictionaryItem struct {

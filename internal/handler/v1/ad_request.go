@@ -12,6 +12,7 @@ import (
 
 func (a *API) RegisterAdRequestHandlers(r *mux.Router) {
 	r.HandleFunc("/ad/request", a.RequestAd).Methods(http.MethodPost)
+	r.HandleFunc("/click/{request_id}", a.ClickAd).Methods(http.MethodGet)
 }
 
 // @Summary      Запрос рекламы для публичного блока
@@ -32,7 +33,7 @@ func (a *API) RequestAd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := a.service.RequestAd(r.Context(), req.EmbedToken)
+	result, err := a.service.RequestAd(r.Context(), req.EmbedToken, req.VisitorID)
 	if err != nil {
 		handler.HandleError(w, r, "request ad", err)
 		return
@@ -44,4 +45,14 @@ func (a *API) RequestAd(w http.ResponseWriter, r *http.Request) {
 		Ad:        dto.ToAdResponse(result.Ad),
 		ClickURL:  clickURL,
 	})
+}
+
+func (a *API) ClickAd(w http.ResponseWriter, r *http.Request) {
+	targetURL, err := a.service.ClickAd(r.Context(), mux.Vars(r)["request_id"])
+	if err != nil {
+		handler.HandleError(w, r, "click ad", err)
+		return
+	}
+
+	http.Redirect(w, r, targetURL, http.StatusFound)
 }

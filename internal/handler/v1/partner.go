@@ -18,8 +18,8 @@ func (a *API) RegisterPartnerHandlers(r *mux.Router) {
 	groups.HandleFunc("/register", a.RegisterPartner).Methods(http.MethodPost)
 	groups.HandleFunc("/login", a.LoginPartner).Methods(http.MethodPost)
 	groups.HandleFunc("/logout", a.LogoutPartner).Methods(http.MethodPost)
-	groups.Handle("/me", middleware.PartnerAuth(a.authClient, a.partnerCookieConfig.Name)(http.HandlerFunc(a.MePartner))).Methods(http.MethodGet)
-	groups.Handle("/me", middleware.PartnerAuth(a.authClient, a.partnerCookieConfig.Name)(http.HandlerFunc(a.UpdatePartner))).Methods(http.MethodPut)
+	groups.Handle("/me", middleware.PartnerAuth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.MePartner))).Methods(http.MethodGet)
+	groups.Handle("/me", middleware.PartnerAuth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.UpdatePartner))).Methods(http.MethodPut)
 }
 
 // @Summary      Регистрация партнера
@@ -53,7 +53,7 @@ func (a *API) RegisterPartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.setSessionCookieWithConfig(w, a.partnerCookieConfig, sessionID, time.Unix(expiresAt, 0))
+	a.setSessionCookie(w, sessionID, time.Unix(expiresAt, 0))
 	httpx.JSON(w, http.StatusOK, dto.PartnerAuthResponse{ID: int(partnerID), Email: req.Email, Phone: req.Phone})
 }
 
@@ -87,7 +87,7 @@ func (a *API) LoginPartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.setSessionCookieWithConfig(w, a.partnerCookieConfig, sessionID, time.Unix(expiresAt, 0))
+	a.setSessionCookie(w, sessionID, time.Unix(expiresAt, 0))
 	httpx.JSON(w, http.StatusOK, dto.PartnerAuthResponse{ID: int(partnerID), Email: email, Phone: phone})
 }
 
@@ -185,14 +185,14 @@ func (a *API) resolveUpdatedPartnerContacts(ctx context.Context, partnerID int64
 // @Failure      500  {object}  httpx.Error
 // @Router       /partners/logout [post]
 func (a *API) LogoutPartner(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie(a.partnerCookieConfig.Name)
+	cookie, err := r.Cookie(a.cookieConfig.Name)
 	if err == nil {
 		if logoutErr := a.authClient.Logout(r.Context(), cookie.Value); logoutErr != nil {
 			handler.HandleError(w, r, "logout partner", logoutErr)
 			return
 		}
 	}
-	a.clearSessionCookieWithConfig(w, a.partnerCookieConfig)
+	a.clearSessionCookie(w)
 	httpx.JSON(w, http.StatusOK, map[string]string{"message": "logout ok"})
 }
 

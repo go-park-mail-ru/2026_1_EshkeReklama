@@ -92,46 +92,30 @@ type VKIDConfig struct {
 }
 
 type APIConfig struct {
-	AuthClient          AuthClient
-	Service             Service
-	CookieConfig        CookieConfig
-	PartnerCookieConfig CookieConfig
-	VKIDConfig          VKIDConfig
+	AuthClient   AuthClient
+	Service      Service
+	CookieConfig CookieConfig
+	VKIDConfig   VKIDConfig
 }
 
 type API struct {
-	authClient          AuthClient
-	service             Service
-	cookieConfig        CookieConfig
-	partnerCookieConfig CookieConfig
-	vkidConfig          VKIDConfig
+	authClient   AuthClient
+	service      Service
+	cookieConfig CookieConfig
+	vkidConfig   VKIDConfig
 }
 
 func NewAPI(config APIConfig) *API {
 	return &API{
-		authClient:          config.AuthClient,
-		service:             config.Service,
-		cookieConfig:        config.CookieConfig,
-		partnerCookieConfig: resolvePartnerCookieConfig(config.CookieConfig, config.PartnerCookieConfig),
-		vkidConfig:          config.VKIDConfig,
+		authClient:   config.AuthClient,
+		service:      config.Service,
+		cookieConfig: config.CookieConfig,
+		vkidConfig:   config.VKIDConfig,
 	}
-}
-
-func resolvePartnerCookieConfig(defaultCfg, partnerCfg CookieConfig) CookieConfig {
-	if partnerCfg.Name == "" {
-		return defaultCfg
-	}
-	if partnerCfg.Path == "" {
-		partnerCfg.Path = defaultCfg.Path
-	}
-	return partnerCfg
 }
 
 func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterAdvertiserHandlers(r)
-	// Partner auth/profile HTTP layer is intentionally disabled for now.
-	// We keep the underlying service/repository code in place, but do not
-	// mount these endpoints until the partner onboarding flow is enabled.
 	a.RegisterPartnerDictionaryHandlers(r)
 	a.RegisterPartnerSiteHandlers(r)
 	a.RegisterPartnerBlockHandlers(r)

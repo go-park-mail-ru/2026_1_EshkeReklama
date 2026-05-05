@@ -2,12 +2,14 @@ package v1
 
 import (
 	"database/sql"
+	"encoding/json"
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
+	"html/template"
 	"net/http"
 	"strconv"
 
@@ -410,7 +412,7 @@ func (a *API) DeletePartnerBlock(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary      Embed-код блока
-// @Description  Возвращает embed_token, URL фронтового ad-sdk.js, iframe fallback URL и HTML snippet вида div data-eshkere-ad + script
+// @Description  Возвращает embed_token, iframe URL и HTML snippet iframe для вставки рекламного блока
 // @Tags         partner_blocks
 // @Produce      json
 // @Param        site_id   path      int                           true  "ID сайта"
@@ -433,7 +435,7 @@ func (a *API) GetPartnerBlockEmbed(w http.ResponseWriter, r *http.Request) {
 		httpx.BadRequest(w, "invalid id")
 		return
 	}
-	embedToken, scriptURL, iframeURL, htmlSnippet, err := a.service.GetPartnerBlockEmbedCode(r.Context(), partnerID, siteID, blockID, requestBaseURL(r), a.adSDKURL)
+	embedToken, iframeURL, htmlSnippet, err := a.service.GetPartnerBlockEmbedCode(r.Context(), partnerID, siteID, blockID, requestBaseURL(r))
 	if err != nil {
 		handler.HandleError(w, r, "get partner block embed", err)
 		return
@@ -441,7 +443,6 @@ func (a *API) GetPartnerBlockEmbed(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusOK, dto.PartnerBlockEmbedResponse{
 		BlockID:     blockID,
 		EmbedToken:  embedToken,
-		ScriptURL:   scriptURL,
 		IframeURL:   iframeURL,
 		HTMLSnippet: htmlSnippet,
 	})
@@ -450,7 +451,192 @@ func (a *API) GetPartnerBlockEmbed(w http.ResponseWriter, r *http.Request) {
 func (a *API) GetPartnerBlockFrame(w http.ResponseWriter, r *http.Request) {
 	embedToken := mux.Vars(r)["embed_token"]
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, _ = w.Write([]byte("<!doctype html><html><body><div data-embed-token=\"" + embedToken + "\">Partner block placeholder</div></body></html>"))
+	if err := partnerBlockFrameTemplate.Execute(w, struct {
+		EmbedToken string
+	}{
+		EmbedToken: embedToken,
+	}); err != nil {
+		handler.HandleError(w, r, "render partner block frame", err)
+	}
 }
 
 var _ = sql.NullString{}
+
+var partnerBlockFrameTemplate = template.Must(template.New("partner-block-frame").Funcs(template.FuncMap{
+	"jsString": func(value string) template.JS {
+		encoded, err := json.Marshal(value)
+		if err != nil {
+			return template.JS(`""`)
+		}
+		return template.JS(encoded)
+	},
+}).Parse(`<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base target="_blank">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      color: #171a1f;
+      background: #fff;
+      overflow: hidden;
+    }
+    .ad {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+      min-height: 120px;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid #dfe3ea;
+      text-decoration: none;
+      color: inherit;
+      background: #fff;
+    }
+    .ad:hover .title { text-decoration: underline; }
+    .image {
+      flex: 0 0 38%;
+      min-width: 88px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #eef1f6;
+    }
+    .content {
+      display: flex;
+      min-width: 0;
+      flex: 1;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+    }
+    .label {
+      font-size: 11px;
+      line-height: 1.2;
+      color: #697386;
+      text-transform: uppercase;
+    }
+    .title {
+      display: -webkit-box;
+      overflow: hidden;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.2;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .desc {
+      display: -webkit-box;
+      overflow: hidden;
+      font-size: 13px;
+      line-height: 1.3;
+      color: #4f5b6b;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+    .placeholder {
+      display: grid;
+      width: 100%;
+      height: 100vh;
+      min-height: 120px;
+      place-items: center;
+      border: 1px solid #dfe3ea;
+      color: #697386;
+      font-size: 13px;
+      text-align: center;
+      background: #f7f8fa;
+    }
+    @media (max-width: 220px) {
+      .ad { flex-direction: column; }
+      .image { flex: 0 0 45%; width: 100%; min-width: 0; }
+      .title { font-size: 14px; }
+      .desc { font-size: 12px; -webkit-line-clamp: 2; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root" class="placeholder">Реклама</div>
+  <script>
+    (function () {
+      const embedToken = {{jsString .EmbedToken}};
+      const root = document.getElementById("root");
+
+      function text(value) {
+        return value == null ? "" : String(value);
+      }
+
+      function renderFallback() {
+        root.className = "placeholder";
+        root.textContent = "Реклама";
+      }
+
+      function renderAd(payload) {
+        const ad = payload && payload.ad;
+        if (!ad || !payload.click_url) {
+          renderFallback();
+          return;
+        }
+
+        root.className = "";
+        root.textContent = "";
+
+        const link = document.createElement("a");
+        link.className = "ad";
+        link.href = text(payload.click_url);
+        link.rel = "noopener sponsored";
+
+        if (ad.image_url) {
+          const img = document.createElement("img");
+          img.className = "image";
+          img.src = text(ad.image_url);
+          img.alt = "";
+          img.loading = "lazy";
+          link.appendChild(img);
+        }
+
+        const content = document.createElement("div");
+        content.className = "content";
+
+        const label = document.createElement("div");
+        label.className = "label";
+        label.textContent = "Реклама";
+        content.appendChild(label);
+
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = text(ad.title);
+        content.appendChild(title);
+
+        if (ad.short_desc) {
+          const desc = document.createElement("div");
+          desc.className = "desc";
+          desc.textContent = text(ad.short_desc);
+          content.appendChild(desc);
+        }
+
+        link.appendChild(content);
+        root.appendChild(link);
+      }
+
+      fetch("/ad/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ embed_token: embedToken })
+      })
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error("ad request failed");
+          }
+          return response.json();
+        })
+        .then(function (envelope) {
+          renderAd(envelope && envelope.data);
+        })
+        .catch(renderFallback);
+    })();
+  </script>
+</body>
+</html>`))

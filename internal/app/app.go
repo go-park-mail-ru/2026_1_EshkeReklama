@@ -141,7 +141,6 @@ func (a *App) Run() error {
 			HTTPOnly: true,
 			Secure:   a.cfg.Session.CookieSecure,
 		},
-		AdSDKURL: a.cfg.AdSDK.URL,
 	}))
 
 	server := &http.Server{

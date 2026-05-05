@@ -451,19 +451,15 @@ func (s *Service) SettlePartnerDailyEarnings(ctx context.Context, earningDate ti
 	return s.partnerRepo.SettleDailyEarnings(ctx, dateOnly(earningDate.UTC()))
 }
 
-func (s *Service) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL, adSDKURL string) (string, string, string, string, error) {
+func (s *Service) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, error) {
 	block, _, err := s.GetPartnerBlock(ctx, partnerID, siteID, blockID)
 	if err != nil {
-		return "", "", "", "", err
+		return "", "", "", err
 	}
 	base := strings.TrimRight(baseURL, "/")
-	scriptURL := strings.TrimSpace(adSDKURL)
-	if scriptURL == "" {
-		scriptURL = fmt.Sprintf("%s/public/ad-sdk.js", base)
-	}
 	iframeURL := fmt.Sprintf("%s/public/partner/blocks/%s/frame", base, block.EmbedToken)
-	htmlSnippet := fmt.Sprintf("<div data-eshkere-ad=\"%s\"></div>\n<script async src=\"%s\"></script>", block.EmbedToken, scriptURL)
-	return block.EmbedToken, scriptURL, iframeURL, htmlSnippet, nil
+	htmlSnippet := fmt.Sprintf(`<iframe src="%s" width="300" height="250" style="border:0;overflow:hidden" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`, iframeURL)
+	return block.EmbedToken, iframeURL, htmlSnippet, nil
 }
 
 func (s *Service) ListPartnerCountries(_ context.Context) []DictionaryItem {

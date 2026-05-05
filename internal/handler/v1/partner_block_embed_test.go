@@ -59,7 +59,7 @@ func TestAdRequest_AcceptsEmbedTokenWithoutCSRF(t *testing.T) {
 	}
 }
 
-func TestPartnerBlockEmbed_ResponseContainsDivAndScript(t *testing.T) {
+func TestPartnerBlockEmbed_ResponseContainsIframe(t *testing.T) {
 	ac := newStubAuthClient()
 	svc := &stubService{}
 	r := newTestRouter(ac, svc)
@@ -68,17 +68,13 @@ func TestPartnerBlockEmbed_ResponseContainsDivAndScript(t *testing.T) {
 	sess := &http.Cookie{Name: testCookieName, Value: "partner-embed-sess"}
 	csrf := getCSRF(t, r)
 
-	svc.getPartnerBlockEmbedCodeFn = func(_ context.Context, partnerID, siteID, blockID int, baseURL, adSDKURL string) (string, string, string, string, error) {
+	svc.getPartnerBlockEmbedCodeFn = func(_ context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, error) {
 		if partnerID != 44 || siteID != 101 || blockID != 9001 {
 			t.Fatalf("unexpected args: partnerID=%d siteID=%d blockID=%d", partnerID, siteID, blockID)
 		}
-		if adSDKURL != "" {
-			t.Fatalf("unexpected ad sdk url: %s", adSDKURL)
-		}
 		return "pb_embed123",
-			"https://ads.example/public/ad-sdk.js",
 			"https://ads.example/public/partner/blocks/pb_embed123/frame",
-			"<div data-eshkere-ad=\"pb_embed123\"></div>\n<script async src=\"https://ads.example/public/ad-sdk.js\"></script>",
+			`<iframe src="https://ads.example/public/partner/blocks/pb_embed123/frame" width="300" height="250" style="border:0;overflow:hidden" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`,
 			nil
 	}
 
@@ -100,7 +96,37 @@ func TestPartnerBlockEmbed_ResponseContainsDivAndScript(t *testing.T) {
 	if err := json.Unmarshal(rr.Body.Bytes(), &envelope); err != nil {
 		t.Fatalf("unmarshal response: %v", err)
 	}
-	if !strings.Contains(envelope.Data.HTMLSnippet, "data-eshkere-ad") || !strings.Contains(envelope.Data.HTMLSnippet, "<script async src=") {
-		t.Fatalf("expected div+script snippet, got: %s", envelope.Data.HTMLSnippet)
+	if !strings.Contains(envelope.Data.HTMLSnippet, "<iframe") ||
+		!strings.Contains(envelope.Data.HTMLSnippet, `src="https://ads.example/public/partner/blocks/pb_embed123/frame"`) ||
+		!strings.Contains(envelope.Data.HTMLSnippet, `referrerpolicy="strict-origin-when-cross-origin"`) {
+		t.Fatalf("expected iframe snippet, got: %s", envelope.Data.HTMLSnippet)
+	}
+}
+
+func TestPartnerBlockFrame_ReturnsRenderableHTML(t *testing.T) {
+	ac := newStubAuthClient()
+	svc := &stubService{}
+	r := newTestRouter(ac, svc)
+
+	req := httptest.NewRequest(http.MethodGet, "/public/partner/blocks/pb_frame123/frame", nil)
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected 200 got %d body=%s", rr.Code, rr.Body.String())
+	}
+	if contentType := rr.Result().Header.Get("Content-Type"); !strings.Contains(contentType, "text/html") {
+		t.Fatalf("expected text/html content type, got: %s", contentType)
+	}
+	body := rr.Body.String()
+	for _, want := range []string{
+		`const embedToken = "pb_frame123";`,
+		`fetch("/ad/request"`,
+		`JSON.stringify({ embed_token: embedToken })`,
+		`renderFallback`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("expected frame HTML to contain %q, got: %s", want, body)
+		}
 	}
 }

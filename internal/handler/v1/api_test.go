@@ -142,7 +142,7 @@ type stubService struct {
 	updatePartnerBlockGeoFn     func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockGeography) ([]*models.PartnerBlockGeoRule, error)
 	updatePartnerBlockSelfAdFn  func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockSelfAd) (*models.PartnerBlock, error)
 	deletePartnerBlockFn        func(ctx context.Context, partnerID, siteID, blockID int) error
-	getPartnerBlockEmbedCodeFn  func(ctx context.Context, partnerID, siteID, blockID int, baseURL, adSDKURL string) (string, string, string, string, error)
+	getPartnerBlockEmbedCodeFn  func(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, error)
 }
 
 func (s *stubService) CreateAdvertiserProfile(ctx context.Context, id int64, name, email string) error {
@@ -432,11 +432,11 @@ func (s *stubService) DeletePartnerBlock(ctx context.Context, partnerID, siteID,
 	return nil
 }
 
-func (s *stubService) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL, adSDKURL string) (string, string, string, string, error) {
+func (s *stubService) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, error) {
 	if s.getPartnerBlockEmbedCodeFn != nil {
-		return s.getPartnerBlockEmbedCodeFn(ctx, partnerID, siteID, blockID, baseURL, adSDKURL)
+		return s.getPartnerBlockEmbedCodeFn(ctx, partnerID, siteID, blockID, baseURL)
 	}
-	return "", "", "", "", nil
+	return "", "", "", nil
 }
 
 func (s *stubService) ListPartnerCountries(ctx context.Context) []service.DictionaryItem { return nil }

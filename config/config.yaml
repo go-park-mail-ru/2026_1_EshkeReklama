@@ -45,9 +45,6 @@ s3:
 auth_service:
   grpc_addr: ${AUTH_GRPC_ADDR}
 
-ad_sdk:
-  url: ${AD_SDK_URL}
-
 cors:
   allowed_origins:
     - "http://localhost:8080"

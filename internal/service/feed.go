@@ -60,7 +60,9 @@ func (s *Service) GetAdByFeedToken(ctx context.Context, token string) (*models.A
 		randAdInd = big.NewInt(0)
 	}
 
-	return ads[randAdInd.Int64()], nil
+	ad := ads[randAdInd.Int64()]
+	s.decorateAdImageURL(ad)
+	return ad, nil
 }
 
 func (s *Service) GetAdsByFeedToken(ctx context.Context, token string) ([]*models.Ad, error) {

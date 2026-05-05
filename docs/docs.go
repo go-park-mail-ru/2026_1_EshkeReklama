@@ -2389,7 +2389,7 @@ const docTemplate = `{
                         "CookieAuth": []
                     }
                 ],
-                "description": "Возвращает embed_token, URL фронтового ad-sdk.js, iframe fallback URL и HTML snippet вида div data-eshkere-ad + script",
+                "description": "Возвращает embed_token, iframe URL и HTML snippet iframe для вставки рекламного блока",
                 "produces": [
                     "application/json"
                 ],
@@ -3241,9 +3241,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "iframe_url": {
-                    "type": "string"
-                },
-                "script_url": {
                     "type": "string"
                 }
             }

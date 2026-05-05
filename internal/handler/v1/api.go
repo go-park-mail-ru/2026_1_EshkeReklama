@@ -64,7 +64,7 @@ type Service interface {
 	UpdatePartnerBlockGeographySettings(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockGeography) ([]*models.PartnerBlockGeoRule, error)
 	UpdatePartnerBlockSelfAdSettings(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockSelfAd) (*models.PartnerBlock, error)
 	DeletePartnerBlock(ctx context.Context, partnerID, siteID, blockID int) error
-	GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL, adSDKURL string) (string, string, string, string, error)
+	GetPartnerBlockEmbedCode(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, string, error)
 	ListPartnerCountries(ctx context.Context) []service.DictionaryItem
 	ListPartnerRegistrationRegions(ctx context.Context, countryCode string) []service.DictionaryItem
 	ListPartnerCooperationForms(ctx context.Context) []service.DictionaryItem
@@ -85,7 +85,6 @@ type APIConfig struct {
 	Service             Service
 	CookieConfig        CookieConfig
 	PartnerCookieConfig CookieConfig
-	AdSDKURL            string
 }
 
 type API struct {
@@ -93,7 +92,6 @@ type API struct {
 	service             Service
 	cookieConfig        CookieConfig
 	partnerCookieConfig CookieConfig
-	adSDKURL            string
 }
 
 func NewAPI(config APIConfig) *API {
@@ -102,7 +100,6 @@ func NewAPI(config APIConfig) *API {
 		service:             config.Service,
 		cookieConfig:        config.CookieConfig,
 		partnerCookieConfig: resolvePartnerCookieConfig(config.CookieConfig, config.PartnerCookieConfig),
-		adSDKURL:            config.AdSDKURL,
 	}
 }
 

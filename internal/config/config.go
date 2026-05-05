@@ -61,17 +61,12 @@ type AuthServiceConfig struct {
 	GRPCAddr string `yaml:"grpc_addr"`
 }
 
-type AdSDKConfig struct {
-	URL string `yaml:"url"`
-}
-
 type Config struct {
 	HTTPServer      HTTPServerConfig  `yaml:"http_server"`
 	Postgres        PostgresConfig    `yaml:"postgres"`
 	Redis           RedisConfig       `yaml:"redis"`
 	Session         SessionConfig     `yaml:"session"`
 	AuthService     AuthServiceConfig `yaml:"auth_service"`
-	AdSDK           AdSDKConfig       `yaml:"ad_sdk"`
 	S3              S3Config          `yaml:"s3"`
 	CORS            CORSConfig        `yaml:"cors"`
 	GracefulTimeout time.Duration     `yaml:"graceful_timeout"`

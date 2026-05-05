@@ -145,7 +145,7 @@ func TestGetAdsByFeedToken_NotFound(t *testing.T) {
 	}
 }
 
-func TestGetPartnerBlockEmbedCode_ReturnsDivAndScriptSnippet(t *testing.T) {
+func TestGetPartnerBlockEmbedCode_ReturnsIframeSnippet(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -163,20 +163,20 @@ func TestGetPartnerBlockEmbedCode_ReturnsDivAndScriptSnippet(t *testing.T) {
 	blockRepo.EXPECT().GetByID(gomock.Any(), 34).Return(&models.PartnerBlock{ID: 34, PartnerSiteID: 12, EmbedToken: "pb_abc123"}, nil)
 	geoRepo.EXPECT().ListByBlockID(gomock.Any(), 34).Return([]*models.PartnerBlockGeoRule{}, nil)
 
-	embedToken, scriptURL, _, htmlSnippet, err := svc.GetPartnerBlockEmbedCode(context.Background(), 7, 12, 34, "https://ads.example.com/", "https://front.example.com/ad-sdk.js")
+	embedToken, iframeURL, htmlSnippet, err := svc.GetPartnerBlockEmbedCode(context.Background(), 7, 12, 34, "https://ads.example.com/")
 	if err != nil {
 		t.Fatalf("GetPartnerBlockEmbedCode: %v", err)
 	}
 	if embedToken != "pb_abc123" {
 		t.Fatalf("unexpected embed token: %s", embedToken)
 	}
-	if scriptURL != "https://front.example.com/ad-sdk.js" {
-		t.Fatalf("unexpected script url: %s", scriptURL)
+	if iframeURL != "https://ads.example.com/public/partner/blocks/pb_abc123/frame" {
+		t.Fatalf("unexpected iframe url: %s", iframeURL)
 	}
-	if !strings.Contains(htmlSnippet, `<div data-eshkere-ad="pb_abc123"></div>`) {
-		t.Fatalf("html snippet must contain data container, got: %s", htmlSnippet)
+	if !strings.Contains(htmlSnippet, `<iframe src="https://ads.example.com/public/partner/blocks/pb_abc123/frame"`) {
+		t.Fatalf("html snippet must contain iframe url, got: %s", htmlSnippet)
 	}
-	if !strings.Contains(htmlSnippet, `<script async src="https://front.example.com/ad-sdk.js"></script>`) {
-		t.Fatalf("html snippet must contain script url, got: %s", htmlSnippet)
+	if !strings.Contains(htmlSnippet, `loading="lazy"`) || !strings.Contains(htmlSnippet, `referrerpolicy="strict-origin-when-cross-origin"`) {
+		t.Fatalf("html snippet must contain iframe attributes, got: %s", htmlSnippet)
 	}
 }

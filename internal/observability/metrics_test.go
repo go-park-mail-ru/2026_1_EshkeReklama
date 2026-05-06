@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/testutil"
@@ -80,5 +81,97 @@ func TestUnaryServerInterceptorTracksErrors(t *testing.T) {
 	errors := testutil.ToFloat64(metrics.grpcRequestErrorsTotal.WithLabelValues("auth", "auth.v1.AuthService", "Login", codes.Internal.String()))
 	if errors != 1 {
 		t.Fatalf("unexpected error counter: got %v want 1", errors)
+	}
+}
+
+func TestHTTPMiddlewareTracksInFlightRequests(t *testing.T) {
+	metrics := NewMetrics("app")
+	started := make(chan struct{})
+	release := make(chan struct{})
+
+	router := mux.NewRouter()
+	router.Use(metrics.HTTPMiddleware(HTTPMiddlewareConfig{}))
+	router.HandleFunc("/widgets/{id}", func(w http.ResponseWriter, _ *http.Request) {
+		close(started)
+		<-release
+		w.WriteHeader(http.StatusOK)
+	}).Methods(http.MethodGet)
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		req := httptest.NewRequest(http.MethodGet, "/widgets/42", nil)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+	}()
+
+	select {
+	case <-started:
+	case <-time.After(time.Second):
+		t.Fatal("handler did not start")
+	}
+
+	inFlight := testutil.ToFloat64(metrics.httpRequestsInFlight.WithLabelValues("app", http.MethodGet, "/widgets/{id}"))
+	if inFlight != 1 {
+		t.Fatalf("unexpected in-flight gauge during request: got %v want 1", inFlight)
+	}
+
+	close(release)
+
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("handler did not finish")
+	}
+
+	inFlight = testutil.ToFloat64(metrics.httpRequestsInFlight.WithLabelValues("app", http.MethodGet, "/widgets/{id}"))
+	if inFlight != 0 {
+		t.Fatalf("unexpected in-flight gauge after request: got %v want 0", inFlight)
+	}
+}
+
+func TestUnaryServerInterceptorTracksInFlightRequests(t *testing.T) {
+	metrics := NewMetrics("auth")
+	interceptor := metrics.UnaryServerInterceptor()
+	started := make(chan struct{})
+	release := make(chan struct{})
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		_, _ = interceptor(
+			context.Background(),
+			struct{}{},
+			&grpc.UnaryServerInfo{FullMethod: "/auth.v1.AuthService/Login"},
+			func(_ context.Context, _ any) (any, error) {
+				close(started)
+				<-release
+				return struct{}{}, nil
+			},
+		)
+	}()
+
+	select {
+	case <-started:
+	case <-time.After(time.Second):
+		t.Fatal("grpc handler did not start")
+	}
+
+	inFlight := testutil.ToFloat64(metrics.grpcRequestsInFlight.WithLabelValues("auth", "auth.v1.AuthService", "Login"))
+	if inFlight != 1 {
+		t.Fatalf("unexpected grpc in-flight gauge during request: got %v want 1", inFlight)
+	}
+
+	close(release)
+
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("grpc handler did not finish")
+	}
+
+	inFlight = testutil.ToFloat64(metrics.grpcRequestsInFlight.WithLabelValues("auth", "auth.v1.AuthService", "Login"))
+	if inFlight != 0 {
+		t.Fatalf("unexpected grpc in-flight gauge after request: got %v want 0", inFlight)
 	}
 }

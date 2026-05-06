@@ -27,9 +27,11 @@ type Metrics struct {
 	httpRequestsTotal      *prometheus.CounterVec
 	httpRequestErrorsTotal *prometheus.CounterVec
 	httpRequestDuration    *prometheus.HistogramVec
+	httpRequestsInFlight   *prometheus.GaugeVec
 	grpcRequestsTotal      *prometheus.CounterVec
 	grpcRequestErrorsTotal *prometheus.CounterVec
 	grpcRequestDuration    *prometheus.HistogramVec
+	grpcRequestsInFlight   *prometheus.GaugeVec
 	serviceInfo            *prometheus.GaugeVec
 }
 
@@ -73,6 +75,11 @@ func NewMetrics(service string) *Metrics {
 			Help:      "Latency distribution of HTTP requests handled by the service.",
 			Buckets:   durationBuckets,
 		}, []string{"service", "method", "route"}),
+		httpRequestsInFlight: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace: namespace,
+			Name:      "http_requests_in_flight",
+			Help:      "Current number of in-flight HTTP requests handled by the service.",
+		}, []string{"service", "method", "route"}),
 		grpcRequestsTotal: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Namespace: namespace,
 			Name:      "grpc_requests_total",
@@ -89,6 +96,11 @@ func NewMetrics(service string) *Metrics {
 			Help:      "Latency distribution of gRPC requests handled by the service.",
 			Buckets:   durationBuckets,
 		}, []string{"service", "grpc_service", "grpc_method"}),
+		grpcRequestsInFlight: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace: namespace,
+			Name:      "grpc_requests_in_flight",
+			Help:      "Current number of in-flight gRPC requests handled by the service.",
+		}, []string{"service", "grpc_service", "grpc_method"}),
 		serviceInfo: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace,
 			Name:      "service_info",
@@ -100,9 +112,11 @@ func NewMetrics(service string) *Metrics {
 		metrics.httpRequestsTotal,
 		metrics.httpRequestErrorsTotal,
 		metrics.httpRequestDuration,
+		metrics.httpRequestsInFlight,
 		metrics.grpcRequestsTotal,
 		metrics.grpcRequestErrorsTotal,
 		metrics.grpcRequestDuration,
+		metrics.grpcRequestsInFlight,
 		metrics.serviceInfo,
 	)
 	metrics.serviceInfo.WithLabelValues(service).Set(1)
@@ -131,10 +145,12 @@ func (m *Metrics) HTTPMiddleware(cfg HTTPMiddlewareConfig) func(http.Handler) ht
 
 			start := time.Now()
 			rec := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+			route := routeTemplate(r)
+			m.httpRequestsInFlight.WithLabelValues(m.service, r.Method, route).Inc()
+			defer m.httpRequestsInFlight.WithLabelValues(m.service, r.Method, route).Dec()
 
 			next.ServeHTTP(rec, r)
 
-			route := routeTemplate(r)
 			statusCode := httpStatusLabel(rec.statusCode)
 
 			m.httpRequestsTotal.WithLabelValues(
@@ -165,10 +181,12 @@ func (m *Metrics) UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		handler grpc.UnaryHandler,
 	) (resp any, err error) {
 		start := time.Now()
+		grpcService, grpcMethod := splitGRPCMethod(info.FullMethod)
+		m.grpcRequestsInFlight.WithLabelValues(m.service, grpcService, grpcMethod).Inc()
+		defer m.grpcRequestsInFlight.WithLabelValues(m.service, grpcService, grpcMethod).Dec()
 
 		resp, err = handler(ctx, req)
 
-		grpcService, grpcMethod := splitGRPCMethod(info.FullMethod)
 		code := status.Code(err).String()
 
 		m.grpcRequestsTotal.WithLabelValues(m.service, grpcService, grpcMethod, code).Inc()

@@ -113,13 +113,13 @@ func TestAdCampaign_CRUD(t *testing.T) {
 	svc.EXPECT().
 		CreateAdCampaign(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ any, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error) {
-			if in.AdvertiserID != 1 || in.Name != "camp" {
+			if in.AdvertiserID != 1 || in.Name != "camp" || in.DailyBudget != 1000 || in.CPMPrice != 50 || in.MainAction != "buy" {
 				t.Fatalf("unexpected campaign input: %+v", in)
 			}
 			return &models.AdCampaign{ID: 42}, nil
 		})
 
-	createReq := httptest.NewRequest(http.MethodPost, "/ad_campaigns", bytes.NewBufferString(`{"name":"camp"}`))
+	createReq := httptest.NewRequest(http.MethodPost, "/ad_campaigns", bytes.NewBufferString(`{"name":"camp","daily_budget":1000,"cpm_price":50,"main_action":"buy"}`))
 	createReq.AddCookie(sess)
 	createReq.AddCookie(csrf)
 	createReq.Header.Set("X-CSRF-Token", csrf.Value)

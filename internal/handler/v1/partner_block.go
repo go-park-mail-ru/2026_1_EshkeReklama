@@ -17,17 +17,17 @@ import (
 )
 
 func (a *API) RegisterPartnerBlockHandlers(r *mux.Router) {
-	group := r.PathPrefix("/partners/sites/{site_id}/blocks").Subrouter()
-	group.Use(middleware.Auth(a.authClient, a.cookieConfig.Name))
-	group.HandleFunc("", a.ListPartnerBlocks).Methods(http.MethodGet)
-	group.HandleFunc("", a.CreatePartnerBlock).Methods(http.MethodPost)
-	group.HandleFunc("/{block_id}", a.GetPartnerBlock).Methods(http.MethodGet)
-	group.HandleFunc("/{block_id}/meta", a.UpdatePartnerBlockMeta).Methods(http.MethodPut)
-	group.HandleFunc("/{block_id}/general", a.UpdatePartnerBlockGeneral).Methods(http.MethodPut)
-	group.HandleFunc("/{block_id}/geography", a.UpdatePartnerBlockGeography).Methods(http.MethodPut)
-	group.HandleFunc("/{block_id}/self-ad", a.UpdatePartnerBlockSelfAd).Methods(http.MethodPut)
-	group.HandleFunc("/{block_id}", a.DeletePartnerBlock).Methods(http.MethodDelete)
-	group.HandleFunc("/{block_id}/embed", a.GetPartnerBlockEmbed).Methods(http.MethodGet)
+	partnerBlocks := r.PathPrefix("/partners/sites/{site_id}/blocks").Subrouter()
+	partnerBlocks.Use(middleware.Auth(a.authClient, a.cookieConfig.Name))
+	partnerBlocks.HandleFunc("", a.ListPartnerBlocks).Methods(http.MethodGet)
+	partnerBlocks.HandleFunc("", a.CreatePartnerBlock).Methods(http.MethodPost)
+	partnerBlocks.HandleFunc("/{block_id}", a.GetPartnerBlock).Methods(http.MethodGet)
+	partnerBlocks.HandleFunc("/{block_id}/meta", a.UpdatePartnerBlockMeta).Methods(http.MethodPut)
+	partnerBlocks.HandleFunc("/{block_id}/general", a.UpdatePartnerBlockGeneral).Methods(http.MethodPut)
+	partnerBlocks.HandleFunc("/{block_id}/geography", a.UpdatePartnerBlockGeography).Methods(http.MethodPut)
+	partnerBlocks.HandleFunc("/{block_id}/self-ad", a.UpdatePartnerBlockSelfAd).Methods(http.MethodPut)
+	partnerBlocks.HandleFunc("/{block_id}", a.DeletePartnerBlock).Methods(http.MethodDelete)
+	partnerBlocks.HandleFunc("/{block_id}/embed", a.GetPartnerBlockEmbed).Methods(http.MethodGet)
 
 	r.HandleFunc("/public/partner/blocks/{embed_token}/frame", a.GetPartnerBlockFrame).Methods(http.MethodGet)
 }

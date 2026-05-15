@@ -13,13 +13,13 @@ import (
 )
 
 func (a *API) RegisterPartnerSiteHandlers(r *mux.Router) {
-	group := r.PathPrefix("/partners/sites").Subrouter()
-	group.Use(middleware.Auth(a.authClient, a.cookieConfig.Name))
-	group.HandleFunc("", a.ListPartnerSites).Methods(http.MethodGet)
-	group.HandleFunc("", a.CreatePartnerSite).Methods(http.MethodPost)
-	group.HandleFunc("/{site_id}", a.GetPartnerSite).Methods(http.MethodGet)
-	group.HandleFunc("/{site_id}", a.UpdatePartnerSite).Methods(http.MethodPut)
-	group.HandleFunc("/{site_id}", a.DeletePartnerSite).Methods(http.MethodDelete)
+	partnerSites := r.PathPrefix("/partners/sites").Subrouter()
+	partnerSites.Use(middleware.Auth(a.authClient, a.cookieConfig.Name))
+	partnerSites.HandleFunc("", a.ListPartnerSites).Methods(http.MethodGet)
+	partnerSites.HandleFunc("", a.CreatePartnerSite).Methods(http.MethodPost)
+	partnerSites.HandleFunc("/{site_id}", a.GetPartnerSite).Methods(http.MethodGet)
+	partnerSites.HandleFunc("/{site_id}", a.UpdatePartnerSite).Methods(http.MethodPut)
+	partnerSites.HandleFunc("/{site_id}", a.DeletePartnerSite).Methods(http.MethodDelete)
 }
 
 // @Summary      Список сайтов партнера

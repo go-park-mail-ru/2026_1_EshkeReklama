@@ -24,6 +24,11 @@ func HandleError(w http.ResponseWriter, r *http.Request, desc string, err error)
 		logger.Debugf("unauthorized during %s: %v", desc, err)
 		httpx.Unauthorized(w, err.Error())
 
+	// 403 Forbidden: Пользователь авторизован, но у него нет нужных прав
+	case errors.Is(err, errs.ForbiddenError):
+		logger.Debugf("forbidden during %s: %v", desc, err)
+		httpx.Forbidden(w, err.Error())
+
 	// 404 Not Found: Ресурс не найден
 	case errors.Is(err, errs.NotFoundError):
 		logger.Debugf("not found during %s: %v", desc, err)

@@ -45,6 +45,20 @@ func (s *Service) CreateAd(ctx context.Context, in *serviceinput.CreateAd) (*mod
 	return ad, nil
 }
 
+func (s *Service) GetAdByID(ctx context.Context, adID int) (*models.Ad, error) {
+	if adID <= 0 {
+		return nil, fmt.Errorf("%w: invalid ad id", errs.BadRequestError)
+	}
+
+	ad, err := s.adRepo.GetByID(ctx, adID)
+	if err != nil {
+		return nil, err
+	}
+
+	s.decorateAdImageURL(ad)
+	return ad, nil
+}
+
 func (s *Service) UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error {
 	currentAd, err := s.adRepo.GetByID(ctx, in.ID)
 	if err != nil {
@@ -108,8 +122,112 @@ func (s *Service) ListAds(ctx context.Context, groupID int) ([]*models.Ad, error
 	return ads, nil
 }
 
+func (s *Service) ListModerationAds(ctx context.Context) ([]*models.Ad, error) {
+	ads, err := s.adRepo.ListByStatus(ctx, models.AdStatusModeration)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ad := range ads {
+		s.decorateAdImageURL(ad)
+	}
+
+	return ads, nil
+}
+
 func (s *Service) DeleteAd(ctx context.Context, adID int) error {
 	return s.adRepo.Delete(ctx, adID)
+}
+
+func (s *Service) UpdateAdModerationStatus(ctx context.Context, in *serviceinput.UpdateAdStatus) error {
+	if in == nil || in.AdID <= 0 {
+		return fmt.Errorf("%w: invalid ad status update", errs.BadRequestError)
+	}
+
+	ad, err := s.adRepo.GetByID(ctx, in.AdID)
+	if err != nil {
+		return err
+	}
+
+	group, err := s.adGroupRepo.GetByID(ctx, ad.AdGroupID)
+	if err != nil {
+		return err
+	}
+
+	campaign, err := s.adCampaignRepo.GetByID(ctx, group.AdCampaignID)
+	if err != nil {
+		return err
+	}
+
+	switch in.Decision {
+	case serviceinput.AdModerationApprove:
+		if s.canStartAd(ctx, campaign) {
+			ad.Status = models.AdStatusWorking
+		} else {
+			ad.Status = models.AdStatusNotEnoughMoney
+		}
+	case serviceinput.AdModerationDisapprove:
+		ad.Status = models.AdStatusRejected
+	default:
+		return fmt.Errorf("%w: invalid moderation decision", errs.BadRequestError)
+	}
+
+	ad.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	if err := s.adRepo.Update(ctx, ad); err != nil {
+		return err
+	}
+
+	ads, err := s.adRepo.ListByAdCampaignID(ctx, campaign.ID)
+	if err != nil {
+		return err
+	}
+
+	campaign.Status = campaignStatusFromAds(ads)
+	campaign.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	return s.adCampaignRepo.Update(ctx, campaign)
+}
+
+func (s *Service) canStartAd(ctx context.Context, campaign *models.AdCampaign) bool {
+	if campaign == nil || s.advertiserRepo == nil {
+		return false
+	}
+
+	price := ImpressionPrice(campaign.CPMPrice)
+	if campaign.DailyBudget <= 0 || campaign.CPMPrice <= 0 || price <= 0 || campaign.DailyBudget < price {
+		return false
+	}
+
+	advertiser, err := s.advertiserRepo.GetByID(ctx, campaign.AdvertiserID)
+	if err != nil {
+		return false
+	}
+
+	return advertiser.Balance >= price
+}
+
+func campaignStatusFromAds(ads []*models.Ad) models.AdStatus {
+	if hasAdStatus(ads, models.AdStatusWorking) {
+		return models.AdStatusWorking
+	}
+	if hasAdStatus(ads, models.AdStatusModeration) {
+		return models.AdStatusModeration
+	}
+	if hasAdStatus(ads, models.AdStatusNotEnoughMoney) {
+		return models.AdStatusNotEnoughMoney
+	}
+	if hasAdStatus(ads, models.AdStatusRejected) {
+		return models.AdStatusRejected
+	}
+	return models.AdStatusTurnedOff
+}
+
+func hasAdStatus(ads []*models.Ad, status models.AdStatus) bool {
+	for _, ad := range ads {
+		if ad != nil && ad.Status == status {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *Service) decorateAdImageURL(ad *models.Ad) {

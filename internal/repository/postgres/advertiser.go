@@ -20,13 +20,13 @@ func NewAdvertiserRepository(db *sql.DB) *AdvertiserRepository {
 
 const (
 	selectAdvertiserByID = `SELECT
-        id, name, surname, avatar_url, balance, company, city, tariff, created_at, updated_at
+        id, name, surname, avatar_url, balance, company, city, tariff, role, created_at, updated_at
     FROM eshkere.advertiser
     WHERE id = $1`
 
 	updateAdvertiser = `UPDATE eshkere.advertiser SET 
-    name = $1, surname = $2, avatar_url = $3, balance = $4, company = $5, city = $6, tariff = $7
-    WHERE id = $8`
+    name = $1, surname = $2, avatar_url = $3, balance = $4, company = $5, city = $6, tariff = $7, role = $8
+    WHERE id = $9`
 
 	// insertProfile вставляет профиль рекламодателя с явным id (из auth-сервиса).
 	// OVERRIDING SYSTEM VALUE позволяет передать id явно при GENERATED ALWAYS AS IDENTITY.
@@ -50,6 +50,7 @@ func (r *AdvertiserRepository) GetByID(ctx context.Context, id int) (*models.Adv
 		&a.Company,
 		&a.City,
 		&a.Tariff,
+		&a.Role,
 		&a.CreatedAt,
 		&a.UpdatedAt,
 	)
@@ -70,7 +71,7 @@ func (r *AdvertiserRepository) Update(ctx context.Context, a *models.Advertiser)
 
 	logger.GetLoggerFromCtx(ctx).Debugf("db: update advertiser by id: %d", a.ID)
 
-	_, err := r.db.ExecContext(ctx, updateAdvertiser, a.Name, a.Surname, a.AvatarURL, a.Balance, a.Company, a.City, a.Tariff, a.ID)
+	_, err := r.db.ExecContext(ctx, updateAdvertiser, a.Name, a.Surname, a.AvatarURL, a.Balance, a.Company, a.City, a.Tariff, a.Role, a.ID)
 	if err != nil {
 		return fmt.Errorf("update advertiser: %w", err)
 	}

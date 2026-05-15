@@ -9,6 +9,7 @@ var (
 	AlreadyExistsError      = errors.New("already exists")
 	BusinessLogicError      = errors.New("business logic error")
 	UnauthorizedError       = errors.New("unauthorized")
+	ForbiddenError          = errors.New("forbidden")
 	NotFoundError           = errors.New("not found")
 	InternalServiceError    = errors.New("internal service error")
 	NotImplementedError     = errors.New("not implemented")

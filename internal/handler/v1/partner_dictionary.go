@@ -8,13 +8,13 @@ import (
 )
 
 func (a *API) RegisterPartnerDictionaryHandlers(r *mux.Router) {
-	group := r.PathPrefix("/partners/dictionaries").Subrouter()
-	group.HandleFunc("/countries", a.ListPartnerCountries).Methods(http.MethodGet)
-	group.HandleFunc("/registration-regions", a.ListPartnerRegistrationRegions).Methods(http.MethodGet)
-	group.HandleFunc("/cooperation-forms", a.ListPartnerCooperationForms).Methods(http.MethodGet)
-	group.HandleFunc("/payout-currencies", a.ListPartnerPayoutCurrencies).Methods(http.MethodGet)
-	group.HandleFunc("/block-types", a.ListPartnerBlockTypes).Methods(http.MethodGet)
-	group.HandleFunc("/geo-tree", a.ListPartnerGeoTree).Methods(http.MethodGet)
+	partnerDictionaries := r.PathPrefix("/partners/dictionaries").Subrouter()
+	partnerDictionaries.HandleFunc("/countries", a.ListPartnerCountries).Methods(http.MethodGet)
+	partnerDictionaries.HandleFunc("/registration-regions", a.ListPartnerRegistrationRegions).Methods(http.MethodGet)
+	partnerDictionaries.HandleFunc("/cooperation-forms", a.ListPartnerCooperationForms).Methods(http.MethodGet)
+	partnerDictionaries.HandleFunc("/payout-currencies", a.ListPartnerPayoutCurrencies).Methods(http.MethodGet)
+	partnerDictionaries.HandleFunc("/block-types", a.ListPartnerBlockTypes).Methods(http.MethodGet)
+	partnerDictionaries.HandleFunc("/geo-tree", a.ListPartnerGeoTree).Methods(http.MethodGet)
 }
 
 // @Summary      Страны партнера

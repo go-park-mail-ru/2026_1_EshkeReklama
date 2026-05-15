@@ -41,6 +41,12 @@ const (
 	WHERE ag.ad_campaign_id = $1
 	ORDER BY a.created_at DESC, a.id DESC`
 
+	selectAdsByStatus = `SELECT
+		id, ad_group_id, status, title, short_desc, image_url, target_url, created_at, updated_at
+	FROM eshkere.ad
+	WHERE status = $1
+	ORDER BY created_at ASC, id ASC`
+
 	selectRandomWorkingAd = `SELECT
 		a.id, a.ad_group_id, a.status, a.title, a.short_desc, a.image_url, a.target_url, a.created_at, a.updated_at
 	FROM eshkere.ad a
@@ -183,6 +189,41 @@ func (r *AdRepository) ListByAdCampaignID(ctx context.Context, campaignID int) (
 	rows, err := r.db.QueryContext(ctx, selectAdsByCampaignID, campaignID)
 	if err != nil {
 		return nil, fmt.Errorf("list ads by campaign_id: %w", err)
+	}
+	defer rows.Close()
+
+	ads := make([]*models.Ad, 0)
+	for rows.Next() {
+		var ad models.Ad
+		if err = rows.Scan(
+			&ad.ID,
+			&ad.AdGroupID,
+			&ad.Status,
+			&ad.Title,
+			&ad.ShortDesc,
+			&ad.ImageURL,
+			&ad.TargetURL,
+			&ad.CreatedAt,
+			&ad.UpdatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("scan ad: %w", err)
+		}
+
+		ads = append(ads, &ad)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate ads rows: %w", err)
+	}
+
+	return ads, nil
+}
+
+func (r *AdRepository) ListByStatus(ctx context.Context, status models.AdStatus) ([]*models.Ad, error) {
+	logger.GetLoggerFromCtx(ctx).Debugf("db: get ads by status: %s", status)
+
+	rows, err := r.db.QueryContext(ctx, selectAdsByStatus, status)
+	if err != nil {
+		return nil, fmt.Errorf("list ads by status: %w", err)
 	}
 	defer rows.Close()
 

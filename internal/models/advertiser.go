@@ -6,11 +6,17 @@ import (
 )
 
 type TariffType string
+type AdvertiserRole string
 
 const (
 	TariffTypeNoob    TariffType = "noob"
 	TariffTypePro     TariffType = "pro"
 	TariffTypeCheater TariffType = "cheater"
+)
+
+const (
+	AdvertiserRoleUser  AdvertiserRole = "user"
+	AdvertiserRoleAdmin AdvertiserRole = "admin"
 )
 
 type Advertiser struct {
@@ -22,6 +28,7 @@ type Advertiser struct {
 	Company   sql.NullString `db:"company"`
 	City      sql.NullString `db:"city"`
 	Tariff    TariffType     `db:"tariff"`
+	Role      AdvertiserRole `db:"role"`
 	CreatedAt time.Time      `db:"created_at"`
 	UpdatedAt sql.NullTime   `db:"updated_at"`
 }

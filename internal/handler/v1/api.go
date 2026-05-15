@@ -42,7 +42,10 @@ type Service interface {
 	DeleteAdGroup(ctx context.Context, groupID int) error
 
 	CreateAd(ctx context.Context, in *serviceinput.CreateAd) (*models.Ad, error)
+	GetAdByID(ctx context.Context, adID int) (*models.Ad, error)
+	ListModerationAds(ctx context.Context) ([]*models.Ad, error)
 	UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error
+	UpdateAdModerationStatus(ctx context.Context, in *serviceinput.UpdateAdStatus) error
 	ListAds(ctx context.Context, groupID int) ([]*models.Ad, error)
 	DeleteAd(ctx context.Context, adID int) error
 
@@ -123,6 +126,7 @@ func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterAdCampaignHandlers(r)
 	a.RegisterAdGroupHandlers(r)
 	a.RegisterAdsHandlers(r)
+	a.RegisterAdminHandlers(r)
 	a.RegisterFeedHandlers(r)
 	a.RegisterAppealHandlers(r)
 }

@@ -17,20 +17,20 @@ import (
 )
 
 func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
-	groups := r.PathPrefix("/advertisers").Subrouter()
+	advertisers := r.PathPrefix("/advertisers").Subrouter()
 
-	groups.HandleFunc("/register", a.Register).Methods(http.MethodPost)
-	groups.HandleFunc("/login/vk", a.BeginVKIDLogin).Methods(http.MethodGet)
-	groups.HandleFunc("/login", a.Login).Methods(http.MethodPost)
-	groups.HandleFunc("/login/vk", a.LoginVKID).Methods(http.MethodPost)
-	groups.HandleFunc("/login/vk/callback", a.LoginVKIDCallback).Methods(http.MethodGet)
-	groups.HandleFunc("/logout", a.Logout).Methods(http.MethodPost)
-	groups.Handle("/balance", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.GetBalance))).Methods(http.MethodGet)
-	groups.Handle("/balance/topup", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.TopUpBalance))).Methods(http.MethodPost)
+	advertisers.HandleFunc("/register", a.Register).Methods(http.MethodPost)
+	advertisers.HandleFunc("/login/vk", a.BeginVKIDLogin).Methods(http.MethodGet)
+	advertisers.HandleFunc("/login", a.Login).Methods(http.MethodPost)
+	advertisers.HandleFunc("/login/vk", a.LoginVKID).Methods(http.MethodPost)
+	advertisers.HandleFunc("/login/vk/callback", a.LoginVKIDCallback).Methods(http.MethodGet)
+	advertisers.HandleFunc("/logout", a.Logout).Methods(http.MethodPost)
+	advertisers.Handle("/balance", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.GetBalance))).Methods(http.MethodGet)
+	advertisers.Handle("/balance/topup", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.TopUpBalance))).Methods(http.MethodPost)
 
-	groups.Handle("/me", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.Me))).Methods(http.MethodGet)
-	groups.Handle("/me", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.UpdateProfile))).Methods(http.MethodPut)
-	groups.Handle("/me/avatar", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.UpdateAvatar))).Methods(http.MethodPut)
+	advertisers.Handle("/me", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.Me))).Methods(http.MethodGet)
+	advertisers.Handle("/me", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.UpdateProfile))).Methods(http.MethodPut)
+	advertisers.Handle("/me/avatar", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.UpdateAvatar))).Methods(http.MethodPut)
 }
 
 // @Summary      Регистрация рекламодателя

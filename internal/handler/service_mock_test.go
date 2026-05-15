@@ -72,6 +72,36 @@ func (mr *MockServiceMockRecorder) CreateAd(ctx, in any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAd", reflect.TypeOf((*MockService)(nil).CreateAd), ctx, in)
 }
 
+// GetAdByID mocks base method.
+func (m *MockService) GetAdByID(ctx context.Context, adID int) (*models.Ad, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAdByID", ctx, adID)
+	ret0, _ := ret[0].(*models.Ad)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAdByID indicates an expected call of GetAdByID.
+func (mr *MockServiceMockRecorder) GetAdByID(ctx, adID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdByID", reflect.TypeOf((*MockService)(nil).GetAdByID), ctx, adID)
+}
+
+// ListModerationAds mocks base method.
+func (m *MockService) ListModerationAds(ctx context.Context) ([]*models.Ad, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListModerationAds", ctx)
+	ret0, _ := ret[0].([]*models.Ad)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListModerationAds indicates an expected call of ListModerationAds.
+func (mr *MockServiceMockRecorder) ListModerationAds(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListModerationAds", reflect.TypeOf((*MockService)(nil).ListModerationAds), ctx)
+}
+
 // CreateAdCampaign mocks base method.
 func (m *MockService) CreateAdCampaign(ctx context.Context, in *input.CreateAdCampaign) (*models.AdCampaign, error) {
 	m.ctrl.T.Helper()
@@ -261,6 +291,20 @@ func (m *MockService) UpdateAd(ctx context.Context, in *input.UpdateAd) error {
 func (mr *MockServiceMockRecorder) UpdateAd(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAd", reflect.TypeOf((*MockService)(nil).UpdateAd), ctx, in)
+}
+
+// UpdateAdModerationStatus mocks base method.
+func (m *MockService) UpdateAdModerationStatus(ctx context.Context, in *input.UpdateAdStatus) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAdModerationStatus", ctx, in)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateAdModerationStatus indicates an expected call of UpdateAdModerationStatus.
+func (mr *MockServiceMockRecorder) UpdateAdModerationStatus(ctx, in any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAdModerationStatus", reflect.TypeOf((*MockService)(nil).UpdateAdModerationStatus), ctx, in)
 }
 
 func (m *MockService) GetAdByFeedToken(ctx context.Context, token string) (*models.Ad, error) {

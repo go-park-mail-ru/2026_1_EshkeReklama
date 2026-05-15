@@ -15,11 +15,11 @@ import (
 )
 
 func (a *API) RegisterAppealHandlers(r *mux.Router) {
-	appealGroup := r.PathPrefix("/appeals").Subrouter()
+	appeals := r.PathPrefix("/appeals").Subrouter()
 
-	appealGroup.HandleFunc("", a.CreateAppeal).Methods(http.MethodPost)
-	appealGroup.Handle("", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.ListAppeals))).Methods(http.MethodGet)
-	appealGroup.Handle("/{appeal_id}", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.GetAppealByID))).Methods(http.MethodGet)
+	appeals.HandleFunc("", a.CreateAppeal).Methods(http.MethodPost)
+	appeals.Handle("", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.ListAppeals))).Methods(http.MethodGet)
+	appeals.Handle("/{appeal_id}", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.GetAppealByID))).Methods(http.MethodGet)
 }
 
 // @Summary      Создание обращения

@@ -746,6 +746,21 @@ func (mr *MockAdRepositoryMockRecorder) ListByAdCampaignID(ctx, campaignID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAdCampaignID", reflect.TypeOf((*MockAdRepository)(nil).ListByAdCampaignID), ctx, campaignID)
 }
 
+// ListByStatus mocks base method.
+func (m *MockAdRepository) ListByStatus(ctx context.Context, status models.AdStatus) ([]*models.Ad, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListByStatus", ctx, status)
+	ret0, _ := ret[0].([]*models.Ad)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListByStatus indicates an expected call of ListByStatus.
+func (mr *MockAdRepositoryMockRecorder) ListByStatus(ctx, status any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByStatus", reflect.TypeOf((*MockAdRepository)(nil).ListByStatus), ctx, status)
+}
+
 // ListByAdGroupID mocks base method.
 func (m *MockAdRepository) ListByAdGroupID(ctx context.Context, adGroupID int) ([]*models.Ad, error) {
 	m.ctrl.T.Helper()

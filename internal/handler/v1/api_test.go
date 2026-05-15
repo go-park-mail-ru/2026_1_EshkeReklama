@@ -131,7 +131,10 @@ type stubService struct {
 	listAdGroupsFn              func(ctx context.Context, campaignID int) ([]*models.AdGroup, error)
 	deleteAdGroupFn             func(ctx context.Context, groupID int) error
 	createAdFn                  func(ctx context.Context, in *serviceinput.CreateAd) (*models.Ad, error)
+	getAdByIDFn                 func(ctx context.Context, adID int) (*models.Ad, error)
+	listModerationAdsFn         func(ctx context.Context) ([]*models.Ad, error)
 	updateAdFn                  func(ctx context.Context, in *serviceinput.UpdateAd) error
+	updateAdModerationStatusFn  func(ctx context.Context, in *serviceinput.UpdateAdStatus) error
 	listAdsFn                   func(ctx context.Context, groupID int) ([]*models.Ad, error)
 	deleteAdFn                  func(ctx context.Context, adID int) error
 	createAppealFn              func(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
@@ -296,9 +299,30 @@ func (s *stubService) CreateAd(ctx context.Context, in *serviceinput.CreateAd) (
 	return nil, nil
 }
 
+func (s *stubService) GetAdByID(ctx context.Context, adID int) (*models.Ad, error) {
+	if s.getAdByIDFn != nil {
+		return s.getAdByIDFn(ctx, adID)
+	}
+	return nil, nil
+}
+
+func (s *stubService) ListModerationAds(ctx context.Context) ([]*models.Ad, error) {
+	if s.listModerationAdsFn != nil {
+		return s.listModerationAdsFn(ctx)
+	}
+	return nil, nil
+}
+
 func (s *stubService) UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error {
 	if s.updateAdFn != nil {
 		return s.updateAdFn(ctx, in)
+	}
+	return nil
+}
+
+func (s *stubService) UpdateAdModerationStatus(ctx context.Context, in *serviceinput.UpdateAdStatus) error {
+	if s.updateAdModerationStatusFn != nil {
+		return s.updateAdModerationStatusFn(ctx, in)
 	}
 	return nil
 }

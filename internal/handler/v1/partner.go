@@ -14,12 +14,12 @@ import (
 )
 
 func (a *API) RegisterPartnerHandlers(r *mux.Router) {
-	groups := r.PathPrefix("/partners").Subrouter()
-	groups.HandleFunc("/register", a.RegisterPartner).Methods(http.MethodPost)
-	groups.HandleFunc("/login", a.LoginPartner).Methods(http.MethodPost)
-	groups.HandleFunc("/logout", a.LogoutPartner).Methods(http.MethodPost)
-	groups.Handle("/me", middleware.PartnerAuth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.MePartner))).Methods(http.MethodGet)
-	groups.Handle("/me", middleware.PartnerAuth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.UpdatePartner))).Methods(http.MethodPut)
+	partners := r.PathPrefix("/partners").Subrouter()
+	partners.HandleFunc("/register", a.RegisterPartner).Methods(http.MethodPost)
+	partners.HandleFunc("/login", a.LoginPartner).Methods(http.MethodPost)
+	partners.HandleFunc("/logout", a.LogoutPartner).Methods(http.MethodPost)
+	partners.Handle("/me", middleware.PartnerAuth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.MePartner))).Methods(http.MethodGet)
+	partners.Handle("/me", middleware.PartnerAuth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.UpdatePartner))).Methods(http.MethodPut)
 }
 
 // @Summary      Регистрация партнера

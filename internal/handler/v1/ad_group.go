@@ -4,6 +4,7 @@ import (
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
+	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
 	"net/http"
 	"strconv"
@@ -31,11 +32,18 @@ func (a *API) RegisterAdGroupHandlers(r *mux.Router) {
 // @Success      200             {object}  dto.CreateAdGroupResponse
 // @Failure      400             {object}  httpx.Error
 // @Failure      401             {object}  httpx.Error
+// @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
 // @Router       /ad_campaigns/{ad_campaign_id}/ad_groups [post]
 // @Security     CookieAuth
 func (a *API) CreateAdGroup(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
 
 	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
 	if err != nil {
@@ -49,7 +57,7 @@ func (a *API) CreateAdGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	created, err := a.service.CreateAdGroup(ctx, req.ToInput(campaignID))
+	created, err := a.service.CreateAdGroup(ctx, advertiserID, req.ToInput(campaignID))
 	if err != nil {
 		handler.HandleError(w, r, "creating group", err)
 		return
@@ -71,11 +79,18 @@ func (a *API) CreateAdGroup(w http.ResponseWriter, r *http.Request) {
 // @Success      200             {object}  httpx.Success
 // @Failure      400             {object}  httpx.Error
 // @Failure      401             {object}  httpx.Error
+// @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
 // @Router       /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id} [put]
 // @Security     CookieAuth
 func (a *API) UpdateAdGroup(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
 
 	groupID, err := strconv.Atoi(mux.Vars(r)["ad_group_id"])
 	if err != nil {
@@ -89,7 +104,7 @@ func (a *API) UpdateAdGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = a.service.UpdateAdGroup(ctx, req.ToInput(groupID)); err != nil {
+	if err = a.service.UpdateAdGroup(ctx, advertiserID, req.ToInput(groupID)); err != nil {
 		handler.HandleError(w, r, "updating group", err)
 		return
 	}
@@ -105,11 +120,18 @@ func (a *API) UpdateAdGroup(w http.ResponseWriter, r *http.Request) {
 // @Success      200             {object}  dto.ListAdGroupsResponse
 // @Failure      400             {object}  httpx.Error
 // @Failure      401             {object}  httpx.Error
+// @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
 // @Router       /ad_campaigns/{ad_campaign_id}/ad_groups [get]
 // @Security     CookieAuth
 func (a *API) ListAdGroups(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
 
 	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
 	if err != nil {
@@ -117,7 +139,7 @@ func (a *API) ListAdGroups(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	groups, err := a.service.ListAdGroups(ctx, campaignID)
+	groups, err := a.service.ListAdGroups(ctx, advertiserID, campaignID)
 	if err != nil {
 		handler.HandleError(w, r, "listing groups", err)
 		return
@@ -135,11 +157,18 @@ func (a *API) ListAdGroups(w http.ResponseWriter, r *http.Request) {
 // @Success      200             {object}  httpx.Success
 // @Failure      400             {object}  httpx.Error
 // @Failure      401             {object}  httpx.Error
+// @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
 // @Router       /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id} [delete]
 // @Security     CookieAuth
 func (a *API) DeleteAdGroup(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
 
 	groupID, err := strconv.Atoi(mux.Vars(r)["ad_group_id"])
 	if err != nil {
@@ -147,7 +176,7 @@ func (a *API) DeleteAdGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = a.service.DeleteAdGroup(ctx, groupID); err != nil {
+	if err = a.service.DeleteAdGroup(ctx, advertiserID, groupID); err != nil {
 		handler.HandleError(w, r, "deleting group", err)
 		return
 	}

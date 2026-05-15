@@ -3,8 +3,10 @@ package service
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"testing"
 
+	errs "eshkere/internal/errors"
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
 
@@ -22,7 +24,7 @@ func TestUpdateAdCampaign_UpdatesProvidedFields(t *testing.T) {
 	repo.EXPECT().GetByID(gomock.Any(), 1).Return(current, nil)
 	repo.EXPECT().Update(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ context.Context, c *models.AdCampaign) error {
-			if c.Name != "new" || c.Status != models.AdStatusRejected {
+			if c.Name != "new" || c.Status != models.AdStatusWorking {
 				t.Fatalf("unexpected updated: %+v", c)
 			}
 			if c.UpdatedAt.Valid != true {
@@ -32,11 +34,9 @@ func TestUpdateAdCampaign_UpdatesProvidedFields(t *testing.T) {
 		})
 
 	name := "new"
-	status := models.AdStatusRejected
-	if err := svc.UpdateAdCampaign(context.Background(), &serviceinput.UpdateAdCampaign{
-		ID:     1,
-		Name:   &name,
-		Status: &status,
+	if err := svc.UpdateAdCampaign(context.Background(), 7, &serviceinput.UpdateAdCampaign{
+		ID:   1,
+		Name: &name,
 	}); err != nil {
 		t.Fatalf("UpdateAdCampaign: %v", err)
 	}
@@ -47,10 +47,12 @@ func TestUpdateAdGroup_UpdatesProvidedFields(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := NewMockAdGroupRepository(ctrl)
-	svc, _ := NewService(&Config{AdGroupRepo: repo})
+	campaignRepo := NewMockAdCampaignRepository(ctrl)
+	svc, _ := NewService(&Config{AdGroupRepo: repo, AdCampaignRepo: campaignRepo})
 
 	current := &models.AdGroup{ID: 1, AdCampaignID: 2, TopicID: 1, RegionID: 1, Name: "old", AgeFrom: 18, AgeTo: 25, Gender: "any"}
 	repo.EXPECT().GetByID(gomock.Any(), 1).Return(current, nil)
+	campaignRepo.EXPECT().GetByID(gomock.Any(), 2).Return(&models.AdCampaign{ID: 2, AdvertiserID: 7}, nil)
 	repo.EXPECT().Update(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ context.Context, g *models.AdGroup) error {
 			if g.Name != "new" || g.AgeFrom != 21 {
@@ -64,7 +66,7 @@ func TestUpdateAdGroup_UpdatesProvidedFields(t *testing.T) {
 
 	name := "new"
 	ageFrom := 21
-	if err := svc.UpdateAdGroup(context.Background(), &serviceinput.UpdateAdGroup{
+	if err := svc.UpdateAdGroup(context.Background(), 7, &serviceinput.UpdateAdGroup{
 		ID:      1,
 		Name:    &name,
 		AgeFrom: &ageFrom,
@@ -78,8 +80,12 @@ func TestCreateAd_SetsModerationStatus(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := NewMockAdRepository(ctrl)
-	svc, _ := NewService(&Config{AdRepo: repo})
+	groupRepo := NewMockAdGroupRepository(ctrl)
+	campaignRepo := NewMockAdCampaignRepository(ctrl)
+	svc, _ := NewService(&Config{AdRepo: repo, AdGroupRepo: groupRepo, AdCampaignRepo: campaignRepo})
 
+	groupRepo.EXPECT().GetByID(gomock.Any(), 2).Return(&models.AdGroup{ID: 2, AdCampaignID: 3}, nil)
+	campaignRepo.EXPECT().GetByID(gomock.Any(), 3).Return(&models.AdCampaign{ID: 3, AdvertiserID: 7}, nil)
 	repo.EXPECT().Create(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ context.Context, a *models.Ad) error {
 			if a.AdGroupID != 2 || a.Title != "t" || a.Status != models.AdStatusModeration {
@@ -88,7 +94,7 @@ func TestCreateAd_SetsModerationStatus(t *testing.T) {
 			return nil
 		})
 
-	if _, err := svc.CreateAd(context.Background(), &serviceinput.CreateAd{
+	if _, err := svc.CreateAd(context.Background(), 7, &serviceinput.CreateAd{
 		AdGroupID: 2,
 		Title:     "t",
 	}); err != nil {
@@ -142,14 +148,21 @@ func TestUpdateAd_SetsUpdatedAt(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := NewMockAdRepository(ctrl)
-	svc, _ := NewService(&Config{AdRepo: repo})
+	groupRepo := NewMockAdGroupRepository(ctrl)
+	campaignRepo := NewMockAdCampaignRepository(ctrl)
+	svc, _ := NewService(&Config{AdRepo: repo, AdGroupRepo: groupRepo, AdCampaignRepo: campaignRepo})
 
-	current := &models.Ad{ID: 9, Title: "old"}
+	current := &models.Ad{ID: 9, AdGroupID: 3, Title: "old"}
 	repo.EXPECT().GetByID(gomock.Any(), 9).Return(current, nil)
+	groupRepo.EXPECT().GetByID(gomock.Any(), 3).Return(&models.AdGroup{ID: 3, AdCampaignID: 2}, nil)
+	campaignRepo.EXPECT().GetByID(gomock.Any(), 2).Return(&models.AdCampaign{ID: 2, AdvertiserID: 7}, nil).Times(3)
 	repo.EXPECT().Update(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ context.Context, a *models.Ad) error {
 			if a.Title != "new" {
 				t.Fatalf("expected title updated")
+			}
+			if a.Status != models.AdStatusModeration {
+				t.Fatalf("expected content update to send ad to moderation, got %s", a.Status)
 			}
 			if a.UpdatedAt.Valid != true {
 				t.Fatalf("expected UpdatedAt set")
@@ -157,9 +170,62 @@ func TestUpdateAd_SetsUpdatedAt(t *testing.T) {
 			return nil
 		})
 
+	repo.EXPECT().ListByAdCampaignID(gomock.Any(), 2).Return([]*models.Ad{{ID: 9, Status: models.AdStatusModeration}}, nil)
+	campaignRepo.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
+
 	title := "new"
-	if err := svc.UpdateAd(context.Background(), &serviceinput.UpdateAd{ID: 9, Title: &title}); err != nil {
+	if err := svc.UpdateAd(context.Background(), 7, &serviceinput.UpdateAd{ID: 9, Title: &title}); err != nil {
 		t.Fatalf("UpdateAd: %v", err)
+	}
+}
+
+func TestUpdateAd_TurnOnWithoutMoneySetsNotEnoughMoney(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	adRepo := NewMockAdRepository(ctrl)
+	groupRepo := NewMockAdGroupRepository(ctrl)
+	campaignRepo := NewMockAdCampaignRepository(ctrl)
+	advertiserRepo := NewMockAdvertiserRepository(ctrl)
+	svc, _ := NewService(&Config{
+		AdRepo:         adRepo,
+		AdGroupRepo:    groupRepo,
+		AdCampaignRepo: campaignRepo,
+		AdvertiserRepo: advertiserRepo,
+	})
+
+	adRepo.EXPECT().GetByID(gomock.Any(), 9).Return(&models.Ad{ID: 9, AdGroupID: 3, Status: models.AdStatusTurnedOff}, nil)
+	groupRepo.EXPECT().GetByID(gomock.Any(), 3).Return(&models.AdGroup{ID: 3, AdCampaignID: 2}, nil)
+	campaignRepo.EXPECT().GetByID(gomock.Any(), 2).Return(&models.AdCampaign{ID: 2, AdvertiserID: 7, DailyBudget: 100, CPMPrice: 1000}, nil).Times(3)
+	advertiserRepo.EXPECT().GetByID(gomock.Any(), 7).Return(&models.Advertiser{ID: 7, Balance: 0}, nil)
+	adRepo.EXPECT().Update(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, ad *models.Ad) error {
+			if ad.Status != models.AdStatusNotEnoughMoney {
+				t.Fatalf("expected not_enough_money, got %s", ad.Status)
+			}
+			return nil
+		})
+	adRepo.EXPECT().ListByAdCampaignID(gomock.Any(), 2).Return([]*models.Ad{{Status: models.AdStatusNotEnoughMoney}}, nil)
+	campaignRepo.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
+
+	status := models.AdStatusWorking
+	if err := svc.UpdateAd(context.Background(), 7, &serviceinput.UpdateAd{ID: 9, Status: &status}); err != nil {
+		t.Fatalf("UpdateAd: %v", err)
+	}
+}
+
+func TestUpdateAdCampaign_HidesForeignCampaign(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := NewMockAdCampaignRepository(ctrl)
+	svc, _ := NewService(&Config{AdCampaignRepo: repo})
+
+	repo.EXPECT().GetByID(gomock.Any(), 1).Return(&models.AdCampaign{ID: 1, AdvertiserID: 8}, nil)
+	name := "new"
+	err := svc.UpdateAdCampaign(context.Background(), 7, &serviceinput.UpdateAdCampaign{ID: 1, Name: &name})
+	if !errors.Is(err, errs.NotFoundError) {
+		t.Fatalf("expected not found for foreign campaign, got %v", err)
 	}
 }
 
@@ -185,7 +251,7 @@ func TestUpdateAdModerationStatus_ApproveWithEnoughBalance(t *testing.T) {
 
 	adRepo.EXPECT().GetByID(gomock.Any(), 9).Return(ad, nil)
 	groupRepo.EXPECT().GetByID(gomock.Any(), 3).Return(group, nil)
-	campaignRepo.EXPECT().GetByID(gomock.Any(), 2).Return(campaign, nil)
+	campaignRepo.EXPECT().GetByID(gomock.Any(), 2).Return(campaign, nil).Times(2)
 	advertiserRepo.EXPECT().GetByID(gomock.Any(), 7).Return(advertiser, nil)
 	adRepo.EXPECT().Update(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ context.Context, updated *models.Ad) error {
@@ -239,7 +305,7 @@ func TestUpdateAdModerationStatus_ApproveWithoutEnoughBalance(t *testing.T) {
 	groupRepo.EXPECT().GetByID(gomock.Any(), 3).Return(&models.AdGroup{ID: 3, AdCampaignID: 2}, nil)
 	campaignRepo.EXPECT().GetByID(gomock.Any(), 2).Return(&models.AdCampaign{
 		ID: 2, AdvertiserID: 7, DailyBudget: 100, CPMPrice: 1000,
-	}, nil)
+	}, nil).Times(2)
 	advertiserRepo.EXPECT().GetByID(gomock.Any(), 7).Return(&models.Advertiser{ID: 7, Balance: 0}, nil)
 	adRepo.EXPECT().Update(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ context.Context, updated *models.Ad) error {

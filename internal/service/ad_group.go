@@ -8,7 +8,10 @@ import (
 	"time"
 )
 
-func (s *Service) CreateAdGroup(ctx context.Context, in *serviceinput.CreateAdGroup) (*models.AdGroup, error) {
+func (s *Service) CreateAdGroup(ctx context.Context, advertiserID int, in *serviceinput.CreateAdGroup) (*models.AdGroup, error) {
+	if _, err := s.ownedCampaign(ctx, advertiserID, in.AdCampaignID); err != nil {
+		return nil, err
+	}
 	g := &models.AdGroup{
 		AdCampaignID: in.AdCampaignID,
 		TopicID:      in.TopicID,
@@ -25,9 +28,12 @@ func (s *Service) CreateAdGroup(ctx context.Context, in *serviceinput.CreateAdGr
 	return g, nil
 }
 
-func (s *Service) UpdateAdGroup(ctx context.Context, in *serviceinput.UpdateAdGroup) error {
+func (s *Service) UpdateAdGroup(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdGroup) error {
 	current, err := s.adGroupRepo.GetByID(ctx, in.ID)
 	if err != nil {
+		return err
+	}
+	if _, err := s.ownedCampaign(ctx, advertiserID, current.AdCampaignID); err != nil {
 		return err
 	}
 
@@ -54,10 +60,20 @@ func (s *Service) UpdateAdGroup(ctx context.Context, in *serviceinput.UpdateAdGr
 	return s.adGroupRepo.Update(ctx, current)
 }
 
-func (s *Service) ListAdGroups(ctx context.Context, campaignID int) ([]*models.AdGroup, error) {
+func (s *Service) ListAdGroups(ctx context.Context, advertiserID, campaignID int) ([]*models.AdGroup, error) {
+	if _, err := s.ownedCampaign(ctx, advertiserID, campaignID); err != nil {
+		return nil, err
+	}
 	return s.adGroupRepo.ListByCampaignID(ctx, campaignID)
 }
 
-func (s *Service) DeleteAdGroup(ctx context.Context, groupID int) error {
-	return s.adGroupRepo.Delete(ctx, groupID)
+func (s *Service) DeleteAdGroup(ctx context.Context, advertiserID, groupID int) error {
+	group, err := s.ownedGroup(ctx, advertiserID, groupID)
+	if err != nil {
+		return err
+	}
+	if err := s.adGroupRepo.Delete(ctx, groupID); err != nil {
+		return err
+	}
+	return s.recalculateCampaignStatus(ctx, group.AdCampaignID)
 }

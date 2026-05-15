@@ -123,20 +123,20 @@ type stubService struct {
 	requestAdFn                 func(ctx context.Context, embedToken, visitorID string) (*service.AdRequestResult, error)
 	clickAdFn                   func(ctx context.Context, requestID string) (string, error)
 	createAdCampaignFn          func(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error)
-	updateAdCampaignFn          func(ctx context.Context, in *serviceinput.UpdateAdCampaign) error
+	updateAdCampaignFn          func(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdCampaign) error
 	listAdCampaignsFn           func(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
-	deleteAdCampaignFn          func(ctx context.Context, campaignID int) error
-	createAdGroupFn             func(ctx context.Context, in *serviceinput.CreateAdGroup) (*models.AdGroup, error)
-	updateAdGroupFn             func(ctx context.Context, in *serviceinput.UpdateAdGroup) error
-	listAdGroupsFn              func(ctx context.Context, campaignID int) ([]*models.AdGroup, error)
-	deleteAdGroupFn             func(ctx context.Context, groupID int) error
-	createAdFn                  func(ctx context.Context, in *serviceinput.CreateAd) (*models.Ad, error)
+	deleteAdCampaignFn          func(ctx context.Context, advertiserID, campaignID int) error
+	createAdGroupFn             func(ctx context.Context, advertiserID int, in *serviceinput.CreateAdGroup) (*models.AdGroup, error)
+	updateAdGroupFn             func(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdGroup) error
+	listAdGroupsFn              func(ctx context.Context, advertiserID, campaignID int) ([]*models.AdGroup, error)
+	deleteAdGroupFn             func(ctx context.Context, advertiserID, groupID int) error
+	createAdFn                  func(ctx context.Context, advertiserID int, in *serviceinput.CreateAd) (*models.Ad, error)
 	getAdByIDFn                 func(ctx context.Context, adID int) (*models.Ad, error)
 	listModerationAdsFn         func(ctx context.Context) ([]*models.Ad, error)
-	updateAdFn                  func(ctx context.Context, in *serviceinput.UpdateAd) error
+	updateAdFn                  func(ctx context.Context, advertiserID int, in *serviceinput.UpdateAd) error
 	updateAdModerationStatusFn  func(ctx context.Context, in *serviceinput.UpdateAdStatus) error
-	listAdsFn                   func(ctx context.Context, groupID int) ([]*models.Ad, error)
-	deleteAdFn                  func(ctx context.Context, adID int) error
+	listAdsFn                   func(ctx context.Context, advertiserID, groupID int) ([]*models.Ad, error)
+	deleteAdFn                  func(ctx context.Context, advertiserID, adID int) error
 	createAppealFn              func(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
 	listAppealsFn               func(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
 	getAppealByIDFn             func(ctx context.Context, appealID int) (*models.Appeal, error)
@@ -243,9 +243,9 @@ func (s *stubService) CreateAdCampaign(ctx context.Context, in *serviceinput.Cre
 	return nil, nil
 }
 
-func (s *stubService) UpdateAdCampaign(ctx context.Context, in *serviceinput.UpdateAdCampaign) error {
+func (s *stubService) UpdateAdCampaign(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdCampaign) error {
 	if s.updateAdCampaignFn != nil {
-		return s.updateAdCampaignFn(ctx, in)
+		return s.updateAdCampaignFn(ctx, advertiserID, in)
 	}
 	return nil
 }
@@ -257,44 +257,44 @@ func (s *stubService) ListAdCampaigns(ctx context.Context, advertiserID int) ([]
 	return nil, nil
 }
 
-func (s *stubService) DeleteAdCampaign(ctx context.Context, campaignID int) error {
+func (s *stubService) DeleteAdCampaign(ctx context.Context, advertiserID, campaignID int) error {
 	if s.deleteAdCampaignFn != nil {
-		return s.deleteAdCampaignFn(ctx, campaignID)
+		return s.deleteAdCampaignFn(ctx, advertiserID, campaignID)
 	}
 	return nil
 }
 
-func (s *stubService) CreateAdGroup(ctx context.Context, in *serviceinput.CreateAdGroup) (*models.AdGroup, error) {
+func (s *stubService) CreateAdGroup(ctx context.Context, advertiserID int, in *serviceinput.CreateAdGroup) (*models.AdGroup, error) {
 	if s.createAdGroupFn != nil {
-		return s.createAdGroupFn(ctx, in)
+		return s.createAdGroupFn(ctx, advertiserID, in)
 	}
 	return nil, nil
 }
 
-func (s *stubService) UpdateAdGroup(ctx context.Context, in *serviceinput.UpdateAdGroup) error {
+func (s *stubService) UpdateAdGroup(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdGroup) error {
 	if s.updateAdGroupFn != nil {
-		return s.updateAdGroupFn(ctx, in)
+		return s.updateAdGroupFn(ctx, advertiserID, in)
 	}
 	return nil
 }
 
-func (s *stubService) ListAdGroups(ctx context.Context, campaignID int) ([]*models.AdGroup, error) {
+func (s *stubService) ListAdGroups(ctx context.Context, advertiserID, campaignID int) ([]*models.AdGroup, error) {
 	if s.listAdGroupsFn != nil {
-		return s.listAdGroupsFn(ctx, campaignID)
+		return s.listAdGroupsFn(ctx, advertiserID, campaignID)
 	}
 	return nil, nil
 }
 
-func (s *stubService) DeleteAdGroup(ctx context.Context, groupID int) error {
+func (s *stubService) DeleteAdGroup(ctx context.Context, advertiserID, groupID int) error {
 	if s.deleteAdGroupFn != nil {
-		return s.deleteAdGroupFn(ctx, groupID)
+		return s.deleteAdGroupFn(ctx, advertiserID, groupID)
 	}
 	return nil
 }
 
-func (s *stubService) CreateAd(ctx context.Context, in *serviceinput.CreateAd) (*models.Ad, error) {
+func (s *stubService) CreateAd(ctx context.Context, advertiserID int, in *serviceinput.CreateAd) (*models.Ad, error) {
 	if s.createAdFn != nil {
-		return s.createAdFn(ctx, in)
+		return s.createAdFn(ctx, advertiserID, in)
 	}
 	return nil, nil
 }
@@ -313,9 +313,9 @@ func (s *stubService) ListModerationAds(ctx context.Context) ([]*models.Ad, erro
 	return nil, nil
 }
 
-func (s *stubService) UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error {
+func (s *stubService) UpdateAd(ctx context.Context, advertiserID int, in *serviceinput.UpdateAd) error {
 	if s.updateAdFn != nil {
-		return s.updateAdFn(ctx, in)
+		return s.updateAdFn(ctx, advertiserID, in)
 	}
 	return nil
 }
@@ -327,16 +327,16 @@ func (s *stubService) UpdateAdModerationStatus(ctx context.Context, in *servicei
 	return nil
 }
 
-func (s *stubService) ListAds(ctx context.Context, groupID int) ([]*models.Ad, error) {
+func (s *stubService) ListAds(ctx context.Context, advertiserID, groupID int) ([]*models.Ad, error) {
 	if s.listAdsFn != nil {
-		return s.listAdsFn(ctx, groupID)
+		return s.listAdsFn(ctx, advertiserID, groupID)
 	}
 	return nil, nil
 }
 
-func (s *stubService) DeleteAd(ctx context.Context, adID int) error {
+func (s *stubService) DeleteAd(ctx context.Context, advertiserID, adID int) error {
 	if s.deleteAdFn != nil {
-		return s.deleteAdFn(ctx, adID)
+		return s.deleteAdFn(ctx, advertiserID, adID)
 	}
 	return nil
 }
@@ -833,7 +833,10 @@ func TestListAds_UnauthorizedAndEmptyList(t *testing.T) {
 
 	csrf := getCSRF(t, r)
 
-	svc.listAdsFn = func(_ context.Context, groupID int) ([]*models.Ad, error) {
+	svc.listAdsFn = func(_ context.Context, advertiserID, groupID int) ([]*models.Ad, error) {
+		if advertiserID != 1 {
+			t.Fatalf("unexpected advertiser id: %d", advertiserID)
+		}
 		if groupID != 2 {
 			t.Fatalf("unexpected group id: %d", groupID)
 		}

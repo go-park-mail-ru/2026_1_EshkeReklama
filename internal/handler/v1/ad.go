@@ -5,6 +5,7 @@ import (
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
 	serviceinput "eshkere/internal/service/input"
+	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
 	"net/http"
 	"strconv"
@@ -36,11 +37,18 @@ func (a *API) RegisterAdsHandlers(r *mux.Router) {
 // @Success      200             {object}  dto.CreateAdResponse
 // @Failure      400             {object}  httpx.Error
 // @Failure      401             {object}  httpx.Error
+// @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
 // @Router       /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads [post]
 // @Security     CookieAuth
 func (a *API) CreateAd(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
 
 	groupID, err := strconv.Atoi(mux.Vars(r)["ad_group_id"])
 	if err != nil {
@@ -54,7 +62,7 @@ func (a *API) CreateAd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdAd, err := a.service.CreateAd(ctx, in)
+	createdAd, err := a.service.CreateAd(ctx, advertiserID, in)
 	if err != nil {
 		handler.HandleError(w, r, "creating ad", err)
 		return
@@ -67,6 +75,7 @@ func (a *API) CreateAd(w http.ResponseWriter, r *http.Request) {
 
 // UpdateAd обновляет объявление.
 // @Summary      Обновление объявления
+// @Description  Пользователь может только включать и выключать объявление; изменение контента повторно отправляет его на модерацию
 // @Tags         ads
 // @Accept       multipart/form-data
 // @Produce      json
@@ -74,18 +83,26 @@ func (a *API) CreateAd(w http.ResponseWriter, r *http.Request) {
 // @Param        ad_group_id     path      int                    true  "ID группы объявлений"
 // @Param        ad_id           path      int                    true  "ID объявления"
 // @Param        title           formData  string                 false "Новый заголовок объявления"
-// @Param        status          formData  string                 false "Новый статус объявления"  Enums(turned_off, moderation, working, rejected, not_enough_money)
+// @Param        status          formData  string                 false "Новый статус объявления"  Enums(turned_off, working)
 // @Param        short_desc      formData  string                 false "Новое короткое описание объявления"
 // @Param        target_url      formData  string                 false "Новый целевой URL"
 // @Param        image           formData  file                   false "Новое изображение объявления"
 // @Success      200             {object}  httpx.Success
 // @Failure      400             {object}  httpx.Error
 // @Failure      401             {object}  httpx.Error
+// @Failure      404             {object}  httpx.Error
+// @Failure      422             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
 // @Router       /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id} [put]
 // @Security     CookieAuth
 func (a *API) UpdateAd(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
 
 	adID, err := strconv.Atoi(mux.Vars(r)["ad_id"])
 	if err != nil {
@@ -99,7 +116,7 @@ func (a *API) UpdateAd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = a.service.UpdateAd(ctx, in)
+	err = a.service.UpdateAd(ctx, advertiserID, in)
 	if err != nil {
 		handler.HandleError(w, r, "updating id", err)
 		return
@@ -142,11 +159,18 @@ func newCreateAdInput(r *http.Request, groupID int) (*serviceinput.CreateAd, err
 // @Success      200             {object}  dto.ListAdsResponse
 // @Failure      400             {object}  httpx.Error
 // @Failure      401             {object}  httpx.Error
+// @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
 // @Router       /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads [get]
 // @Security     CookieAuth
 func (a *API) ListAds(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
 
 	groupID, err := strconv.Atoi(mux.Vars(r)["ad_group_id"])
 	if err != nil {
@@ -154,7 +178,7 @@ func (a *API) ListAds(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ads, err := a.service.ListAds(ctx, groupID)
+	ads, err := a.service.ListAds(ctx, advertiserID, groupID)
 	if err != nil {
 		handler.HandleError(w, r, "listing ads", err)
 		return
@@ -173,11 +197,18 @@ func (a *API) ListAds(w http.ResponseWriter, r *http.Request) {
 // @Success      200             {object}  httpx.Success
 // @Failure      400             {object}  httpx.Error
 // @Failure      401             {object}  httpx.Error
+// @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
 // @Router       /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id} [delete]
 // @Security     CookieAuth
 func (a *API) DeleteAd(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
 
 	adID, err := strconv.Atoi(mux.Vars(r)["ad_id"])
 	if err != nil {
@@ -185,7 +216,7 @@ func (a *API) DeleteAd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = a.service.DeleteAd(ctx, adID)
+	err = a.service.DeleteAd(ctx, advertiserID, adID)
 	if err != nil {
 		handler.HandleError(w, r, "deleting ad", err)
 		return

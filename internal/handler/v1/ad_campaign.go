@@ -72,11 +72,18 @@ func (a *API) CreateAdCampaign(w http.ResponseWriter, r *http.Request) {
 // @Success      200             {object}  httpx.Success
 // @Failure      400             {object}  httpx.Error
 // @Failure      401             {object}  httpx.Error
+// @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
 // @Router       /ad_campaigns/{ad_campaign_id} [put]
 // @Security     CookieAuth
 func (a *API) UpdateAdCampaign(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
 
 	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
 	if err != nil {
@@ -90,7 +97,7 @@ func (a *API) UpdateAdCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = a.service.UpdateAdCampaign(ctx, req.ToInput(campaignID)); err != nil {
+	if err = a.service.UpdateAdCampaign(ctx, advertiserID, req.ToInput(campaignID)); err != nil {
 		handler.HandleError(w, r, "updating campaign", err)
 		return
 	}
@@ -134,11 +141,18 @@ func (a *API) ListAdCampaigns(w http.ResponseWriter, r *http.Request) {
 // @Success      200             {object}  httpx.Success
 // @Failure      400             {object}  httpx.Error
 // @Failure      401             {object}  httpx.Error
+// @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
 // @Router       /ad_campaigns/{ad_campaign_id} [delete]
 // @Security     CookieAuth
 func (a *API) DeleteAdCampaign(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
 
 	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
 	if err != nil {
@@ -146,7 +160,7 @@ func (a *API) DeleteAdCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = a.service.DeleteAdCampaign(ctx, campaignID); err != nil {
+	if err = a.service.DeleteAdCampaign(ctx, advertiserID, campaignID); err != nil {
 		handler.HandleError(w, r, "deleting campaign", err)
 		return
 	}

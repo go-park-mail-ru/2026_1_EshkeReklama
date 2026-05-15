@@ -28,7 +28,6 @@ type CreateAdCampaignResponse struct {
 
 type UpdateAdCampaignRequest struct {
 	Name        *string `json:"name" validate:"omitempty,min=1"`
-	Status      *string `json:"status" validate:"omitempty,min=1"`
 	DailyBudget *int64  `json:"daily_budget" validate:"omitempty,gte=0"`
 	CPMPrice    *int64  `json:"cpm_price" validate:"omitempty,gte=0"`
 	MainAction  *string `json:"main_action" validate:"omitempty,min=1"`
@@ -41,7 +40,6 @@ func (u *UpdateAdCampaignRequest) ToInput(campaignID int) *serviceinput.UpdateAd
 		DailyBudget: u.DailyBudget,
 		CPMPrice:    u.CPMPrice,
 		MainAction:  u.MainAction,
-		Status:      (*models.AdStatus)(u.Status),
 	}
 }
 

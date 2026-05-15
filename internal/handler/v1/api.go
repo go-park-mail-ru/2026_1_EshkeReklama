@@ -32,22 +32,22 @@ type Service interface {
 	ClickAd(ctx context.Context, requestID string) (string, error)
 
 	CreateAdCampaign(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error)
-	UpdateAdCampaign(ctx context.Context, in *serviceinput.UpdateAdCampaign) error
+	UpdateAdCampaign(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdCampaign) error
 	ListAdCampaigns(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
-	DeleteAdCampaign(ctx context.Context, campaignID int) error
+	DeleteAdCampaign(ctx context.Context, advertiserID, campaignID int) error
 
-	CreateAdGroup(ctx context.Context, in *serviceinput.CreateAdGroup) (*models.AdGroup, error)
-	UpdateAdGroup(ctx context.Context, in *serviceinput.UpdateAdGroup) error
-	ListAdGroups(ctx context.Context, campaignID int) ([]*models.AdGroup, error)
-	DeleteAdGroup(ctx context.Context, groupID int) error
+	CreateAdGroup(ctx context.Context, advertiserID int, in *serviceinput.CreateAdGroup) (*models.AdGroup, error)
+	UpdateAdGroup(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdGroup) error
+	ListAdGroups(ctx context.Context, advertiserID, campaignID int) ([]*models.AdGroup, error)
+	DeleteAdGroup(ctx context.Context, advertiserID, groupID int) error
 
-	CreateAd(ctx context.Context, in *serviceinput.CreateAd) (*models.Ad, error)
+	CreateAd(ctx context.Context, advertiserID int, in *serviceinput.CreateAd) (*models.Ad, error)
 	GetAdByID(ctx context.Context, adID int) (*models.Ad, error)
 	ListModerationAds(ctx context.Context) ([]*models.Ad, error)
-	UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error
+	UpdateAd(ctx context.Context, advertiserID int, in *serviceinput.UpdateAd) error
 	UpdateAdModerationStatus(ctx context.Context, in *serviceinput.UpdateAdStatus) error
-	ListAds(ctx context.Context, groupID int) ([]*models.Ad, error)
-	DeleteAd(ctx context.Context, adID int) error
+	ListAds(ctx context.Context, advertiserID, groupID int) ([]*models.Ad, error)
+	DeleteAd(ctx context.Context, advertiserID, adID int) error
 
 	CreateAppeal(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
 	ListAppeals(ctx context.Context, advertiserID int) ([]*models.Appeal, error)

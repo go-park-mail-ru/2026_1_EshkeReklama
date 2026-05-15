@@ -219,6 +219,13 @@ definitions:
           $ref: '#/definitions/dto.AdGroupResponse'
         type: array
     type: object
+  dto.ListAdminAdsResponse:
+    properties:
+      ads:
+        items:
+          $ref: '#/definitions/dto.AdResponse'
+        type: array
+    type: object
   dto.ListAdsResponse:
     properties:
       ads:
@@ -513,9 +520,6 @@ definitions:
       name:
         minLength: 1
         type: string
-      status:
-        minLength: 1
-        type: string
     type: object
   dto.UpdateAdGroupRequest:
     properties:
@@ -541,6 +545,16 @@ definitions:
       topic_id:
         minimum: 1
         type: integer
+    type: object
+  dto.UpdateAdStatusRequest:
+    properties:
+      status:
+        enum:
+        - approve
+        - disapprove
+        type: string
+    required:
+    - status
     type: object
   dto.UpdateAdvertiserProfileRequest:
     properties:
@@ -822,6 +836,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
         "500":
           description: Internal Server Error
           schema:
@@ -862,6 +880,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
         "500":
           description: Internal Server Error
           schema:
@@ -892,6 +914,10 @@ paths:
             $ref: '#/definitions/httpx.Error'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/httpx.Error'
         "500":
@@ -933,6 +959,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
         "500":
           description: Internal Server Error
           schema:
@@ -968,6 +998,10 @@ paths:
             $ref: '#/definitions/httpx.Error'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/httpx.Error'
         "500":
@@ -1014,6 +1048,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
         "500":
           description: Internal Server Error
           schema:
@@ -1049,6 +1087,10 @@ paths:
             $ref: '#/definitions/httpx.Error'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/httpx.Error'
         "500":
@@ -1108,6 +1150,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
         "500":
           description: Internal Server Error
           schema:
@@ -1150,6 +1196,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
         "500":
           description: Internal Server Error
           schema:
@@ -1162,6 +1212,8 @@ paths:
     put:
       consumes:
       - multipart/form-data
+      description: Пользователь может только включать и выключать объявление; изменение
+        контента повторно отправляет его на модерацию
       parameters:
       - description: ID рекламной кампании
         in: path
@@ -1185,10 +1237,7 @@ paths:
       - description: Новый статус объявления
         enum:
         - turned_off
-        - moderation
         - working
-        - rejected
-        - not_enough_money
         in: formData
         name: status
         type: string
@@ -1217,6 +1266,14 @@ paths:
             $ref: '#/definitions/httpx.Error'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "422":
+          description: Unprocessable Entity
           schema:
             $ref: '#/definitions/httpx.Error'
         "500":
@@ -1258,6 +1315,124 @@ paths:
       summary: Создать feed-ссылку для кампании
       tags:
       - feed
+  /admin/ads:
+    get:
+      description: Возвращает все объявления со статусом moderation
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListAdminAdsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Очередь объявлений на модерации
+      tags:
+      - admin
+  /admin/ads/{ad_id}:
+    get:
+      description: Возвращает объявление по ID для модерации
+      parameters:
+      - description: ID объявления
+        in: path
+        name: ad_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AdResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Просмотр объявления администратором
+      tags:
+      - admin
+  /admin/ads/{ad_id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Одобряет или отклоняет объявление; при одобрении итоговый статус
+        зависит от доступных средств
+      parameters:
+      - description: ID объявления
+        in: path
+        name: ad_id
+        required: true
+        type: integer
+      - description: Решение модерации
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAdStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Решение модерации объявления
+      tags:
+      - admin
   /advertisers/balance:
     get:
       description: Возвращает текущий баланс рекламодателя по сессии

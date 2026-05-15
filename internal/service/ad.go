@@ -11,7 +11,10 @@ import (
 	"time"
 )
 
-func (s *Service) CreateAd(ctx context.Context, in *serviceinput.CreateAd) (*models.Ad, error) {
+func (s *Service) CreateAd(ctx context.Context, advertiserID int, in *serviceinput.CreateAd) (*models.Ad, error) {
+	if _, err := s.ownedGroup(ctx, advertiserID, in.AdGroupID); err != nil {
+		return nil, err
+	}
 	ad := &models.Ad{
 		AdGroupID: in.AdGroupID,
 		Status:    models.AdStatusModeration,
@@ -59,23 +62,32 @@ func (s *Service) GetAdByID(ctx context.Context, adID int) (*models.Ad, error) {
 	return ad, nil
 }
 
-func (s *Service) UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error {
+func (s *Service) UpdateAd(ctx context.Context, advertiserID int, in *serviceinput.UpdateAd) error {
 	currentAd, err := s.adRepo.GetByID(ctx, in.ID)
 	if err != nil {
 		return err
 	}
+	group, err := s.ownedGroup(ctx, advertiserID, currentAd.AdGroupID)
+	if err != nil {
+		return err
+	}
+	campaign, err := s.adCampaignRepo.GetByID(ctx, group.AdCampaignID)
+	if err != nil {
+		return err
+	}
 
+	contentChanged := false
 	if in.Title != nil {
 		currentAd.Title = *in.Title
-	}
-	if in.Status != nil {
-		currentAd.Status = *in.Status
+		contentChanged = true
 	}
 	if in.ShortDesc != nil {
 		currentAd.ShortDesc = *in.ShortDesc
+		contentChanged = true
 	}
 	if in.TargetURL != nil {
 		currentAd.TargetURL = *in.TargetURL
+		contentChanged = true
 	}
 	if in.Image != nil && len(*in.Image) > 0 {
 		if s.adStorage == nil {
@@ -96,6 +108,17 @@ func (s *Service) UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error
 			return err
 		}
 		currentAd.ImageURL = imageKey
+		contentChanged = true
+	}
+
+	if contentChanged {
+		currentAd.Status = models.AdStatusModeration
+	} else if in.Status != nil {
+		status, err := s.userAdStatusTransition(ctx, currentAd.Status, *in.Status, campaign)
+		if err != nil {
+			return err
+		}
+		currentAd.Status = status
 	}
 	currentAd.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
@@ -106,10 +129,13 @@ func (s *Service) UpdateAd(ctx context.Context, in *serviceinput.UpdateAd) error
 		return err
 	}
 
-	return nil
+	return s.recalculateCampaignStatus(ctx, campaign.ID)
 }
 
-func (s *Service) ListAds(ctx context.Context, groupID int) ([]*models.Ad, error) {
+func (s *Service) ListAds(ctx context.Context, advertiserID, groupID int) ([]*models.Ad, error) {
+	if _, err := s.ownedGroup(ctx, advertiserID, groupID); err != nil {
+		return nil, err
+	}
 	ads, err := s.adRepo.ListByAdGroupID(ctx, groupID)
 	if err != nil {
 		return nil, err
@@ -135,8 +161,19 @@ func (s *Service) ListModerationAds(ctx context.Context) ([]*models.Ad, error) {
 	return ads, nil
 }
 
-func (s *Service) DeleteAd(ctx context.Context, adID int) error {
-	return s.adRepo.Delete(ctx, adID)
+func (s *Service) DeleteAd(ctx context.Context, advertiserID, adID int) error {
+	ad, err := s.adRepo.GetByID(ctx, adID)
+	if err != nil {
+		return err
+	}
+	group, err := s.ownedGroup(ctx, advertiserID, ad.AdGroupID)
+	if err != nil {
+		return err
+	}
+	if err := s.adRepo.Delete(ctx, adID); err != nil {
+		return err
+	}
+	return s.recalculateCampaignStatus(ctx, group.AdCampaignID)
 }
 
 func (s *Service) UpdateAdModerationStatus(ctx context.Context, in *serviceinput.UpdateAdStatus) error {
@@ -177,14 +214,7 @@ func (s *Service) UpdateAdModerationStatus(ctx context.Context, in *serviceinput
 		return err
 	}
 
-	ads, err := s.adRepo.ListByAdCampaignID(ctx, campaign.ID)
-	if err != nil {
-		return err
-	}
-
-	campaign.Status = campaignStatusFromAds(ads)
-	campaign.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
-	return s.adCampaignRepo.Update(ctx, campaign)
+	return s.recalculateCampaignStatus(ctx, campaign.ID)
 }
 
 func (s *Service) canStartAd(ctx context.Context, campaign *models.AdCampaign) bool {
@@ -228,6 +258,34 @@ func hasAdStatus(ads []*models.Ad, status models.AdStatus) bool {
 		}
 	}
 	return false
+}
+
+func (s *Service) userAdStatusTransition(ctx context.Context, current, requested models.AdStatus, campaign *models.AdCampaign) (models.AdStatus, error) {
+	switch {
+	case current == models.AdStatusWorking && requested == models.AdStatusTurnedOff:
+		return models.AdStatusTurnedOff, nil
+	case current == models.AdStatusTurnedOff && requested == models.AdStatusWorking:
+		if s.canStartAd(ctx, campaign) {
+			return models.AdStatusWorking, nil
+		}
+		return models.AdStatusNotEnoughMoney, nil
+	default:
+		return "", fmt.Errorf("%w: invalid ad status transition", errs.BusinessLogicError)
+	}
+}
+
+func (s *Service) recalculateCampaignStatus(ctx context.Context, campaignID int) error {
+	campaign, err := s.adCampaignRepo.GetByID(ctx, campaignID)
+	if err != nil {
+		return err
+	}
+	ads, err := s.adRepo.ListByAdCampaignID(ctx, campaignID)
+	if err != nil {
+		return err
+	}
+	campaign.Status = campaignStatusFromAds(ads)
+	campaign.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	return s.adCampaignRepo.Update(ctx, campaign)
 }
 
 func (s *Service) decorateAdImageURL(ad *models.Ad) {

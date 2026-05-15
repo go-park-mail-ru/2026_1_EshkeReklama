@@ -26,7 +26,10 @@ func TestAdCampaign_UpdateListDelete(t *testing.T) {
 	csrf := getCSRF(t, r)
 	sess := createSessionCookie(t, ac, 1)
 
-	svc.updateAdCampaignFn = func(_ context.Context, in *serviceinput.UpdateAdCampaign) error {
+	svc.updateAdCampaignFn = func(_ context.Context, advertiserID int, in *serviceinput.UpdateAdCampaign) error {
+		if advertiserID != 1 {
+			t.Fatalf("unexpected advertiser id: %d", advertiserID)
+		}
 		if in.ID != 5 || in.Name == nil || *in.Name != "new" {
 			t.Fatalf("unexpected update input: %+v", in)
 		}
@@ -38,7 +41,10 @@ func TestAdCampaign_UpdateListDelete(t *testing.T) {
 		}
 		return []*models.AdCampaign{{ID: 5, AdvertiserID: 1, Name: "camp", Status: models.AdStatusWorking, DailyBudget: 42}}, nil
 	}
-	svc.deleteAdCampaignFn = func(_ context.Context, campaignID int) error {
+	svc.deleteAdCampaignFn = func(_ context.Context, advertiserID, campaignID int) error {
+		if advertiserID != 1 {
+			t.Fatalf("unexpected advertiser id: %d", advertiserID)
+		}
 		if campaignID != 5 {
 			t.Fatalf("unexpected delete id: %d", campaignID)
 		}
@@ -92,19 +98,28 @@ func TestAdGroup_UpdateListDelete(t *testing.T) {
 	csrf := getCSRF(t, r)
 	sess := createSessionCookie(t, ac, 1)
 
-	svc.updateAdGroupFn = func(_ context.Context, in *serviceinput.UpdateAdGroup) error {
+	svc.updateAdGroupFn = func(_ context.Context, advertiserID int, in *serviceinput.UpdateAdGroup) error {
+		if advertiserID != 1 {
+			t.Fatalf("unexpected advertiser id: %d", advertiserID)
+		}
 		if in.ID != 3 || in.Name == nil || *in.Name != "new-group" {
 			t.Fatalf("unexpected update input: %+v", in)
 		}
 		return nil
 	}
-	svc.listAdGroupsFn = func(_ context.Context, campaignID int) ([]*models.AdGroup, error) {
+	svc.listAdGroupsFn = func(_ context.Context, advertiserID, campaignID int) ([]*models.AdGroup, error) {
+		if advertiserID != 1 {
+			t.Fatalf("unexpected advertiser id: %d", advertiserID)
+		}
 		if campaignID != 9 {
 			t.Fatalf("unexpected campaign id: %d", campaignID)
 		}
 		return []*models.AdGroup{{ID: 3, AdCampaignID: 9, Name: "g", TopicID: 1, RegionID: 2, AgeFrom: 18, AgeTo: 30, Gender: models.GenderAny}}, nil
 	}
-	svc.deleteAdGroupFn = func(_ context.Context, groupID int) error {
+	svc.deleteAdGroupFn = func(_ context.Context, advertiserID, groupID int) error {
+		if advertiserID != 1 {
+			t.Fatalf("unexpected advertiser id: %d", advertiserID)
+		}
 		if groupID != 3 {
 			t.Fatalf("unexpected delete id: %d", groupID)
 		}
@@ -149,13 +164,19 @@ func TestAd_UpdateDelete(t *testing.T) {
 	csrf := getCSRF(t, r)
 	sess := createSessionCookie(t, ac, 1)
 
-	svc.updateAdFn = func(_ context.Context, in *serviceinput.UpdateAd) error {
+	svc.updateAdFn = func(_ context.Context, advertiserID int, in *serviceinput.UpdateAd) error {
+		if advertiserID != 1 {
+			t.Fatalf("unexpected advertiser id: %d", advertiserID)
+		}
 		if in.ID != 8 || in.Title == nil || *in.Title != "renamed" {
 			t.Fatalf("unexpected update input: %+v", in)
 		}
 		return nil
 	}
-	svc.deleteAdFn = func(_ context.Context, adID int) error {
+	svc.deleteAdFn = func(_ context.Context, advertiserID, adID int) error {
+		if advertiserID != 1 {
+			t.Fatalf("unexpected advertiser id: %d", advertiserID)
+		}
 		if adID != 8 {
 			t.Fatalf("unexpected delete id: %d", adID)
 		}

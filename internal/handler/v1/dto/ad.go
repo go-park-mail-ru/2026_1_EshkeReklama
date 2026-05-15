@@ -36,7 +36,7 @@ type CreateAdResponse struct {
 type UpdateAdRequest struct {
 	ID        int
 	Title     *string `json:"title" validate:"omitempty,min=1"`
-	Status    *string `json:"status" validate:"omitempty,min=1,oneof=turned_off moderation working rejected not_enough_money"`
+	Status    *string `json:"status" validate:"omitempty,min=1,oneof=turned_off working"`
 	ShortDesc *string `json:"short_desc" validate:"omitempty,min=1"`
 	TargetURL *string `json:"target_url" validate:"omitempty,min=1"`
 }

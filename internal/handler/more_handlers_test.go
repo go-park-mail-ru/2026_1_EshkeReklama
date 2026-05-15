@@ -144,7 +144,7 @@ func TestAdCampaign_CRUD(t *testing.T) {
 
 	newName := "new"
 	svc.EXPECT().
-		UpdateAdCampaign(gomock.Any(), &serviceinput.UpdateAdCampaign{ID: 42, Name: &newName}).
+		UpdateAdCampaign(gomock.Any(), 1, &serviceinput.UpdateAdCampaign{ID: 42, Name: &newName}).
 		Return(nil)
 
 	updReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/42", bytes.NewBufferString(`{"name":"new"}`))
@@ -157,7 +157,7 @@ func TestAdCampaign_CRUD(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", updRR.Code, updRR.Body.String())
 	}
 
-	svc.EXPECT().DeleteAdCampaign(gomock.Any(), 42).Return(nil)
+	svc.EXPECT().DeleteAdCampaign(gomock.Any(), 1, 42).Return(nil)
 
 	delReq := httptest.NewRequest(http.MethodDelete, "/ad_campaigns/42", nil)
 	delReq.AddCookie(sess)
@@ -182,8 +182,11 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 	sess := createSessionCookie(t, ac, 1)
 
 	svc.EXPECT().
-		CreateAdGroup(gomock.Any(), gomock.Any()).
-		DoAndReturn(func(_ any, in *serviceinput.CreateAdGroup) (*models.AdGroup, error) {
+		CreateAdGroup(gomock.Any(), 1, gomock.Any()).
+		DoAndReturn(func(_ any, advertiserID int, in *serviceinput.CreateAdGroup) (*models.AdGroup, error) {
+			if advertiserID != 1 {
+				t.Fatalf("unexpected advertiser id: %d", advertiserID)
+			}
 			if in.AdCampaignID != 10 || in.Name != "g" {
 				t.Fatalf("unexpected group input: %+v", in)
 			}
@@ -200,7 +203,7 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", createGroupRR.Code, createGroupRR.Body.String())
 	}
 
-	svc.EXPECT().ListAdGroups(gomock.Any(), 10).Return([]*models.AdGroup{}, nil)
+	svc.EXPECT().ListAdGroups(gomock.Any(), 1, 10).Return([]*models.AdGroup{}, nil)
 	listGroupReq := httptest.NewRequest(http.MethodGet, "/ad_campaigns/10/ad_groups", nil)
 	listGroupReq.AddCookie(sess)
 	listGroupReq.AddCookie(csrf)
@@ -210,7 +213,7 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", listGroupRR.Code, listGroupRR.Body.String())
 	}
 
-	svc.EXPECT().UpdateAdGroup(gomock.Any(), gomock.Any()).Return(nil)
+	svc.EXPECT().UpdateAdGroup(gomock.Any(), 1, gomock.Any()).Return(nil)
 	updGroupReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/10/ad_groups/5", bytes.NewBufferString(`{"name":"g2"}`))
 	updGroupReq.AddCookie(sess)
 	updGroupReq.AddCookie(csrf)
@@ -221,7 +224,7 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", updGroupRR.Code, updGroupRR.Body.String())
 	}
 
-	svc.EXPECT().DeleteAdGroup(gomock.Any(), 5).Return(nil)
+	svc.EXPECT().DeleteAdGroup(gomock.Any(), 1, 5).Return(nil)
 	delGroupReq := httptest.NewRequest(http.MethodDelete, "/ad_campaigns/10/ad_groups/5", nil)
 	delGroupReq.AddCookie(sess)
 	delGroupReq.AddCookie(csrf)
@@ -233,8 +236,11 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 	}
 
 	svc.EXPECT().
-		CreateAd(gomock.Any(), gomock.Any()).
-		DoAndReturn(func(_ any, in *serviceinput.CreateAd) (*models.Ad, error) {
+		CreateAd(gomock.Any(), 1, gomock.Any()).
+		DoAndReturn(func(_ any, advertiserID int, in *serviceinput.CreateAd) (*models.Ad, error) {
+			if advertiserID != 1 {
+				t.Fatalf("unexpected advertiser id: %d", advertiserID)
+			}
 			if in.AdGroupID != 2 || in.Title != "t" {
 				t.Fatalf("unexpected ad input: %+v", in)
 			}
@@ -258,7 +264,7 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", createAdRR.Code, createAdRR.Body.String())
 	}
 
-	svc.EXPECT().UpdateAd(gomock.Any(), gomock.Any()).Return(nil)
+	svc.EXPECT().UpdateAd(gomock.Any(), 1, gomock.Any()).Return(nil)
 	var updAdBody bytes.Buffer
 	updAdWriter := multipart.NewWriter(&updAdBody)
 	_ = updAdWriter.WriteField("title", "t2")
@@ -274,7 +280,7 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", updAdRR.Code, updAdRR.Body.String())
 	}
 
-	svc.EXPECT().DeleteAd(gomock.Any(), 9).Return(nil)
+	svc.EXPECT().DeleteAd(gomock.Any(), 1, 9).Return(nil)
 	delAdReq := httptest.NewRequest(http.MethodDelete, "/ad_campaigns/1/ad_groups/2/ads/9", nil)
 	delAdReq.AddCookie(sess)
 	delAdReq.AddCookie(csrf)

@@ -64,3 +64,14 @@ cors:
 
 observability:
   metrics_addr: ${APP_METRICS_ADDR}
+
+kafka:
+  brokers: ${KAFKA_BROKERS}
+  ad_events_topic: ${KAFKA_AD_EVENTS_TOPIC}
+  consumer_group: ${KAFKA_CONSUMER_GROUP}
+
+clickhouse:
+  addr: ${CLICKHOUSE_ADDR}
+  database: ${CLICKHOUSE_DB}
+  username: ${CLICKHOUSE_USER}
+  password: ${CLICKHOUSE_PASSWORD}

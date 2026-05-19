@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"eshkere/internal/analytics"
 	"eshkere/internal/models"
 
 	"go.uber.org/mock/gomock"
@@ -170,6 +171,58 @@ func TestRequestAdSavesClickContext(t *testing.T) {
 	}
 }
 
+func TestRequestAdPublishesImpression(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	blockRepo := NewMockPartnerBlockRepository(ctrl)
+	adRepo := NewMockAdRepository(ctrl)
+	store := &fakeAdRequestStore{}
+	publisher := &fakeAdEventPublisher{}
+	svc, _ := NewService(&Config{
+		PartnerBlockRepo: blockRepo,
+		AdRepo:           adRepo,
+		AdRequestStore:   store,
+		AdEventPublisher: publisher,
+	})
+
+	blockRepo.EXPECT().
+		GetByEmbedToken(gomock.Any(), "pb").
+		Return(&models.PartnerBlock{ID: 7, PartnerSiteID: 8, EmbedToken: "pb", RevenueShareBPS: 7000}, nil)
+	adRepo.EXPECT().
+		ListAdCandidates(gomock.Any(), gomock.Any()).
+		Return([]*models.AdCandidate{
+			{
+				CampaignID:        3,
+				AdvertiserID:      4,
+				TopicID:           12,
+				DailyBudget:       1000,
+				CPMPrice:          20000,
+				SpentToday:        0,
+				AdvertiserBalance: 1000,
+				Ad:                &models.Ad{ID: 9, AdGroupID: 5, TargetURL: "https://target.example"},
+			},
+		}, nil)
+	adRepo.EXPECT().ReserveImpression(gomock.Any(), gomock.Any()).Return(true, nil)
+
+	result, err := svc.RequestAd(context.Background(), "pb", "visitor-1")
+	if err != nil {
+		t.Fatalf("RequestAd: %v", err)
+	}
+	if len(publisher.events) != 1 {
+		t.Fatalf("expected one event, got %d", len(publisher.events))
+	}
+	event := publisher.events[0]
+	if event.EventID == "" || event.EventType != analytics.EventTypeImpression ||
+		event.RequestID != result.RequestID || event.VisitorID != "visitor-1" ||
+		event.AdvertiserID != 4 || event.CampaignID != 3 || event.AdGroupID != 5 ||
+		event.AdID != 9 || event.PartnerBlockID != 7 || event.PartnerSiteID != 8 ||
+		event.TopicID != 12 || event.Price != 20 || event.PartnerReward != 14 ||
+		event.PlatformRevenue != 6 {
+		t.Fatalf("unexpected impression event: %+v", event)
+	}
+}
+
 func TestRequestAdDecoratesStoredImageURL(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -215,7 +268,7 @@ func TestClickAdTracksProfileAndReturnsTarget(t *testing.T) {
 		VisitorID: "visitor-1",
 		TopicID:   12,
 		TargetURL: "https://target.example",
-	}}
+	}, clickOnce: true}
 	profile := &fakeProfileClient{}
 	svc, _ := NewService(&Config{AdRequestStore: store, ProfileClient: profile})
 
@@ -231,9 +284,53 @@ func TestClickAdTracksProfileAndReturnsTarget(t *testing.T) {
 	}
 }
 
+func TestClickAdPublishesClickOnlyOnce(t *testing.T) {
+	store := &fakeAdRequestStore{record: &AdRequestRecord{
+		RequestID:       "req",
+		VisitorID:       "visitor-1",
+		AdvertiserID:    4,
+		CampaignID:      3,
+		AdGroupID:       5,
+		AdID:            9,
+		PartnerBlockID:  7,
+		PartnerSiteID:   8,
+		TopicID:         12,
+		TargetURL:       "https://target.example",
+		Price:           20,
+		PartnerReward:   14,
+		PlatformRevenue: 6,
+	}, clickOnce: true}
+	profile := &fakeProfileClient{}
+	publisher := &fakeAdEventPublisher{}
+	svc, _ := NewService(&Config{AdRequestStore: store, ProfileClient: profile, AdEventPublisher: publisher})
+
+	if _, err := svc.ClickAd(context.Background(), "req"); err != nil {
+		t.Fatalf("first ClickAd: %v", err)
+	}
+	if _, err := svc.ClickAd(context.Background(), "req"); err != nil {
+		t.Fatalf("second ClickAd: %v", err)
+	}
+	if len(publisher.events) != 1 {
+		t.Fatalf("expected one click event, got %d", len(publisher.events))
+	}
+	event := publisher.events[0]
+	if event.EventID == "" || event.EventType != analytics.EventTypeClick ||
+		event.RequestID != "req" || event.VisitorID != "visitor-1" ||
+		event.AdvertiserID != 4 || event.CampaignID != 3 || event.AdGroupID != 5 ||
+		event.AdID != 9 || event.PartnerBlockID != 7 || event.PartnerSiteID != 8 ||
+		event.TopicID != 12 || event.Price != 0 || event.PartnerReward != 0 ||
+		event.PlatformRevenue != 0 {
+		t.Fatalf("unexpected click event: %+v", event)
+	}
+	if profile.visitorID != "visitor-1" || profile.topicID != 12 || profile.eventType != EventTypeClick {
+		t.Fatalf("unexpected tracked event: %+v", profile)
+	}
+}
+
 type fakeAdRequestStore struct {
-	record *AdRequestRecord
-	ttl    time.Duration
+	record    *AdRequestRecord
+	ttl       time.Duration
+	clickOnce bool
 }
 
 func (s *fakeAdRequestStore) Save(_ context.Context, record AdRequestRecord, ttl time.Duration) error {
@@ -247,6 +344,23 @@ func (s *fakeAdRequestStore) Get(_ context.Context, requestID string) (*AdReques
 		return nil, errNotFoundForTest
 	}
 	return s.record, nil
+}
+
+func (s *fakeAdRequestStore) MarkClickedOnce(context.Context, string, time.Duration) (bool, error) {
+	if !s.clickOnce {
+		return false, nil
+	}
+	s.clickOnce = false
+	return true, nil
+}
+
+type fakeAdEventPublisher struct {
+	events []analytics.AdEvent
+}
+
+func (p *fakeAdEventPublisher) PublishAdEvent(_ context.Context, event analytics.AdEvent) error {
+	p.events = append(p.events, event)
+	return nil
 }
 
 type fakeProfileClient struct {

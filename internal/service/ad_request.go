@@ -5,8 +5,10 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"errors"
+	"eshkere/internal/analytics"
 	errs "eshkere/internal/errors"
 	"eshkere/internal/models"
+	"eshkere/pkg/logger"
 	"fmt"
 	"math"
 	"math/big"
@@ -24,8 +26,15 @@ type AdRequestResult struct {
 }
 
 type adSelection struct {
-	ad      *models.Ad
-	topicID int
+	ad              *models.Ad
+	advertiserID    int
+	campaignID      int
+	partnerBlockID  int
+	partnerSiteID   int
+	topicID         int
+	price           int64
+	partnerReward   int64
+	platformRevenue int64
 }
 
 func (s *Service) RequestAd(ctx context.Context, embedToken, visitorID string) (*AdRequestResult, error) {
@@ -59,6 +68,23 @@ func (s *Service) RequestAd(ctx context.Context, embedToken, visitorID string) (
 		return nil, err
 	}
 
+	s.publishAdEvent(ctx, analytics.AdEvent{
+		EventType:       analytics.EventTypeImpression,
+		RequestID:       requestID,
+		OccurredAt:      time.Now().UTC(),
+		VisitorID:       visitorID,
+		AdvertiserID:    selection.advertiserID,
+		CampaignID:      selection.campaignID,
+		AdGroupID:       selection.ad.AdGroupID,
+		AdID:            selection.ad.ID,
+		PartnerBlockID:  selection.partnerBlockID,
+		PartnerSiteID:   selection.partnerSiteID,
+		TopicID:         selection.topicID,
+		Price:           selection.price,
+		PartnerReward:   selection.partnerReward,
+		PlatformRevenue: selection.platformRevenue,
+	})
+
 	s.decorateAdImageURL(selection.ad)
 
 	return &AdRequestResult{
@@ -83,8 +109,33 @@ func (s *Service) ClickAd(ctx context.Context, requestID string) (string, error)
 		return "", fmt.Errorf("%w: empty target url", errs.NotFoundError)
 	}
 
-	if s.profileClient != nil && record.VisitorID != "" && record.TopicID > 0 {
-		_ = s.profileClient.TrackEvent(ctx, record.VisitorID, record.TopicID, EventTypeClick)
+	clicked, err := s.adRequestStore.MarkClickedOnce(ctx, requestID, adRequestTTL)
+	if err != nil {
+		logger.GetLoggerFromCtx(ctx).Warnf("mark ad click once: %v", err)
+		return record.TargetURL, nil
+	}
+
+	if clicked {
+		if s.profileClient != nil && record.VisitorID != "" && record.TopicID > 0 {
+			_ = s.profileClient.TrackEvent(ctx, record.VisitorID, record.TopicID, EventTypeClick)
+		}
+
+		s.publishAdEvent(ctx, analytics.AdEvent{
+			EventType:       analytics.EventTypeClick,
+			RequestID:       record.RequestID,
+			OccurredAt:      time.Now().UTC(),
+			VisitorID:       record.VisitorID,
+			AdvertiserID:    record.AdvertiserID,
+			CampaignID:      record.CampaignID,
+			AdGroupID:       record.AdGroupID,
+			AdID:            record.AdID,
+			PartnerBlockID:  record.PartnerBlockID,
+			PartnerSiteID:   record.PartnerSiteID,
+			TopicID:         record.TopicID,
+			Price:           0,
+			PartnerReward:   0,
+			PlatformRevenue: 0,
+		})
 	}
 
 	return record.TargetURL, nil
@@ -114,12 +165,40 @@ func (s *Service) saveAdRequest(ctx context.Context, requestID, visitorID string
 		return nil
 	}
 	return s.adRequestStore.Save(ctx, AdRequestRecord{
-		RequestID: requestID,
-		VisitorID: visitorID,
-		AdID:      selection.ad.ID,
-		TopicID:   selection.topicID,
-		TargetURL: selection.ad.TargetURL,
+		RequestID:       requestID,
+		VisitorID:       visitorID,
+		AdvertiserID:    selection.advertiserID,
+		CampaignID:      selection.campaignID,
+		AdGroupID:       selection.ad.AdGroupID,
+		AdID:            selection.ad.ID,
+		PartnerBlockID:  selection.partnerBlockID,
+		PartnerSiteID:   selection.partnerSiteID,
+		TopicID:         selection.topicID,
+		TargetURL:       selection.ad.TargetURL,
+		Price:           selection.price,
+		PartnerReward:   selection.partnerReward,
+		PlatformRevenue: selection.platformRevenue,
 	}, adRequestTTL)
+}
+
+func (s *Service) publishAdEvent(ctx context.Context, event analytics.AdEvent) {
+	if s.adEventPublisher == nil {
+		return
+	}
+
+	eventID, err := analytics.NewEventID()
+	if err != nil {
+		logger.GetLoggerFromCtx(ctx).Warnf("generate ad event id: %v", err)
+		return
+	}
+	event.EventID = eventID
+	if event.OccurredAt.IsZero() {
+		event.OccurredAt = time.Now().UTC()
+	}
+
+	if err := s.adEventPublisher.PublishAdEvent(ctx, event); err != nil {
+		logger.GetLoggerFromCtx(ctx).Warnf("publish ad event: %v", err)
+	}
 }
 
 type campaignCandidate struct {
@@ -175,7 +254,17 @@ func (s *Service) selectAndReserveAd(ctx context.Context, block *models.PartnerB
 			return nil, err
 		}
 		if reserved {
-			return &adSelection{ad: option.ad, topicID: option.topicID}, nil
+			return &adSelection{
+				ad:              option.ad,
+				advertiserID:    candidate.advertiserID,
+				campaignID:      candidate.campaignID,
+				partnerBlockID:  block.ID,
+				partnerSiteID:   block.PartnerSiteID,
+				topicID:         option.topicID,
+				price:           candidate.impressionPrice,
+				partnerReward:   partnerReward,
+				platformRevenue: candidate.impressionPrice - partnerReward,
+			}, nil
 		}
 
 		candidates = append(candidates[:index], candidates[index+1:]...)

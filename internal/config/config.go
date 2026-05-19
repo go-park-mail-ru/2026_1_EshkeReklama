@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strings"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -78,6 +79,30 @@ type ObservabilityConfig struct {
 	MetricsAddr string `yaml:"metrics_addr"`
 }
 
+type KafkaConfig struct {
+	Brokers       string `yaml:"brokers"`
+	AdEventsTopic string `yaml:"ad_events_topic"`
+	ConsumerGroup string `yaml:"consumer_group"`
+}
+
+func (c KafkaConfig) BrokerList() []string {
+	parts := strings.Split(c.Brokers, ",")
+	out := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if broker := strings.TrimSpace(part); broker != "" {
+			out = append(out, broker)
+		}
+	}
+	return out
+}
+
+type ClickHouseConfig struct {
+	Addr     string `yaml:"addr"`
+	Database string `yaml:"database"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+}
+
 type Config struct {
 	HTTPServer      HTTPServerConfig     `yaml:"http_server"`
 	Postgres        PostgresConfig       `yaml:"postgres"`
@@ -89,6 +114,8 @@ type Config struct {
 	S3              S3Config             `yaml:"s3"`
 	CORS            CORSConfig           `yaml:"cors"`
 	Observability   ObservabilityConfig  `yaml:"observability"`
+	Kafka           KafkaConfig          `yaml:"kafka"`
+	ClickHouse      ClickHouseConfig     `yaml:"clickhouse"`
 	GracefulTimeout time.Duration        `yaml:"graceful_timeout"`
 }
 

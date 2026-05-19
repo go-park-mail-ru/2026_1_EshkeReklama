@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	analyticskafka "eshkere/internal/analytics/kafka"
 	authclient "eshkere/internal/client/auth"
 	profileclient "eshkere/internal/client/profile"
 	"eshkere/internal/config"
@@ -77,6 +78,15 @@ func New(configPath string) *App {
 	feedLinkRepo := postgres.NewFeedLinkRepository(db)
 	appealRepo := postgres.NewAppealRepository(db)
 	adRequestStore := redisrepo.NewAdRequestStore(redisPool)
+	var adEventPublisher service.AdEventPublisher
+	if brokers := cfg.Kafka.BrokerList(); len(brokers) > 0 && cfg.Kafka.AdEventsTopic != "" {
+		publisher, err := analyticskafka.NewPublisher(brokers, cfg.Kafka.AdEventsTopic)
+		if err != nil {
+			logger.Fatalf("Failed to init Kafka publisher: %v", err)
+		}
+		closers = append(closers, publisher)
+		adEventPublisher = publisher
+	}
 
 	s3Client, err := s3.NewClient(context.Background(), s3.Config{
 		Region:          cfg.S3.Region,
@@ -114,6 +124,7 @@ func New(configPath string) *App {
 		RegionRepo:              nil,
 		ProfileClient:           nil,
 		AdRequestStore:          adRequestStore,
+		AdEventPublisher:        adEventPublisher,
 	})
 	if err != nil {
 		logger.Fatalf("Failed to init service: %v", err)

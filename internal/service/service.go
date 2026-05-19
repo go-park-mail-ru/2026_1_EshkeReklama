@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"eshkere/internal/analytics"
 	"eshkere/internal/models"
 	"time"
 )
@@ -120,17 +121,30 @@ type ProfileClient interface {
 	TrackEvent(ctx context.Context, visitorID string, topicID int, eventType string) error
 }
 
+type AdEventPublisher interface {
+	PublishAdEvent(ctx context.Context, event analytics.AdEvent) error
+}
+
 type AdRequestRecord struct {
-	RequestID string
-	VisitorID string
-	AdID      int
-	TopicID   int
-	TargetURL string
+	RequestID       string
+	VisitorID       string
+	AdvertiserID    int
+	CampaignID      int
+	AdGroupID       int
+	AdID            int
+	PartnerBlockID  int
+	PartnerSiteID   int
+	TopicID         int
+	TargetURL       string
+	Price           int64
+	PartnerReward   int64
+	PlatformRevenue int64
 }
 
 type AdRequestStore interface {
 	Save(ctx context.Context, record AdRequestRecord, ttl time.Duration) error
 	Get(ctx context.Context, requestID string) (*AdRequestRecord, error)
+	MarkClickedOnce(ctx context.Context, requestID string, ttl time.Duration) (bool, error)
 }
 
 type Config struct {
@@ -152,6 +166,7 @@ type Config struct {
 	AppealRepo              AppealRepository
 	ProfileClient           ProfileClient
 	AdRequestStore          AdRequestStore
+	AdEventPublisher        AdEventPublisher
 }
 
 type Service struct {
@@ -173,6 +188,7 @@ type Service struct {
 	appealRepo              AppealRepository
 	profileClient           ProfileClient
 	adRequestStore          AdRequestStore
+	adEventPublisher        AdEventPublisher
 }
 
 func NewService(cfg *Config) (*Service, error) {
@@ -199,6 +215,7 @@ func NewService(cfg *Config) (*Service, error) {
 		appealRepo:              cfg.AppealRepo,
 		profileClient:           cfg.ProfileClient,
 		adRequestStore:          cfg.AdRequestStore,
+		adEventPublisher:        cfg.AdEventPublisher,
 	}, nil
 }
 

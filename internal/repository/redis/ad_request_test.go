@@ -25,18 +25,37 @@ func TestAdRequestStore(t *testing.T) {
 	}
 
 	record := service.AdRequestRecord{
-		RequestID: "req-1",
-		VisitorID: "visitor-1",
-		AdID:      3,
-		TopicID:   7,
-		TargetURL: "https://example.com",
+		RequestID:       "req-1",
+		VisitorID:       "visitor-1",
+		AdvertiserID:    2,
+		CampaignID:      4,
+		AdGroupID:       5,
+		AdID:            3,
+		PartnerBlockID:  6,
+		PartnerSiteID:   8,
+		TopicID:         7,
+		TargetURL:       "https://example.com",
+		Price:           10,
+		PartnerReward:   7,
+		PlatformRevenue: 3,
 	}
 	if err := store.Save(context.Background(), record, time.Hour); err != nil {
 		t.Fatalf("save: %v", err)
 	}
 	got, err := store.Get(context.Background(), "req-1")
-	if err != nil || got.RequestID != "req-1" || got.AdID != 3 || got.TopicID != 7 {
+	if err != nil || got.RequestID != "req-1" || got.AdID != 3 || got.TopicID != 7 ||
+		got.AdvertiserID != 2 || got.CampaignID != 4 || got.AdGroupID != 5 ||
+		got.PartnerBlockID != 6 || got.PartnerSiteID != 8 || got.Price != 10 ||
+		got.PartnerReward != 7 || got.PlatformRevenue != 3 {
 		t.Fatalf("get: %#v %v", got, err)
+	}
+	first, err := store.MarkClickedOnce(context.Background(), "req-1", time.Hour)
+	if err != nil || !first {
+		t.Fatalf("mark first click: %v %v", first, err)
+	}
+	again, err := store.MarkClickedOnce(context.Background(), "req-1", time.Hour)
+	if err != nil || again {
+		t.Fatalf("mark second click: %v %v", again, err)
 	}
 	if _, err := store.Get(context.Background(), ""); err == nil {
 		t.Fatal("expected error for empty request id")

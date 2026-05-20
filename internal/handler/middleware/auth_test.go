@@ -2,11 +2,12 @@ package middleware
 
 import (
 	"context"
-	errs "eshkere/internal/errors"
-	"eshkere/pkg/ctxutils"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	errs "eshkere/internal/errors"
+	"eshkere/pkg/ctxutils"
 )
 
 type stubValidator struct {

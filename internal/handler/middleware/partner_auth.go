@@ -3,10 +3,11 @@ package middleware
 import (
 	"context"
 	"errors"
+	"net/http"
+
 	errs "eshkere/internal/errors"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
-	"net/http"
 )
 
 func PartnerAuth(validator SessionValidator, cookieName string) func(http.Handler) http.Handler {

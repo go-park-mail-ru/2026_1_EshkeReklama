@@ -2,9 +2,10 @@ package service
 
 import (
 	"context"
+	"fmt"
+
 	errs "eshkere/internal/errors"
 	"eshkere/internal/models"
-	"fmt"
 )
 
 func ownershipNotFound(entity string) error {

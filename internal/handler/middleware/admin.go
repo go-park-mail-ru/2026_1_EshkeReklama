@@ -2,10 +2,11 @@ package middleware
 
 import (
 	"context"
+	"net/http"
+
 	"eshkere/internal/models"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
-	"net/http"
 )
 
 type AdminChecker interface {

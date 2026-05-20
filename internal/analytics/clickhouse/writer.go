@@ -2,9 +2,10 @@ package clickhouse
 
 import (
 	"context"
-	"eshkere/internal/analytics"
 	"fmt"
 	"time"
+
+	"eshkere/internal/analytics"
 
 	clickhousego "github.com/ClickHouse/clickhouse-go/v2"
 )

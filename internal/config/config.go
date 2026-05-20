@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -122,7 +123,7 @@ type Config struct {
 func ReadConfig(path string) (*Config, error) {
 	cfg := &Config{}
 
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return nil, err
 	}

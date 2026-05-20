@@ -3,9 +3,10 @@ package kafka
 import (
 	"context"
 	"encoding/json"
-	"eshkere/internal/analytics"
 	"fmt"
 	"time"
+
+	"eshkere/internal/analytics"
 
 	kafkago "github.com/segmentio/kafka-go"
 )

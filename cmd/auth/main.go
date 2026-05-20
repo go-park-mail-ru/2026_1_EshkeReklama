@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"eshkere/internal/observability"
 	"fmt"
 	"log"
 	"net"
@@ -15,10 +14,13 @@ import (
 	"syscall"
 	"time"
 
-	"eshkere/internal/auth/vkid"
+	"eshkere/internal/observability"
+
 	redis "github.com/gomodule/redigo/redis"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"google.golang.org/grpc"
+
+	"eshkere/internal/auth/vkid"
 
 	authrepo "eshkere/internal/auth/repository/postgres"
 	authserver "eshkere/internal/auth/server"
@@ -131,7 +133,7 @@ func initRedis(addr, password string) (*redis.Pool, error) {
 	conn := pool.Get()
 	defer conn.Close()
 	if _, err := conn.Do("PING"); err != nil {
-		pool.Close()
+		_ = pool.Close()
 		return nil, fmt.Errorf("ping redis: %w", err)
 	}
 	return pool, nil

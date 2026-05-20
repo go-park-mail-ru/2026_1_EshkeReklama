@@ -5,14 +5,15 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"errors"
-	"eshkere/internal/analytics"
-	errs "eshkere/internal/errors"
-	"eshkere/internal/models"
-	"eshkere/pkg/logger"
 	"fmt"
 	"math"
 	"math/big"
 	"time"
+
+	"eshkere/internal/analytics"
+	errs "eshkere/internal/errors"
+	"eshkere/internal/models"
+	"eshkere/pkg/logger"
 )
 
 const (

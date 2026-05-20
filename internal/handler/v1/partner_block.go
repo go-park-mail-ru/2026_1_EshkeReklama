@@ -3,15 +3,16 @@ package v1
 import (
 	"database/sql"
 	"encoding/json"
+	"html/template"
+	"net/http"
+	"strconv"
+
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
-	"html/template"
-	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -466,6 +467,7 @@ var partnerBlockFrameTemplate = template.Must(template.New("partner-block-frame"
 		if err != nil {
 			return template.JS(`""`)
 		}
+		//nolint:gosec // JSON-encoded string is intentionally embedded into a JS string literal.
 		return template.JS(encoded)
 	},
 }).Parse(`<!doctype html>

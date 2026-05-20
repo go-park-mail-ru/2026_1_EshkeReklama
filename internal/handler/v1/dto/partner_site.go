@@ -1,9 +1,10 @@
 package dto
 
 import (
+	"time"
+
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
-	"time"
 )
 
 type CreatePartnerSiteRequest struct {

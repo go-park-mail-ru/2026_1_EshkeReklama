@@ -2,9 +2,10 @@ package app
 
 import (
 	"database/sql"
-	"eshkere/internal/config"
 	"fmt"
 	"time"
+
+	"eshkere/internal/config"
 
 	redis "github.com/gomodule/redigo/redis"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -66,7 +67,7 @@ func initRedis(cfg config.RedisConfig) (*redis.Pool, error) {
 	conn := pool.Get()
 	defer conn.Close()
 	if _, err := conn.Do("PING"); err != nil {
-		pool.Close()
+		_ = pool.Close()
 		return nil, fmt.Errorf("ping redis: %w", err)
 	}
 

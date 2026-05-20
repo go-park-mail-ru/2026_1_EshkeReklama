@@ -3,10 +3,11 @@ package middleware
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"eshkere/pkg/httpx"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"eshkere/pkg/httpx"
 )
 
 type CSRFConfig struct {
@@ -61,7 +62,7 @@ func CSRF(cfg CSRFConfig) func(http.Handler) http.Handler {
 			}
 
 			reqToken := r.Header.Get(headerName)
-			if reqToken == "" || token == "" || subtleConstantTimeStringEq(reqToken, token) == false {
+			if reqToken == "" || token == "" || !subtleConstantTimeStringEq(reqToken, token) {
 				httpx.ErrorJSON(w, http.StatusForbidden, "csrf token required")
 				return
 			}

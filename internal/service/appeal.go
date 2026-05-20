@@ -3,10 +3,11 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
+
 	errs "eshkere/internal/errors"
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
-	"fmt"
 )
 
 func (s *Service) CreateAppeal(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error) {

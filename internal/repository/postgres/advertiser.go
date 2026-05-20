@@ -4,10 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+
 	errs "eshkere/internal/errors"
 	"eshkere/internal/models"
 	"eshkere/pkg/logger"
-	"fmt"
 )
 
 type AdvertiserRepository struct {

@@ -3,8 +3,9 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	"eshkere/internal/models"
 	"fmt"
+
+	"eshkere/internal/models"
 )
 
 type PartnerBlockGeoRuleRepository struct {

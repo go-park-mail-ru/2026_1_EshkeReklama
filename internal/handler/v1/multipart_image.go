@@ -2,12 +2,13 @@ package v1
 
 import (
 	"errors"
-	"eshkere/internal/handler/v1/dto"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"path/filepath"
 	"strings"
+
+	"eshkere/internal/handler/v1/dto"
 )
 
 const maxAvatarSize = 5 << 20 // 5 MB

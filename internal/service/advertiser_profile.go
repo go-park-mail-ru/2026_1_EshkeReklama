@@ -3,10 +3,11 @@ package service
 import (
 	"context"
 	"database/sql"
-	errs "eshkere/internal/errors"
-	serviceinput "eshkere/internal/service/input"
 	"fmt"
 	"strings"
+
+	errs "eshkere/internal/errors"
+	serviceinput "eshkere/internal/service/input"
 
 	"eshkere/internal/models"
 )

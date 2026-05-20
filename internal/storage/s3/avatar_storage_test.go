@@ -57,9 +57,9 @@ func TestClient_GetPublicURL(t *testing.T) {
 
 func TestNewClient_SetsFields(t *testing.T) {
 	client, err := NewClient(context.Background(), Config{
-		Region:        "us-east-1",
-		Bucket:        "bucket",
-		PublicBaseURL: "https://cdn.example.com",
+		Region:         "us-east-1",
+		Bucket:         "bucket",
+		PublicBaseURL:  "https://cdn.example.com",
 		ForcePathStyle: true,
 	})
 	if err != nil {

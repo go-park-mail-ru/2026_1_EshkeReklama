@@ -3,6 +3,9 @@ package v1
 import (
 	"context"
 	"errors"
+	"net/http"
+	"time"
+
 	errs "eshkere/internal/errors"
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
@@ -10,8 +13,6 @@ import (
 	"eshkere/internal/models"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
-	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -401,6 +402,7 @@ func (a *API) UpdateAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	r.Body = http.MaxBytesReader(w, r.Body, maxAvatarSize)
 	if err = r.ParseMultipartForm(maxAvatarSize); err != nil {
 		handler.HandleError(w, r, "parsing multipart form", err)
 		return

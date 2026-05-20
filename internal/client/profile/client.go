@@ -2,8 +2,9 @@ package profileclient
 
 import (
 	"context"
-	"eshkere/internal/service"
 	"time"
+
+	"eshkere/internal/service"
 
 	profilev1 "eshkere/pkg/pb/profile/v1"
 

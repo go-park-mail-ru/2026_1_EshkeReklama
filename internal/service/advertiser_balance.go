@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-	errs "eshkere/internal/errors"
 	"fmt"
+
+	errs "eshkere/internal/errors"
 )
 
 func (s *Service) TopUpAdvertiserBalance(ctx context.Context, advertiserID int, amount int64) (int64, error) {

@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"eshkere/internal/models"
 	"fmt"
 	"time"
+
+	"eshkere/internal/models"
 )
 
 type PartnerRepository struct {
@@ -136,16 +137,16 @@ func (r *PartnerRepository) SettleDailyEarnings(ctx context.Context, earningDate
 	for rows.Next() {
 		var earning partnerEarning
 		if err := rows.Scan(&earning.partnerID, &earning.reward); err != nil {
-			rows.Close()
+			_ = rows.Close()
 			return 0, fmt.Errorf("scan partner earning: %w", err)
 		}
 		earnings = append(earnings, earning)
 	}
 	if err := rows.Err(); err != nil {
-		rows.Close()
+		_ = rows.Close()
 		return 0, fmt.Errorf("iterate partner earnings: %w", err)
 	}
-	rows.Close()
+	_ = rows.Close()
 
 	var totalSettled int64
 	for _, earning := range earnings {

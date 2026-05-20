@@ -2,10 +2,11 @@ package handler
 
 import (
 	"errors"
+	"net/http"
+
 	errs "eshkere/internal/errors"
 	"eshkere/pkg/httpx"
 	lgr "eshkere/pkg/logger"
-	"net/http"
 )
 
 func HandleError(w http.ResponseWriter, r *http.Request, desc string, err error) {

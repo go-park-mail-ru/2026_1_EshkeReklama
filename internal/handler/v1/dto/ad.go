@@ -1,9 +1,10 @@
 package dto
 
 import (
+	"net/url"
+
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
-	"net/url"
 )
 
 type CreateAdRequest struct {

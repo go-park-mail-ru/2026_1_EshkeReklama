@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	errs "eshkere/internal/errors"
-	"eshkere/pkg/ctxutils"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	errs "eshkere/internal/errors"
+	"eshkere/pkg/ctxutils"
 )
 
 func TestPartnerAuth(t *testing.T) {

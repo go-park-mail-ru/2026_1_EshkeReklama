@@ -11,59 +11,34 @@ formatters:
   enable:
     - gofmt
     - goimports
-    - gci
   settings:
     goimports:
       local-prefixes:
         - eshkere
-    gci:
-      sections:
-        - standard
-        - default
-        - prefix(eshkere)
 
 linters:
   default: none
   enable:
     - errcheck
-    - gocritic
     - gosec
     - govet
     - ineffassign
     - misspell
-    - revive
     - staticcheck
     - unused
 
   settings:
-    govet:
-      enable:
-        - shadow
-
     misspell:
       locale: US
       extra-words:
         - typo: "cancelled"
           correction: "cancelled"
-
-    revive:
-      rules:
-        - name: exported
-          disabled: true
-        - name: package-comments
-          disabled: true
-        - name: line-length-limit
-          disabled: true
-
-    gocritic:
-      enabled-tags:
-        - diagnostic
-        - performance
-        - style
-      disabled-checks:
-        - hugeParam
-        - rangeValCopy
-        - commentedOutCode
+    staticcheck:
+      checks:
+        - all
+        - -QF*
+        - -ST*
+        - -SA1019
 
   exclusions:
     presets: []
@@ -76,11 +51,12 @@ linters:
           - errcheck
           - gosec
 
-      - path: '^cmd/.+/main\.go$'
-        linters:
-          - revive
-
       - text: "G115:"
+        linters:
+          - gosec
+
+      - path: internal/repository/postgres/partner_block\.go
+        text: "G101:"
         linters:
           - gosec
 

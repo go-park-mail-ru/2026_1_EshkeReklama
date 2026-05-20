@@ -3,9 +3,10 @@ package dto
 import (
 	"database/sql"
 	"encoding/json"
+	"time"
+
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
-	"time"
 )
 
 type CreatePartnerBlockRequest struct {

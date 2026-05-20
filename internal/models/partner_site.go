@@ -31,11 +31,11 @@ func (s PartnerSiteStatus) IsValid() bool {
 }
 
 type PartnerSite struct {
-	ID        int          `db:"id"`
-	PartnerID int          `db:"partner_id"`
-	Domain    string       `db:"domain"`
-	SiteName  string       `db:"site_name"`
+	ID        int               `db:"id"`
+	PartnerID int               `db:"partner_id"`
+	Domain    string            `db:"domain"`
+	SiteName  string            `db:"site_name"`
 	Status    PartnerSiteStatus `db:"status"`
-	CreatedAt time.Time    `db:"created_at"`
-	UpdatedAt sql.NullTime `db:"updated_at"`
+	CreatedAt time.Time         `db:"created_at"`
+	UpdatedAt sql.NullTime      `db:"updated_at"`
 }

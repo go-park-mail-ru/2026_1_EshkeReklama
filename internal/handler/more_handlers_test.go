@@ -3,16 +3,17 @@ package handler_test
 import (
 	"bytes"
 	"context"
-	errs "eshkere/internal/errors"
-	handlers "eshkere/internal/handler"
-	"eshkere/internal/handler/middleware"
-	"eshkere/internal/handler/v1"
-	"eshkere/internal/models"
-	serviceinput "eshkere/internal/service/input"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	errs "eshkere/internal/errors"
+	handlers "eshkere/internal/handler"
+	"eshkere/internal/handler/middleware"
+	v1 "eshkere/internal/handler/v1"
+	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 
 	"github.com/gorilla/mux"
 	"go.uber.org/mock/gomock"

@@ -3,12 +3,13 @@ package service
 import (
 	"context"
 	"database/sql"
-	errs "eshkere/internal/errors"
-	"eshkere/internal/models"
-	serviceinput "eshkere/internal/service/input"
 	"fmt"
 	"strings"
 	"time"
+
+	errs "eshkere/internal/errors"
+	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 )
 
 func (s *Service) CreateAd(ctx context.Context, advertiserID int, in *serviceinput.CreateAd) (*models.Ad, error) {

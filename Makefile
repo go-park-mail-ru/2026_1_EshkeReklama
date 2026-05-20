@@ -1,4 +1,4 @@
-.PHONY: up down proto
+.PHONY: up down proto lint lint-fmt
 
 proto:
 	protoc \
@@ -17,6 +17,9 @@ down:
 
 coverage:
 	go test ./... -coverprofile=cover.out && go tool cover -func=cover.out | tail -n 1
+
+lint:
+	golangci-lint run
 
 swagger:
 	swag init -g main.go -d ./cmd/eshkere,./internal/app,./internal/handler,./internal/handler/v1,./internal/handler/v1/dto,./internal/models,./internal/handler/middleware,./pkg/httpx

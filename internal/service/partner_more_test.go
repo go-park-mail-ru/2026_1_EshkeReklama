@@ -3,11 +3,12 @@ package service
 import (
 	"context"
 	"errors"
+	"testing"
+	"time"
+
 	errs "eshkere/internal/errors"
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
-	"testing"
-	"time"
 )
 
 type stubPartnerRepo struct {

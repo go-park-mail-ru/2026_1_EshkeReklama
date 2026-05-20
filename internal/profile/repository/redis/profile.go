@@ -2,10 +2,11 @@ package redis
 
 import (
 	"context"
-	profileservice "eshkere/internal/profile/service"
 	"fmt"
 	"strconv"
 	"time"
+
+	profileservice "eshkere/internal/profile/service"
 
 	redis "github.com/gomodule/redigo/redis"
 )

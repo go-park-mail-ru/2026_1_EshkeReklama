@@ -3,9 +3,10 @@ package service
 import (
 	"context"
 	"database/sql"
+	"time"
+
 	"eshkere/internal/models"
 	serviceinput "eshkere/internal/service/input"
-	"time"
 )
 
 func (s *Service) CreateAdGroup(ctx context.Context, advertiserID int, in *serviceinput.CreateAdGroup) (*models.AdGroup, error) {

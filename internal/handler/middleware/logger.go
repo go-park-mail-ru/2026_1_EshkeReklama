@@ -1,10 +1,11 @@
 package middleware
 
 import (
-	"eshkere/pkg/ctxutils"
-	"eshkere/pkg/logger"
 	"net/http"
 	"time"
+
+	"eshkere/pkg/ctxutils"
+	"eshkere/pkg/logger"
 
 	"go.uber.org/zap"
 )

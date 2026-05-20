@@ -6,9 +6,10 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
-	errs "eshkere/internal/errors"
 	"fmt"
 	"math/big"
+
+	errs "eshkere/internal/errors"
 
 	"eshkere/internal/models"
 )

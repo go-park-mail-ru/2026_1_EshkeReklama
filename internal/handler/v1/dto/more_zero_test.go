@@ -3,9 +3,10 @@ package dto
 import (
 	"database/sql"
 	"encoding/json"
-	"eshkere/internal/models"
 	"testing"
 	"time"
+
+	"eshkere/internal/models"
 )
 
 func TestPartnerAndSiteDTOConversions(t *testing.T) {

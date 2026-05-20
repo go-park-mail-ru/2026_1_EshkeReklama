@@ -4,9 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"eshkere/internal/analytics"
-	analyticsch "eshkere/internal/analytics/clickhouse"
-	"eshkere/internal/config"
 	"flag"
 	"log"
 	"net"
@@ -14,6 +11,10 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"eshkere/internal/analytics"
+	analyticsch "eshkere/internal/analytics/clickhouse"
+	"eshkere/internal/config"
 
 	kafkago "github.com/segmentio/kafka-go"
 )

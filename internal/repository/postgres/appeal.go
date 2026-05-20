@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+
 	"eshkere/internal/models"
 	"eshkere/pkg/logger"
-	"fmt"
 )
 
 type AppealRepository struct {

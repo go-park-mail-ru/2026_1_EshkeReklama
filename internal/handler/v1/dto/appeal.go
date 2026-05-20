@@ -1,10 +1,11 @@
 package dto
 
 import (
-	"eshkere/internal/models"
-	serviceinput "eshkere/internal/service/input"
 	"net/url"
 	"time"
+
+	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 )
 
 type CreateAppealRequest struct {

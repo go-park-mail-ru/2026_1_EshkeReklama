@@ -2,10 +2,11 @@ package service
 
 import (
 	"context"
-	errs "eshkere/internal/errors"
-	"eshkere/internal/models"
 	"fmt"
 	"strings"
+
+	errs "eshkere/internal/errors"
+	"eshkere/internal/models"
 )
 
 func displayNameFromEmail(email string) string {

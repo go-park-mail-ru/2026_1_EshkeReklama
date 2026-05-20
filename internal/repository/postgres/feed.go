@@ -4,8 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"eshkere/pkg/logger"
 	"fmt"
+
+	"eshkere/pkg/logger"
 )
 
 type FeedLinkRepository struct {

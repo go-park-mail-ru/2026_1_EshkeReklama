@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"eshkere/internal/observability"
 	"fmt"
 	"log"
 	"net"
@@ -11,6 +10,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"eshkere/internal/observability"
 
 	profileredis "eshkere/internal/profile/repository/redis"
 	profileserver "eshkere/internal/profile/server"
@@ -102,7 +103,7 @@ func initRedis(addr, password string) (*redis.Pool, error) {
 	conn := pool.Get()
 	defer conn.Close()
 	if _, err := conn.Do("PING"); err != nil {
-		pool.Close()
+		_ = pool.Close()
 		return nil, fmt.Errorf("ping redis: %w", err)
 	}
 	return pool, nil

@@ -5,6 +5,11 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
 	errs "eshkere/internal/errors"
 	handlers "eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
@@ -12,10 +17,6 @@ import (
 	"eshkere/internal/models"
 	"eshkere/internal/service"
 	serviceinput "eshkere/internal/service/input"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
 
 	"github.com/gorilla/mux"
 )

@@ -5,9 +5,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 )
+
+var safeGoFileName = regexp.MustCompile(`^[a-z0-9_]+\.go$`)
 
 func main() {
 	if len(os.Args) != 2 {
@@ -37,7 +40,12 @@ func main() {
 		if slices.Contains([]string{"generate.go", "image.go", "partner_dictionary.go"}, name) {
 			continue
 		}
+		if !safeGoFileName.MatchString(name) {
+			fmt.Fprintf(os.Stderr, "skip unexpected file name %q\n", name)
+			continue
+		}
 
+		//nolint:gosec
 		cmd := exec.Command("go", "run", "github.com/mailru/easyjson/easyjson@v0.7.6", "-all", name)
 		cmd.Dir = dir
 		cmd.Stdout = os.Stdout

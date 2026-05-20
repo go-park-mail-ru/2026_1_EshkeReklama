@@ -1,4 +1,7 @@
-.PHONY: up down proto lint lint-fmt
+.PHONY: up down proto lint lint-fmt generate coverage
+
+generate:
+	go generate ./...
 
 proto:
 	protoc \
@@ -16,7 +19,7 @@ down:
 	docker compose down -v
 
 coverage:
-	go test ./... -coverprofile=cover.out && go tool cover -func=cover.out | tail -n 1
+	go test ./... -coverprofile=cover.out && grep -v '_easyjson.go:' cover.out > cover.filtered.out && go tool cover -func=cover.filtered.out | tail -n 1
 
 lint:
 	golangci-lint run

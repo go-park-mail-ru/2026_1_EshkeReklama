@@ -1,0 +1,93 @@
+version: "2"
+
+run:
+  timeout: 3m
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+    - gci
+  settings:
+    goimports:
+      local-prefixes:
+        - eshkere
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(eshkere)
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - gocritic
+    - gosec
+    - govet
+    - ineffassign
+    - misspell
+    - revive
+    - staticcheck
+    - unused
+
+  settings:
+    govet:
+      enable:
+        - shadow
+
+    misspell:
+      locale: US
+      extra-words:
+        - typo: "cancelled"
+          correction: "cancelled"
+
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
+        - name: line-length-limit
+          disabled: true
+
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - performance
+        - style
+      disabled-checks:
+        - hugeParam
+        - rangeValCopy
+        - commentedOutCode
+
+  exclusions:
+    presets: []
+    paths:
+      - docs
+    generated: strict
+    rules:
+      - path: '(.+)_test\.go'
+        linters:
+          - errcheck
+          - gosec
+
+      - path: '^cmd/.+/main\.go$'
+        linters:
+          - revive
+
+      - text: "G115:"
+        linters:
+          - gosec
+
+      - text: "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv|.*Rollback). is not checked"
+        linters:
+          - errcheck
+
+      - text: "should check returned error before deferring"
+        linters:
+          - errcheck

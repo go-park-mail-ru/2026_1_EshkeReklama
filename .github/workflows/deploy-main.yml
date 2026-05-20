@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate:
+  lint:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -32,11 +32,27 @@ jobs:
         with:
           version: v2.4.0
 
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
       - name: Run tests
         run: go test ./...
 
   deploy:
-    needs: validate
+    needs:
+      - lint
+      - test
     runs-on: ubuntu-latest
     timeout-minutes: 30
 

@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
@@ -36,7 +35,6 @@ func main() {
 	redisPassword := envOr("AUTH_REDIS_PASSWORD", "")
 	sessionTTL := envDuration("AUTH_SESSION_TTL", 24*time.Hour)
 	vkIDClientID := envInt64("AUTH_VKID_CLIENT_ID", 0)
-	vkIDRedirectURI := envOr("AUTH_VKID_REDIRECT_URI", "")
 	vkIDDomain := envOr("AUTH_VKID_DOMAIN", "id.vk.ru")
 	vkIDTimeout := envDuration("AUTH_VKID_TIMEOUT", 5*time.Second)
 	metricsAddr := envOr("AUTH_METRICS_ADDR", "")
@@ -54,7 +52,7 @@ func main() {
 	defer redisPool.Close()
 
 	credsRepo := authrepo.NewCredentialsRepository(db)
-	credsSvc := authsvc.NewCredentialsService(credsRepo, initVKIDClient(vkIDClientID, vkIDRedirectURI, vkIDDomain, vkIDTimeout))
+	credsSvc := authsvc.NewCredentialsService(credsRepo, initVKIDClient(vkIDClientID, vkIDDomain, vkIDTimeout))
 
 	store := authsession.NewRedisStore(redisPool)
 	sessionMgr := authsession.NewManager(store, sessionTTL)
@@ -170,13 +168,9 @@ func envInt64(key string, def int64) int64 {
 	return n
 }
 
-func initVKIDClient(clientID int64, redirectURI, domain string, timeout time.Duration) *vkid.Client {
-	if clientID <= 0 || redirectURI == "" {
+func initVKIDClient(clientID int64, domain string, timeout time.Duration) *vkid.Client {
+	if clientID <= 0 {
 		return nil
 	}
-	if _, err := url.ParseRequestURI(redirectURI); err != nil {
-		log.Printf("vk id disabled: invalid redirect uri: %v", err)
-		return nil
-	}
-	return vkid.New(clientID, redirectURI, domain, timeout)
+	return vkid.New(clientID, domain, timeout)
 }

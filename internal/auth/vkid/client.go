@@ -19,19 +19,20 @@ var (
 )
 
 type Identity struct {
-	UserID int64
-	Email  string
-	Phone  string
+	UserID    int64
+	Email     string
+	Phone     string
+	FirstName string
+	LastName  string
 }
 
 type Client struct {
-	baseURL     string
-	clientID    int64
-	redirectURI string
-	httpClient  *http.Client
+	baseURL    string
+	clientID   int64
+	httpClient *http.Client
 }
 
-func New(clientID int64, redirectURI, domain string, timeout time.Duration) *Client {
+func New(clientID int64, domain string, timeout time.Duration) *Client {
 	baseURL := strings.TrimSpace(domain)
 	if baseURL == "" {
 		baseURL = "https://id.vk.ru"
@@ -44,81 +45,48 @@ func New(clientID int64, redirectURI, domain string, timeout time.Duration) *Cli
 	}
 
 	return &Client{
-		baseURL:     strings.TrimRight(baseURL, "/"),
-		clientID:    clientID,
-		redirectURI: redirectURI,
-		httpClient:  &http.Client{Timeout: timeout},
+		baseURL:    strings.TrimRight(baseURL, "/"),
+		clientID:   clientID,
+		httpClient: &http.Client{Timeout: timeout},
 	}
 }
 
-func (c *Client) ExchangeUser(ctx context.Context, code, deviceID, codeVerifier string) (*Identity, error) {
-	token, err := c.exchangeCode(ctx, code, deviceID, codeVerifier)
+func (c *Client) ResolveUser(ctx context.Context, accessToken string) (*Identity, error) {
+	user, err := c.userInfo(ctx, strings.TrimSpace(accessToken))
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := c.userInfo(ctx, token.AccessToken)
+	userID, err := strconv.ParseInt(strings.TrimSpace(user.User.UserID), 10, 64)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: parse user id: %v", ErrUnexpectedReply, err)
 	}
-
-	userID := token.UserID
-	if user.User.UserID != "" {
-		parsedID, parseErr := strconv.ParseInt(user.User.UserID, 10, 64)
-		if parseErr != nil {
-			return nil, fmt.Errorf("%w: parse user id: %v", ErrUnexpectedReply, parseErr)
-		}
-		userID = parsedID
-	}
-
 	if userID <= 0 {
 		return nil, fmt.Errorf("%w: missing user id", ErrUnexpectedReply)
 	}
 
 	return &Identity{
-		UserID: userID,
-		Email:  strings.TrimSpace(strings.ToLower(user.User.Email)),
-		Phone:  strings.TrimSpace(user.User.Phone),
+		UserID:    userID,
+		Email:     strings.TrimSpace(strings.ToLower(user.User.Email)),
+		Phone:     strings.TrimSpace(user.User.Phone),
+		FirstName: strings.TrimSpace(user.User.FirstName),
+		LastName:  strings.TrimSpace(user.User.LastName),
 	}, nil
-}
-
-type tokenResponse struct {
-	AccessToken string `json:"access_token"`
-	UserID      int64  `json:"user_id"`
 }
 
 type userInfoResponse struct {
 	User struct {
-		Email  string `json:"email"`
-		Phone  string `json:"phone"`
-		UserID string `json:"user_id"`
+		Email     string `json:"email"`
+		Phone     string `json:"phone"`
+		UserID    string `json:"user_id"`
+		FirstName string `json:"first_name"`
+		LastName  string `json:"last_name"`
 	} `json:"user"`
 }
 
 type errorResponse struct {
 	Error            string `json:"error"`
 	ErrorDescription string `json:"error_description"`
-}
-
-func (c *Client) exchangeCode(ctx context.Context, code, deviceID, codeVerifier string) (*tokenResponse, error) {
-	query := url.Values{
-		"grant_type":    {"authorization_code"},
-		"redirect_uri":  {c.redirectURI},
-		"client_id":     {strconv.FormatInt(c.clientID, 10)},
-		"code_verifier": {codeVerifier},
-		"device_id":     {deviceID},
-	}
-
-	var token tokenResponse
-	if err := c.postForm(ctx, c.baseURL+"/oauth2/auth?"+query.Encode(), url.Values{"code": {code}}, &token); err != nil {
-		return nil, err
-	}
-
-	if token.AccessToken == "" {
-		return nil, fmt.Errorf("%w: empty access token", ErrUnexpectedReply)
-	}
-
-	return &token, nil
 }
 
 func (c *Client) userInfo(ctx context.Context, accessToken string) (*userInfoResponse, error) {

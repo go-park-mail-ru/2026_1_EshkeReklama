@@ -21,10 +21,8 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 	advertisers := r.PathPrefix("/advertisers").Subrouter()
 
 	advertisers.HandleFunc("/register", a.Register).Methods(http.MethodPost)
-	advertisers.HandleFunc("/login/vk", a.BeginVKIDLogin).Methods(http.MethodGet)
 	advertisers.HandleFunc("/login", a.Login).Methods(http.MethodPost)
 	advertisers.HandleFunc("/login/vk", a.LoginVKID).Methods(http.MethodPost)
-	advertisers.HandleFunc("/login/vk/callback", a.LoginVKIDCallback).Methods(http.MethodGet)
 	advertisers.HandleFunc("/logout", a.Logout).Methods(http.MethodPost)
 	advertisers.Handle("/balance", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.GetBalance))).Methods(http.MethodGet)
 	advertisers.Handle("/balance/topup", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.TopUpBalance))).Methods(http.MethodPost)
@@ -117,11 +115,11 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary      Вход рекламодателя через VK ID
-// @Description  Аутентифицирует рекламодателя по VK ID authorization code и открывает сессию
+// @Description  Аутентифицирует рекламодателя по frontend-driven VK ID SDK payload и открывает сессию
 // @Tags         advertiser
 // @Accept       json
 // @Produce      json
-// @Param        input body      dto.VKIDLoginRequest  true  "code, device_id и code_verifier от VK ID"
+// @Param        input body      dto.VKIDLoginRequest  true  "access_token и user_id от VK ID SDK"
 // @Success      200   {object}  dto.LoginResponse
 // @Failure      400   {object}  httpx.Error
 // @Failure      401   {object}  httpx.Error
@@ -137,7 +135,7 @@ func (a *API) LoginVKID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	advID, sessionID, expiresAt, err := a.authClient.LoginVKID(ctx, req.Code, req.DeviceID, req.CodeVerifier)
+	advID, sessionID, expiresAt, err := a.authClient.LoginVKID(ctx, req.AccessToken, req.UserID)
 	if err != nil {
 		handler.HandleError(w, r, "auth advertiser via vk id", err)
 		return
@@ -149,7 +147,7 @@ func (a *API) LoginVKID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.ensureAdvertiserProfile(ctx, advID, email); err != nil {
+	if err := a.ensureAdvertiserProfile(ctx, advID, req.FirstName, email); err != nil {
 		_ = a.authClient.Logout(ctx, sessionID)
 		handler.HandleError(w, r, "ensure advertiser profile", err)
 		return
@@ -277,14 +275,14 @@ func (a *API) resolveUpdatedContacts(
 	return a.authClient.UpdateCredentials(ctx, advertiserID, email, phone)
 }
 
-func (a *API) ensureAdvertiserProfile(ctx context.Context, advertiserID int64, email string) error {
+func (a *API) ensureAdvertiserProfile(ctx context.Context, advertiserID int64, preferredName, email string) error {
 	if _, err := a.service.GetAdvertiserByID(ctx, int(advertiserID)); err == nil {
 		return nil
 	} else if !errors.Is(err, errs.NotFoundError) {
 		return err
 	}
 
-	return a.service.CreateAdvertiserProfile(ctx, advertiserID, "", email)
+	return a.service.CreateAdvertiserProfile(ctx, advertiserID, preferredName, email)
 }
 
 // @Summary      Выход рекламодателя

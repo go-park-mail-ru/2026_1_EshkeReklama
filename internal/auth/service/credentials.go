@@ -26,7 +26,7 @@ type CredentialsRepo interface {
 }
 
 type VKIDAuthenticator interface {
-	ExchangeUser(ctx context.Context, code, deviceID, codeVerifier string) (*vkid.Identity, error)
+	ResolveUser(ctx context.Context, accessToken string) (*vkid.Identity, error)
 }
 
 type CredentialsService struct {
@@ -118,20 +118,23 @@ func (s *CredentialsService) Authenticate(ctx context.Context, identifier, passw
 	return cred.ID, nil
 }
 
-func (s *CredentialsService) AuthenticateVKID(ctx context.Context, code, deviceID, codeVerifier string) (int64, error) {
-	if strings.TrimSpace(code) == "" || strings.TrimSpace(deviceID) == "" || strings.TrimSpace(codeVerifier) == "" {
-		return 0, fmt.Errorf("%w: code, device_id and code_verifier are required", ErrInvalidArg)
+func (s *CredentialsService) AuthenticateVKID(ctx context.Context, accessToken string, expectedUserID int64) (int64, error) {
+	if strings.TrimSpace(accessToken) == "" || expectedUserID <= 0 {
+		return 0, fmt.Errorf("%w: access_token and user_id are required", ErrInvalidArg)
 	}
 	if s.vkidAuth == nil {
 		return 0, ErrVKIDUnavailable
 	}
 
-	identity, err := s.vkidAuth.ExchangeUser(ctx, strings.TrimSpace(code), strings.TrimSpace(deviceID), strings.TrimSpace(codeVerifier))
+	identity, err := s.vkidAuth.ResolveUser(ctx, strings.TrimSpace(accessToken))
 	if err != nil {
 		if errors.Is(err, vkid.ErrUnauthorized) {
 			return 0, ErrInvalidCredentials
 		}
 		return 0, err
+	}
+	if identity.UserID != expectedUserID {
+		return 0, ErrInvalidCredentials
 	}
 
 	if cred, getErr := s.repo.GetByVKUserID(ctx, identity.UserID); getErr == nil {

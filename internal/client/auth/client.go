@@ -18,7 +18,7 @@ import (
 var _ interface {
 	Register(ctx context.Context, email, phone, password string) (int64, string, int64, error)
 	Login(ctx context.Context, identifier, password string) (int64, string, int64, error)
-	LoginVKID(ctx context.Context, code, deviceID, codeVerifier string) (int64, string, int64, error)
+	LoginVKID(ctx context.Context, accessToken string, userID int64) (int64, string, int64, error)
 	ValidateSession(ctx context.Context, sessionID string) (int64, error)
 	Logout(ctx context.Context, sessionID string) error
 	GetCredentials(ctx context.Context, advertiserID int64) (string, string, error)
@@ -68,14 +68,13 @@ func (c *Client) Login(ctx context.Context, identifier, password string) (int64,
 	return resp.AdvertiserId, resp.SessionId, resp.ExpiresAt, nil
 }
 
-func (c *Client) LoginVKID(ctx context.Context, code, deviceID, codeVerifier string) (int64, string, int64, error) {
+func (c *Client) LoginVKID(ctx context.Context, accessToken string, userID int64) (int64, string, int64, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	resp, err := c.rpc.LoginVKID(ctx, &authv1.LoginVKIDRequest{
-		Code:         code,
-		DeviceId:     deviceID,
-		CodeVerifier: codeVerifier,
+		AccessToken: accessToken,
+		UserId:      userID,
 	})
 	if err != nil {
 		return 0, "", 0, mapErr(err)

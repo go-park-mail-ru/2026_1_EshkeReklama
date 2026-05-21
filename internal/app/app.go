@@ -180,14 +180,6 @@ func (a *App) Run() error {
 			HTTPOnly: true,
 			Secure:   a.cfg.Session.CookieSecure,
 		},
-		VKIDConfig: v1.VKIDConfig{
-			ClientID:           a.cfg.VKID.ClientID,
-			RedirectURI:        a.cfg.VKID.RedirectURI,
-			AuthDomain:         a.cfg.VKID.AuthDomain,
-			Scope:              a.cfg.VKID.Scope,
-			DefaultRedirectURL: a.cfg.VKID.DefaultRedirectURL,
-			ErrorRedirectURL:   a.cfg.VKID.ErrorRedirectURL,
-		},
 	}))
 
 	apiServer := &http.Server{

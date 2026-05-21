@@ -63,15 +63,6 @@ type AuthServiceConfig struct {
 	GRPCAddr string `yaml:"grpc_addr"`
 }
 
-type VKIDConfig struct {
-	ClientID           int64  `yaml:"client_id"`
-	RedirectURI        string `yaml:"redirect_uri"`
-	AuthDomain         string `yaml:"auth_domain"`
-	Scope              string `yaml:"scope"`
-	DefaultRedirectURL string `yaml:"default_redirect_url"`
-	ErrorRedirectURL   string `yaml:"error_redirect_url"`
-}
-
 type ProfileServiceConfig struct {
 	GRPCAddr string `yaml:"grpc_addr"`
 }
@@ -111,7 +102,6 @@ type Config struct {
 	Session         SessionConfig        `yaml:"session"`
 	AuthService     AuthServiceConfig    `yaml:"auth_service"`
 	ProfileService  ProfileServiceConfig `yaml:"profile_service"`
-	VKID            VKIDConfig           `yaml:"vkid"`
 	S3              S3Config             `yaml:"s3"`
 	CORS            CORSConfig           `yaml:"cors"`
 	Observability   ObservabilityConfig  `yaml:"observability"`

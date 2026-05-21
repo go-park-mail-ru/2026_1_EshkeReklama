@@ -53,11 +53,11 @@ func (s *stubCredentialsRepo) Delete(ctx context.Context, id int64) error {
 }
 
 type stubVKIDAuth struct {
-	exchangeFunc func(context.Context, string, string, string) (*vkid.Identity, error)
+	resolveFunc func(context.Context, string) (*vkid.Identity, error)
 }
 
-func (s *stubVKIDAuth) ExchangeUser(ctx context.Context, code, deviceID, codeVerifier string) (*vkid.Identity, error) {
-	return s.exchangeFunc(ctx, code, deviceID, codeVerifier)
+func (s *stubVKIDAuth) ResolveUser(ctx context.Context, accessToken string) (*vkid.Identity, error) {
+	return s.resolveFunc(ctx, accessToken)
 }
 
 func TestRegisterAndAuthenticate(t *testing.T) {
@@ -222,13 +222,13 @@ func TestAuthenticateVKIDAndUpdateAndHelpers(t *testing.T) {
 		deleteFunc: func(context.Context, int64) error { return nil },
 	}
 	vk := &stubVKIDAuth{
-		exchangeFunc: func(context.Context, string, string, string) (*vkid.Identity, error) {
+		resolveFunc: func(context.Context, string) (*vkid.Identity, error) {
 			return &vkid.Identity{UserID: 123, Email: "vk@example.com", Phone: "+7 900 000 00 00"}, nil
 		},
 	}
 	svc := NewCredentialsService(repo, vk)
 
-	id, err := svc.AuthenticateVKID(context.Background(), "code", "device", "verifier")
+	id, err := svc.AuthenticateVKID(context.Background(), "vk-token", 123)
 	if err != nil {
 		t.Fatalf("authenticate vkid: %v", err)
 	}
@@ -267,10 +267,10 @@ func TestAuthenticateVKIDAndUpdateAndHelpers(t *testing.T) {
 		t.Fatalf("expected ErrPhoneTaken, got %v", err)
 	}
 
-	if _, err := svc.AuthenticateVKID(context.Background(), "", "device", "verifier"); !errors.Is(err, ErrInvalidArg) {
+	if _, err := svc.AuthenticateVKID(context.Background(), "", 123); !errors.Is(err, ErrInvalidArg) {
 		t.Fatalf("expected invalid arg, got %v", err)
 	}
-	if _, err := NewCredentialsService(repo, nil).AuthenticateVKID(context.Background(), "code", "device", "verifier"); !errors.Is(err, ErrVKIDUnavailable) {
+	if _, err := NewCredentialsService(repo, nil).AuthenticateVKID(context.Background(), "vk-token", 123); !errors.Is(err, ErrVKIDUnavailable) {
 		t.Fatalf("expected unavailable, got %v", err)
 	}
 }

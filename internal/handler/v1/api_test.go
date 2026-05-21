@@ -3,11 +3,9 @@ package v1
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	errs "eshkere/internal/errors"
@@ -29,7 +27,7 @@ type stubAuthClient struct {
 	credentials         map[int64]authTestCredentials
 	registerFn          func(ctx context.Context, email, phone, password string) (int64, string, int64, error)
 	loginFn             func(ctx context.Context, identifier, password string) (int64, string, int64, error)
-	loginVKIDFn         func(ctx context.Context, code, deviceID, codeVerifier string) (int64, string, int64, error)
+	loginVKIDFn         func(ctx context.Context, accessToken string, userID int64) (int64, string, int64, error)
 	validateFn          func(ctx context.Context, sessionID string) (int64, error)
 	logoutFn            func(ctx context.Context, sessionID string) error
 	getCredentialsFn    func(ctx context.Context, advertiserID int64) (string, string, error)
@@ -70,9 +68,9 @@ func (c *stubAuthClient) Login(ctx context.Context, identifier, password string)
 	return 0, "", 0, nil
 }
 
-func (c *stubAuthClient) LoginVKID(ctx context.Context, code, deviceID, codeVerifier string) (int64, string, int64, error) {
+func (c *stubAuthClient) LoginVKID(ctx context.Context, accessToken string, userID int64) (int64, string, int64, error) {
 	if c.loginVKIDFn != nil {
-		return c.loginVKIDFn(ctx, code, deviceID, codeVerifier)
+		return c.loginVKIDFn(ctx, accessToken, userID)
 	}
 	return 0, "", 0, nil
 }
@@ -515,14 +513,6 @@ func newTestRouter(ac *stubAuthClient, svc Service) *mux.Router {
 			Path:     "/",
 			HTTPOnly: true,
 		},
-		VKIDConfig: VKIDConfig{
-			ClientID:           54559987,
-			RedirectURI:        "http://localhost:8000/advertisers/login/vk/callback",
-			AuthDomain:         "id.vk.ru",
-			Scope:              "email phone",
-			DefaultRedirectURL: "http://localhost:8080/app",
-			ErrorRedirectURL:   "http://localhost:8080/login",
-		},
 	}))
 	return r
 }
@@ -627,9 +617,9 @@ func TestLoginVKID_CreatesProfileForFirstLogin(t *testing.T) {
 
 	csrf := getCSRF(t, r)
 
-	ac.loginVKIDFn = func(_ context.Context, code, deviceID, codeVerifier string) (int64, string, int64, error) {
-		if code != "vk-code" || deviceID != "device-1" || codeVerifier != "verifier-1" {
-			t.Fatalf("unexpected vk id payload: code=%s deviceID=%s codeVerifier=%s", code, deviceID, codeVerifier)
+	ac.loginVKIDFn = func(_ context.Context, accessToken string, userID int64) (int64, string, int64, error) {
+		if accessToken != "vk-token" || userID != 7001 {
+			t.Fatalf("unexpected vk id payload: accessToken=%s userID=%d", accessToken, userID)
 		}
 		return 7, "vk-sess", 9999999999, nil
 	}
@@ -642,13 +632,13 @@ func TestLoginVKID_CreatesProfileForFirstLogin(t *testing.T) {
 		return nil, errs.NotFoundError
 	}
 	svc.createAdvertiserProfileFn = func(_ context.Context, id int64, name, email string) error {
-		if id != 7 || name != "" || email != "vk@example.com" {
+		if id != 7 || name != "Vasya" || email != "vk@example.com" {
 			t.Fatalf("unexpected profile create payload: id=%d name=%q email=%q", id, name, email)
 		}
 		return nil
 	}
 
-	req := httptest.NewRequest(http.MethodPost, "/advertisers/login/vk", bytes.NewBufferString(`{"code":"vk-code","device_id":"device-1","code_verifier":"verifier-1"}`))
+	req := httptest.NewRequest(http.MethodPost, "/advertisers/login/vk", bytes.NewBufferString(`{"access_token":"vk-token","user_id":7001,"first_name":"Vasya"}`))
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)
 	rr := httptest.NewRecorder()
@@ -656,74 +646,6 @@ func TestLoginVKID_CreatesProfileForFirstLogin(t *testing.T) {
 
 	if rr.Code != http.StatusOK {
 		t.Fatalf("expected 200 got %d body=%s", rr.Code, rr.Body.String())
-	}
-	if rr.Result().Header.Get("Set-Cookie") == "" {
-		t.Fatalf("expected session cookie")
-	}
-}
-
-func TestBeginVKIDLogin_RedirectsToVK(t *testing.T) {
-	ac := newStubAuthClient()
-	svc := &stubService{}
-	r := newTestRouter(ac, svc)
-
-	req := httptest.NewRequest(http.MethodGet, "/advertisers/login/vk", nil)
-	rr := httptest.NewRecorder()
-	r.ServeHTTP(rr, req)
-
-	if rr.Code != http.StatusFound {
-		t.Fatalf("expected 302 got %d body=%s", rr.Code, rr.Body.String())
-	}
-
-	location := rr.Result().Header.Get("Location")
-	if !strings.HasPrefix(location, "https://id.vk.ru/authorize?") {
-		t.Fatalf("unexpected redirect location: %s", location)
-	}
-
-	if len(rr.Result().Cookies()) == 0 {
-		t.Fatalf("expected oauth cookies to be set")
-	}
-}
-
-func TestLoginVKIDCallback_RedirectsBackAndSetsSession(t *testing.T) {
-	ac := newStubAuthClient()
-	svc := &stubService{}
-	r := newTestRouter(ac, svc)
-
-	ac.loginVKIDFn = func(_ context.Context, code, deviceID, codeVerifier string) (int64, string, int64, error) {
-		if code != "vk-code" || deviceID != "device-1" || codeVerifier != "verifier-1" {
-			t.Fatalf("unexpected vk callback payload: code=%s deviceID=%s codeVerifier=%s", code, deviceID, codeVerifier)
-		}
-		return 8, "vk-sess-callback", 9999999999, nil
-	}
-	ac.setCredentials(8, "vk2@example.com", "9000000002")
-
-	svc.getAdvertiserByIDFn = func(_ context.Context, id int) (*models.Advertiser, error) {
-		if id != 8 {
-			t.Fatalf("unexpected advertiser id: %d", id)
-		}
-		return nil, errs.NotFoundError
-	}
-	svc.createAdvertiserProfileFn = func(_ context.Context, id int64, name, email string) error {
-		if id != 8 || email != "vk2@example.com" {
-			t.Fatalf("unexpected create advertiser profile payload: id=%d email=%s", id, email)
-		}
-		return nil
-	}
-
-	req := httptest.NewRequest(http.MethodGet, "/advertisers/login/vk/callback?code=vk-code&device_id=device-1&state=state-1", nil)
-	req.AddCookie(&http.Cookie{Name: vkidStateCookieName, Value: "state-1"})
-	req.AddCookie(&http.Cookie{Name: vkidVerifierCookieName, Value: "verifier-1"})
-	req.AddCookie(&http.Cookie{Name: vkidRedirectCookieName, Value: base64.RawURLEncoding.EncodeToString([]byte("http://localhost:8080/app"))})
-
-	rr := httptest.NewRecorder()
-	r.ServeHTTP(rr, req)
-
-	if rr.Code != http.StatusFound {
-		t.Fatalf("expected 302 got %d body=%s", rr.Code, rr.Body.String())
-	}
-	if got := rr.Result().Header.Get("Location"); got != "http://localhost:8080/app" {
-		t.Fatalf("unexpected redirect location: %s", got)
 	}
 	if rr.Result().Header.Get("Set-Cookie") == "" {
 		t.Fatalf("expected session cookie")

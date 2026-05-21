@@ -195,9 +195,8 @@ func (x *LoginRequest) GetPassword() string {
 
 type LoginVKIDRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
-	DeviceId      string                 `protobuf:"bytes,2,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
-	CodeVerifier  string                 `protobuf:"bytes,3,opt,name=code_verifier,json=codeVerifier,proto3" json:"code_verifier,omitempty"`
+	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -232,25 +231,18 @@ func (*LoginVKIDRequest) Descriptor() ([]byte, []int) {
 	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *LoginVKIDRequest) GetCode() string {
+func (x *LoginVKIDRequest) GetAccessToken() string {
 	if x != nil {
-		return x.Code
+		return x.AccessToken
 	}
 	return ""
 }
 
-func (x *LoginVKIDRequest) GetDeviceId() string {
+func (x *LoginVKIDRequest) GetUserId() int64 {
 	if x != nil {
-		return x.DeviceId
+		return x.UserId
 	}
-	return ""
-}
-
-func (x *LoginVKIDRequest) GetCodeVerifier() string {
-	if x != nil {
-		return x.CodeVerifier
-	}
-	return ""
+	return 0
 }
 
 type LoginResponse struct {
@@ -732,11 +724,10 @@ const file_proto_auth_v1_auth_proto_rawDesc = "" +
 	"\n" +
 	"identifier\x18\x01 \x01(\tR\n" +
 	"identifier\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"h\n" +
-	"\x10LoginVKIDRequest\x12\x12\n" +
-	"\x04code\x18\x01 \x01(\tR\x04code\x12\x1b\n" +
-	"\tdevice_id\x18\x02 \x01(\tR\bdeviceId\x12#\n" +
-	"\rcode_verifier\x18\x03 \x01(\tR\fcodeVerifier\"r\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"N\n" +
+	"\x10LoginVKIDRequest\x12!\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\"r\n" +
 	"\rLoginResponse\x12#\n" +
 	"\radvertiser_id\x18\x01 \x01(\x03R\fadvertiserId\x12\x1d\n" +
 	"\n" +

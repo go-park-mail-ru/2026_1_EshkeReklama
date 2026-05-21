@@ -33,14 +33,14 @@ func TestEnvHelpersAndVKIDInit(t *testing.T) {
 		t.Fatalf("unexpected default int64: %d", got)
 	}
 
-	if client := initVKIDClient(0, "", "", 0); client != nil {
+	if client := initVKIDClient(0, "", 0); client != nil {
 		t.Fatal("expected nil client for missing config")
 	}
-	if client := initVKIDClient(1, "://bad", "id.vk.ru", time.Second); client != nil {
-		t.Fatal("expected nil client for invalid redirect uri")
-	}
-	if client := initVKIDClient(1, "https://example.com/callback", "id.vk.ru", time.Second); client == nil {
+	if client := initVKIDClient(1, "id.vk.ru", time.Second); client == nil {
 		t.Fatal("expected vkid client")
+	}
+	if client := initVKIDClient(1, "", 0); client == nil {
+		t.Fatal("expected default-domain vkid client")
 	}
 
 	_ = os.Getenv("AUTH_TEST_STR")

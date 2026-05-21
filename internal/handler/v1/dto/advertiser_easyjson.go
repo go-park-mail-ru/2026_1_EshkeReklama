@@ -36,12 +36,18 @@ func easyjson94f0a767DecodeEshkereInternalHandlerV1Dto(in *jlexer.Lexer, out *VK
 			continue
 		}
 		switch key {
-		case "code":
-			out.Code = string(in.String())
-		case "device_id":
-			out.DeviceID = string(in.String())
-		case "code_verifier":
-			out.CodeVerifier = string(in.String())
+		case "access_token":
+			out.AccessToken = string(in.String())
+		case "user_id":
+			out.UserID = int64(in.Int64())
+		case "email":
+			out.Email = string(in.String())
+		case "phone":
+			out.Phone = string(in.String())
+		case "first_name":
+			out.FirstName = string(in.String())
+		case "last_name":
+			out.LastName = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -57,19 +63,34 @@ func easyjson94f0a767EncodeEshkereInternalHandlerV1Dto(out *jwriter.Writer, in V
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"code\":"
+		const prefix string = ",\"access_token\":"
 		out.RawString(prefix[1:])
-		out.String(string(in.Code))
+		out.String(string(in.AccessToken))
 	}
 	{
-		const prefix string = ",\"device_id\":"
+		const prefix string = ",\"user_id\":"
 		out.RawString(prefix)
-		out.String(string(in.DeviceID))
+		out.Int64(int64(in.UserID))
 	}
 	{
-		const prefix string = ",\"code_verifier\":"
+		const prefix string = ",\"email\":"
 		out.RawString(prefix)
-		out.String(string(in.CodeVerifier))
+		out.String(string(in.Email))
+	}
+	{
+		const prefix string = ",\"phone\":"
+		out.RawString(prefix)
+		out.String(string(in.Phone))
+	}
+	{
+		const prefix string = ",\"first_name\":"
+		out.RawString(prefix)
+		out.String(string(in.FirstName))
+	}
+	{
+		const prefix string = ",\"last_name\":"
+		out.RawString(prefix)
+		out.String(string(in.LastName))
 	}
 	out.RawByte('}')
 }

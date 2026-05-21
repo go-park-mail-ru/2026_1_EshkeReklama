@@ -26,9 +26,12 @@ type LoginRequest struct {
 }
 
 type VKIDLoginRequest struct {
-	Code         string `json:"code"`
-	DeviceID     string `json:"device_id"`
-	CodeVerifier string `json:"code_verifier"`
+	AccessToken string `json:"access_token"`
+	UserID      int64  `json:"user_id"`
+	Email       string `json:"email"`
+	Phone       string `json:"phone"`
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
 }
 
 type LoginResponse struct {

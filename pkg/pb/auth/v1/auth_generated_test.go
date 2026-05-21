@@ -160,8 +160,8 @@ func TestAuthMessagesGeneratedMethods(t *testing.T) {
 	})
 
 	t.Run("login vkid request", func(t *testing.T) {
-		msg := &LoginVKIDRequest{Code: "code", DeviceId: "device", CodeVerifier: "verifier"}
-		if msg.GetCode() != "code" || msg.GetDeviceId() != "device" || msg.GetCodeVerifier() != "verifier" {
+		msg := &LoginVKIDRequest{AccessToken: "vk-token", UserId: 123}
+		if msg.GetAccessToken() != "vk-token" || msg.GetUserId() != 123 {
 			t.Fatalf("unexpected getters: %+v", msg)
 		}
 		_, _ = msg.Descriptor()
@@ -169,7 +169,7 @@ func TestAuthMessagesGeneratedMethods(t *testing.T) {
 		_ = msg.ProtoReflect()
 		msg.Reset()
 		var nilMsg *LoginVKIDRequest
-		if nilMsg.GetCode() != "" || nilMsg.GetDeviceId() != "" || nilMsg.GetCodeVerifier() != "" || nilMsg.ProtoReflect() == nil {
+		if nilMsg.GetAccessToken() != "" || nilMsg.GetUserId() != 0 || nilMsg.ProtoReflect() == nil {
 			t.Fatal("nil LoginVKIDRequest accessors failed")
 		}
 	})
@@ -301,7 +301,7 @@ func TestAuthServiceClientGeneratedMethods(t *testing.T) {
 	if resp, err := client.Login(ctx, &LoginRequest{Identifier: "id"}); err != nil || resp.GetAdvertiserId() != 2 || conn.lastMethod != AuthService_Login_FullMethodName {
 		t.Fatalf("Login failed: resp=%+v err=%v method=%s", resp, err, conn.lastMethod)
 	}
-	if resp, err := client.LoginVKID(ctx, &LoginVKIDRequest{Code: "code"}); err != nil || resp.GetAdvertiserId() != 2 || conn.lastMethod != AuthService_LoginVKID_FullMethodName {
+	if resp, err := client.LoginVKID(ctx, &LoginVKIDRequest{AccessToken: "vk-token", UserId: 123}); err != nil || resp.GetAdvertiserId() != 2 || conn.lastMethod != AuthService_LoginVKID_FullMethodName {
 		t.Fatalf("LoginVKID failed: resp=%+v err=%v method=%s", resp, err, conn.lastMethod)
 	}
 	if resp, err := client.ValidateSession(ctx, &ValidateSessionRequest{SessionId: "sid"}); err != nil || resp.GetAdvertiserId() != 3 || conn.lastMethod != AuthService_ValidateSession_FullMethodName {
@@ -361,7 +361,7 @@ func TestAuthServiceServerGeneratedMethods(t *testing.T) {
 	}
 
 	if resp, err := _AuthService_LoginVKID_Handler(srv, ctx, func(v interface{}) error {
-		*v.(*LoginVKIDRequest) = LoginVKIDRequest{Code: "code"}
+		*v.(*LoginVKIDRequest) = LoginVKIDRequest{AccessToken: "vk-token", UserId: 123}
 		return nil
 	}, nil); err != nil || resp.(*LoginResponse).GetAdvertiserId() != 12 || srv.lastMethod != "LoginVKID" {
 		t.Fatalf("login vkid handler failed: resp=%+v err=%v method=%s", resp, err, srv.lastMethod)

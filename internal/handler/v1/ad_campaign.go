@@ -7,6 +7,7 @@ import (
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
+	"eshkere/internal/models"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
 
@@ -20,6 +21,7 @@ func (a *API) RegisterAdCampaignHandlers(r *mux.Router) {
 	campaigns.HandleFunc("", a.CreateAdCampaign).Methods(http.MethodPost)
 	campaigns.HandleFunc("", a.ListAdCampaigns).Methods(http.MethodGet)
 	campaigns.HandleFunc("/{ad_campaign_id}", a.UpdateAdCampaign).Methods(http.MethodPut)
+	campaigns.HandleFunc("/{ad_campaign_id}/status", a.UpdateAdCampaignStatus).Methods(http.MethodPatch)
 	campaigns.HandleFunc("/{ad_campaign_id}", a.DeleteAdCampaign).Methods(http.MethodDelete)
 }
 
@@ -100,6 +102,54 @@ func (a *API) UpdateAdCampaign(w http.ResponseWriter, r *http.Request) {
 
 	if err = a.service.UpdateAdCampaign(ctx, advertiserID, req.ToInput(campaignID)); err != nil {
 		handler.HandleError(w, r, "updating campaign", err)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, nil)
+}
+
+// UpdateAdCampaignStatus выключает рекламную кампанию и все её объявления.
+// @Summary      Выключение рекламной кампании
+// @Description  Переводит кампанию и все объявления внутри неё в статус turned_off
+// @Tags         ad_campaigns
+// @Accept       json
+// @Produce      json
+// @Param        ad_campaign_id  path      int                                true  "ID кампании"
+// @Param        body            body      dto.UpdateAdCampaignStatusRequest  true  "Новый статус кампании"
+// @Success      200             {object}  httpx.Success
+// @Failure      400             {object}  httpx.Error
+// @Failure      401             {object}  httpx.Error
+// @Failure      404             {object}  httpx.Error
+// @Failure      500             {object}  httpx.Error
+// @Router       /ad_campaigns/{ad_campaign_id}/status [patch]
+// @Security     CookieAuth
+func (a *API) UpdateAdCampaignStatus(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
+
+	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
+	if err != nil {
+		handler.HandleError(w, r, "parsing campaign id", err)
+		return
+	}
+
+	req, err := newJSONRequest[dto.UpdateAdCampaignStatusRequest](r)
+	if err != nil {
+		httpx.BadRequest(w, "invalid request")
+		return
+	}
+	if req.Status != string(models.AdStatusTurnedOff) {
+		httpx.BadRequest(w, "invalid status")
+		return
+	}
+
+	if err = a.service.TurnOffAdCampaign(ctx, advertiserID, campaignID); err != nil {
+		handler.HandleError(w, r, "updating campaign status", err)
 		return
 	}
 

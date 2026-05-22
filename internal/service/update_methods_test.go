@@ -229,6 +229,33 @@ func TestUpdateAdCampaign_HidesForeignCampaign(t *testing.T) {
 	}
 }
 
+func TestTurnOffAdCampaign_TurnsOffCampaignAndAds(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	adRepo := NewMockAdRepository(ctrl)
+	campaignRepo := NewMockAdCampaignRepository(ctrl)
+	svc, _ := NewService(&Config{AdRepo: adRepo, AdCampaignRepo: campaignRepo})
+
+	campaign := &models.AdCampaign{ID: 5, AdvertiserID: 7, Status: models.AdStatusWorking}
+	campaignRepo.EXPECT().GetByID(gomock.Any(), 5).Return(campaign, nil)
+	adRepo.EXPECT().UpdateStatusByCampaignID(gomock.Any(), 5, models.AdStatusTurnedOff).Return(nil)
+	campaignRepo.EXPECT().Update(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, updated *models.AdCampaign) error {
+			if updated.Status != models.AdStatusTurnedOff {
+				t.Fatalf("expected campaign turned_off, got %s", updated.Status)
+			}
+			if !updated.UpdatedAt.Valid {
+				t.Fatalf("expected UpdatedAt set")
+			}
+			return nil
+		})
+
+	if err := svc.TurnOffAdCampaign(context.Background(), 7, 5); err != nil {
+		t.Fatalf("TurnOffAdCampaign: %v", err)
+	}
+}
+
 func TestUpdateAdModerationStatus_ApproveWithEnoughBalance(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

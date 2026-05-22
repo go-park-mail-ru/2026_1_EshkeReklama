@@ -26,7 +26,8 @@ type GenericSettingsRequest interface {
 		dto.CreatePartnerSiteRequest | dto.UpdatePartnerSiteRequest |
 		dto.CreatePartnerBlockRequest | dto.UpdatePartnerBlockMetaRequest |
 		dto.UpdatePartnerBlockGeneralRequest | dto.UpdatePartnerBlockGeographyRequest |
-		dto.UpdatePartnerBlockSelfAdRequest | dto.AdRequest | dto.UpdateAdStatusRequest
+		dto.UpdatePartnerBlockSelfAdRequest | dto.AdRequest | dto.UpdateAdStatusRequest |
+		dto.UpdateAdCampaignStatusRequest
 }
 
 func newJSONRequest[T GenericSettingsRequest](r *http.Request) (*T, error) {

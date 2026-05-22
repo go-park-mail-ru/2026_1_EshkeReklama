@@ -123,6 +123,7 @@ type stubService struct {
 	clickAdFn                   func(ctx context.Context, requestID string) (string, error)
 	createAdCampaignFn          func(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error)
 	updateAdCampaignFn          func(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdCampaign) error
+	turnOffAdCampaignFn         func(ctx context.Context, advertiserID, campaignID int) error
 	listAdCampaignsFn           func(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
 	deleteAdCampaignFn          func(ctx context.Context, advertiserID, campaignID int) error
 	createAdGroupFn             func(ctx context.Context, advertiserID int, in *serviceinput.CreateAdGroup) (*models.AdGroup, error)
@@ -245,6 +246,13 @@ func (s *stubService) CreateAdCampaign(ctx context.Context, in *serviceinput.Cre
 func (s *stubService) UpdateAdCampaign(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdCampaign) error {
 	if s.updateAdCampaignFn != nil {
 		return s.updateAdCampaignFn(ctx, advertiserID, in)
+	}
+	return nil
+}
+
+func (s *stubService) TurnOffAdCampaign(ctx context.Context, advertiserID, campaignID int) error {
+	if s.turnOffAdCampaignFn != nil {
+		return s.turnOffAdCampaignFn(ctx, advertiserID, campaignID)
 	}
 	return nil
 }

@@ -521,6 +521,15 @@ definitions:
         minLength: 1
         type: string
     type: object
+  dto.UpdateAdCampaignStatusRequest:
+    properties:
+      status:
+        enum:
+        - turned_off
+        type: string
+    required:
+    - status
+    type: object
   dto.UpdateAdGroupRequest:
     properties:
       age_from:
@@ -1315,6 +1324,51 @@ paths:
       summary: Создать feed-ссылку для кампании
       tags:
       - feed
+  /ad_campaigns/{ad_campaign_id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Переводит кампанию и все объявления внутри неё в статус turned_off
+      parameters:
+      - description: ID кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: Новый статус кампании
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAdCampaignStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Выключение рекламной кампании
+      tags:
+      - ad_campaigns
   /admin/ads:
     get:
       description: Возвращает все объявления со статусом moderation

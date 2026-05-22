@@ -51,6 +51,21 @@ func (s *Service) UpdateAdCampaign(ctx context.Context, advertiserID int, in *se
 	return s.adCampaignRepo.Update(ctx, current)
 }
 
+func (s *Service) TurnOffAdCampaign(ctx context.Context, advertiserID, campaignID int) error {
+	campaign, err := s.ownedCampaign(ctx, advertiserID, campaignID)
+	if err != nil {
+		return err
+	}
+
+	if err := s.adRepo.UpdateStatusByCampaignID(ctx, campaignID, models.AdStatusTurnedOff); err != nil {
+		return err
+	}
+
+	campaign.Status = models.AdStatusTurnedOff
+	campaign.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	return s.adCampaignRepo.Update(ctx, campaign)
+}
+
 func (s *Service) ListAdCampaigns(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error) {
 	return s.adCampaignRepo.ListByAdvertiserID(ctx, advertiserID)
 }

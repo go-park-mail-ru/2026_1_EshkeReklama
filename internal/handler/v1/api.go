@@ -34,6 +34,7 @@ type Service interface {
 
 	CreateAdCampaign(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error)
 	UpdateAdCampaign(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdCampaign) error
+	TurnOffAdCampaign(ctx context.Context, advertiserID, campaignID int) error
 	ListAdCampaigns(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
 	DeleteAdCampaign(ctx context.Context, advertiserID, campaignID int) error
 

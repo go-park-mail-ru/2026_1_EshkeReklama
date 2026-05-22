@@ -68,6 +68,7 @@ type AdRepository interface {
 	ListByAdGroupID(ctx context.Context, adGroupID int) ([]*models.Ad, error)
 	ListByAdCampaignID(ctx context.Context, campaignID int) ([]*models.Ad, error)
 	ListByStatus(ctx context.Context, status models.AdStatus) ([]*models.Ad, error)
+	UpdateStatusByCampaignID(ctx context.Context, campaignID int, status models.AdStatus) error
 	GetRandomWorking(ctx context.Context) (*models.Ad, error)
 	ListAdCandidates(ctx context.Context, spendDate time.Time) ([]*models.AdCandidate, error)
 	ReserveImpression(ctx context.Context, reservation models.ImpressionReservation) (bool, error)

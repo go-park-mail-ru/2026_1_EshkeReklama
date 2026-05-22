@@ -33,6 +33,10 @@ type UpdateAdCampaignRequest struct {
 	MainAction  *string `json:"main_action" validate:"omitempty,min=1"`
 }
 
+type UpdateAdCampaignStatusRequest struct {
+	Status string `json:"status" validate:"required,oneof=turned_off"`
+}
+
 func (u *UpdateAdCampaignRequest) ToInput(campaignID int) *serviceinput.UpdateAdCampaign {
 	return &serviceinput.UpdateAdCampaign{
 		ID:          campaignID,

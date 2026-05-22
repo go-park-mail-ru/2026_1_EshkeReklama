@@ -100,6 +100,11 @@ const (
 		ad_group_id = $1, status = $2, title = $3, short_desc = $4, image_url = $5, target_url = $6, updated_at = $7
 	WHERE id = $8`
 
+	updateAdsStatusByCampaignID = `UPDATE eshkere.ad a
+	SET status = $2, updated_at = NOW()
+	FROM eshkere.ad_group ag
+	WHERE a.ad_group_id = ag.id AND ag.ad_campaign_id = $1`
+
 	updateAdImage = `UPDATE eshkere.ad SET
 		image_url = $1
 	WHERE id = $2`
@@ -385,6 +390,17 @@ func (r *AdRepository) Update(ctx context.Context, ad *models.Ad) error {
 	)
 	if err != nil {
 		return fmt.Errorf("update ad: %w", err)
+	}
+
+	return nil
+}
+
+func (r *AdRepository) UpdateStatusByCampaignID(ctx context.Context, campaignID int, status models.AdStatus) error {
+	logger.GetLoggerFromCtx(ctx).Debugf("db: update ads status by campaign id: %d", campaignID)
+
+	_, err := r.db.ExecContext(ctx, updateAdsStatusByCampaignID, campaignID, status)
+	if err != nil {
+		return fmt.Errorf("update ads status by campaign id: %w", err)
 	}
 
 	return nil

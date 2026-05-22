@@ -50,6 +50,15 @@ func TestAdCampaign_UpdateListDelete(t *testing.T) {
 		}
 		return nil
 	}
+	svc.turnOffAdCampaignFn = func(_ context.Context, advertiserID, campaignID int) error {
+		if advertiserID != 1 {
+			t.Fatalf("unexpected advertiser id: %d", advertiserID)
+		}
+		if campaignID != 5 {
+			t.Fatalf("unexpected campaign id: %d", campaignID)
+		}
+		return nil
+	}
 
 	updateReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/5", bytes.NewBufferString(`{"name":"new"}`))
 	updateReq.AddCookie(sess)
@@ -77,6 +86,16 @@ func TestAdCampaign_UpdateListDelete(t *testing.T) {
 	}
 	if len(listEnvelope.Data.Campaigns) != 1 || listEnvelope.Data.Campaigns[0].ID != 5 {
 		t.Fatalf("unexpected campaigns: %+v", listEnvelope.Data.Campaigns)
+	}
+
+	statusReq := httptest.NewRequest(http.MethodPatch, "/ad_campaigns/5/status", bytes.NewBufferString(`{"status":"turned_off"}`))
+	statusReq.AddCookie(sess)
+	statusReq.AddCookie(csrf)
+	statusReq.Header.Set("X-CSRF-Token", csrf.Value)
+	statusRR := httptest.NewRecorder()
+	r.ServeHTTP(statusRR, statusReq)
+	if statusRR.Code != http.StatusOK {
+		t.Fatalf("expected 200 got %d body=%s", statusRR.Code, statusRR.Body.String())
 	}
 
 	deleteReq := httptest.NewRequest(http.MethodDelete, "/ad_campaigns/5", nil)

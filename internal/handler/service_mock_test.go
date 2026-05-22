@@ -537,6 +537,20 @@ func (mr *MockServiceMockRecorder) UpdateAdCampaign(ctx, advertiserID, in any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAdCampaign", reflect.TypeOf((*MockService)(nil).UpdateAdCampaign), ctx, advertiserID, in)
 }
 
+// TurnOffAdCampaign mocks base method.
+func (m *MockService) TurnOffAdCampaign(ctx context.Context, advertiserID, campaignID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TurnOffAdCampaign", ctx, advertiserID, campaignID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TurnOffAdCampaign indicates an expected call of TurnOffAdCampaign.
+func (mr *MockServiceMockRecorder) TurnOffAdCampaign(ctx, advertiserID, campaignID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TurnOffAdCampaign", reflect.TypeOf((*MockService)(nil).TurnOffAdCampaign), ctx, advertiserID, campaignID)
+}
+
 // UpdateAdGroup mocks base method.
 func (m *MockService) UpdateAdGroup(ctx context.Context, advertiserID int, in *input.UpdateAdGroup) error {
 	m.ctrl.T.Helper()

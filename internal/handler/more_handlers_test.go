@@ -37,8 +37,8 @@ func (c *stubAuthClient) Register(_ context.Context, _, _, _ string) (int64, str
 func (c *stubAuthClient) Login(_ context.Context, _, _ string) (int64, string, int64, error) {
 	return 0, "", 0, nil
 }
-func (c *stubAuthClient) LoginVKID(_ context.Context, _ string, _ int64) (int64, string, int64, error) {
-	return 0, "", 0, nil
+func (c *stubAuthClient) LoginVKID(_ context.Context, _ string, _ int64) (int64, string, int64, string, string, error) {
+	return 0, "", 0, "", "", nil
 }
 func (c *stubAuthClient) ValidateSession(_ context.Context, sid string) (int64, error) {
 	advID, ok := c.sessions[sid]

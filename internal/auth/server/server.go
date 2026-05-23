@@ -61,7 +61,7 @@ func (s *Server) Login(ctx context.Context, req *authv1.LoginRequest) (*authv1.L
 }
 
 func (s *Server) LoginVKID(ctx context.Context, req *authv1.LoginVKIDRequest) (*authv1.LoginResponse, error) {
-	id, err := s.creds.AuthenticateVKID(ctx, req.AccessToken, req.UserId)
+	id, identity, err := s.creds.AuthenticateVKID(ctx, req.AccessToken, req.UserId)
 	if err != nil {
 		return nil, mapErr(err)
 	}
@@ -75,6 +75,8 @@ func (s *Server) LoginVKID(ctx context.Context, req *authv1.LoginVKIDRequest) (*
 		AdvertiserId: id,
 		SessionId:    sessionID,
 		ExpiresAt:    expiresAt.Unix(),
+		FirstName:    identity.FirstName,
+		LastName:     identity.LastName,
 	}, nil
 }
 

@@ -228,12 +228,15 @@ func TestAuthenticateVKIDAndUpdateAndHelpers(t *testing.T) {
 	}
 	svc := NewCredentialsService(repo, vk)
 
-	id, err := svc.AuthenticateVKID(context.Background(), "vk-token", 123)
+	id, identity, err := svc.AuthenticateVKID(context.Background(), "vk-token", 123)
 	if err != nil {
 		t.Fatalf("authenticate vkid: %v", err)
 	}
 	if id != 5 || linkedID != 5 || linkedVKID != 123 {
 		t.Fatalf("unexpected vk link result: id=%d linked=%d/%d", id, linkedID, linkedVKID)
+	}
+	if identity == nil || identity.Email != "vk@example.com" {
+		t.Fatalf("unexpected vk identity: %#v", identity)
 	}
 
 	updated, err := svc.Update(context.Background(), 5, "new@example.com", "8 911 111 11 11")
@@ -267,10 +270,10 @@ func TestAuthenticateVKIDAndUpdateAndHelpers(t *testing.T) {
 		t.Fatalf("expected ErrPhoneTaken, got %v", err)
 	}
 
-	if _, err := svc.AuthenticateVKID(context.Background(), "", 123); !errors.Is(err, ErrInvalidArg) {
+	if _, _, err := svc.AuthenticateVKID(context.Background(), "", 123); !errors.Is(err, ErrInvalidArg) {
 		t.Fatalf("expected invalid arg, got %v", err)
 	}
-	if _, err := NewCredentialsService(repo, nil).AuthenticateVKID(context.Background(), "vk-token", 123); !errors.Is(err, ErrVKIDUnavailable) {
+	if _, _, err := NewCredentialsService(repo, nil).AuthenticateVKID(context.Background(), "vk-token", 123); !errors.Is(err, ErrVKIDUnavailable) {
 		t.Fatalf("expected unavailable, got %v", err)
 	}
 }

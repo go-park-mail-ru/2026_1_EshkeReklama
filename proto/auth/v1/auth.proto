@@ -40,6 +40,8 @@ message LoginResponse {
   int64  advertiser_id = 1;
   string session_id    = 2;
   int64  expires_at    = 3;
+  string first_name    = 4;
+  string last_name     = 5;
 }
 
 message ValidateSessionRequest {

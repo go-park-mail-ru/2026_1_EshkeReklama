@@ -118,29 +118,29 @@ func (s *CredentialsService) Authenticate(ctx context.Context, identifier, passw
 	return cred.ID, nil
 }
 
-func (s *CredentialsService) AuthenticateVKID(ctx context.Context, accessToken string, expectedUserID int64) (int64, error) {
+func (s *CredentialsService) AuthenticateVKID(ctx context.Context, accessToken string, expectedUserID int64) (int64, *vkid.Identity, error) {
 	if strings.TrimSpace(accessToken) == "" || expectedUserID <= 0 {
-		return 0, fmt.Errorf("%w: access_token and user_id are required", ErrInvalidArg)
+		return 0, nil, fmt.Errorf("%w: access_token and user_id are required", ErrInvalidArg)
 	}
 	if s.vkidAuth == nil {
-		return 0, ErrVKIDUnavailable
+		return 0, nil, ErrVKIDUnavailable
 	}
 
 	identity, err := s.vkidAuth.ResolveUser(ctx, strings.TrimSpace(accessToken))
 	if err != nil {
 		if errors.Is(err, vkid.ErrUnauthorized) {
-			return 0, ErrInvalidCredentials
+			return 0, nil, ErrInvalidCredentials
 		}
-		return 0, err
+		return 0, nil, err
 	}
 	if identity.UserID != expectedUserID {
-		return 0, ErrInvalidCredentials
+		return 0, nil, ErrInvalidCredentials
 	}
 
 	if cred, getErr := s.repo.GetByVKUserID(ctx, identity.UserID); getErr == nil {
-		return cred.ID, nil
+		return cred.ID, identity, nil
 	} else if !errors.Is(getErr, sql.ErrNoRows) {
-		return 0, getErr
+		return 0, nil, getErr
 	}
 
 	email := strings.ToLower(strings.TrimSpace(identity.Email))
@@ -148,34 +148,38 @@ func (s *CredentialsService) AuthenticateVKID(ctx context.Context, accessToken s
 	if strings.TrimSpace(identity.Phone) != "" {
 		phone, err = normalizePhone(identity.Phone)
 		if err != nil {
-			return 0, fmt.Errorf("%w: %v", ErrInvalidArg, err)
+			return 0, nil, fmt.Errorf("%w: %v", ErrInvalidArg, err)
 		}
 	}
 
 	emailCred, err := s.lookupByEmail(ctx, email)
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 	phoneCred, err := s.lookupByPhone(ctx, phone)
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 
 	targetCred, err := resolveVKIDTarget(identity.UserID, emailCred, phoneCred)
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 
 	if targetCred != nil {
 		if !targetCred.VKUserID.Valid {
 			if err := s.repo.LinkVKUserID(ctx, targetCred.ID, identity.UserID); err != nil {
-				return 0, err
+				return 0, nil, err
 			}
 		}
-		return targetCred.ID, nil
+		return targetCred.ID, identity, nil
 	}
 
-	return s.repo.CreateVK(ctx, email, phone, identity.UserID)
+	id, err := s.repo.CreateVK(ctx, email, phone, identity.UserID)
+	if err != nil {
+		return 0, nil, err
+	}
+	return id, identity, nil
 }
 
 func (s *CredentialsService) GetByID(ctx context.Context, id int64) (*authrepo.Credential, error) {

@@ -706,12 +706,10 @@ definitions:
     type: object
   dto.VKIDLoginRequest:
     properties:
-      code:
+      access_token:
         type: string
-      code_verifier:
-        type: string
-      device_id:
-        type: string
+      user_id:
+        type: integer
     type: object
   httpx.Error:
     properties:
@@ -1588,10 +1586,10 @@ paths:
     post:
       consumes:
       - application/json
-      description: Аутентифицирует рекламодателя по VK ID authorization code и открывает
-        сессию
+      description: Аутентифицирует рекламодателя по frontend-driven VK ID SDK payload
+        и открывает сессию
       parameters:
-      - description: code, device_id и code_verifier от VK ID
+      - description: access_token и user_id от VK ID SDK
         in: body
         name: input
         required: true

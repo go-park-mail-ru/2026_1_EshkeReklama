@@ -250,6 +250,8 @@ type LoginResponse struct {
 	AdvertiserId  int64                  `protobuf:"varint,1,opt,name=advertiser_id,json=advertiserId,proto3" json:"advertiser_id,omitempty"`
 	SessionId     string                 `protobuf:"bytes,2,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
 	ExpiresAt     int64                  `protobuf:"varint,3,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	FirstName     string                 `protobuf:"bytes,4,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
+	LastName      string                 `protobuf:"bytes,5,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -303,6 +305,20 @@ func (x *LoginResponse) GetExpiresAt() int64 {
 		return x.ExpiresAt
 	}
 	return 0
+}
+
+func (x *LoginResponse) GetFirstName() string {
+	if x != nil {
+		return x.FirstName
+	}
+	return ""
+}
+
+func (x *LoginResponse) GetLastName() string {
+	if x != nil {
+		return x.LastName
+	}
+	return ""
 }
 
 type ValidateSessionRequest struct {
@@ -727,13 +743,16 @@ const file_proto_auth_v1_auth_proto_rawDesc = "" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\"N\n" +
 	"\x10LoginVKIDRequest\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\x03R\x06userId\"r\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\"\xae\x01\n" +
 	"\rLoginResponse\x12#\n" +
 	"\radvertiser_id\x18\x01 \x01(\x03R\fadvertiserId\x12\x1d\n" +
 	"\n" +
 	"session_id\x18\x02 \x01(\tR\tsessionId\x12\x1d\n" +
 	"\n" +
-	"expires_at\x18\x03 \x01(\x03R\texpiresAt\"7\n" +
+	"expires_at\x18\x03 \x01(\x03R\texpiresAt\x12\x1d\n" +
+	"\n" +
+	"first_name\x18\x04 \x01(\tR\tfirstName\x12\x1b\n" +
+	"\tlast_name\x18\x05 \x01(\tR\blastName\"7\n" +
 	"\x16ValidateSessionRequest\x12\x1d\n" +
 	"\n" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\"]\n" +

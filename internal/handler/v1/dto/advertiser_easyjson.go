@@ -40,14 +40,6 @@ func easyjson94f0a767DecodeEshkereInternalHandlerV1Dto(in *jlexer.Lexer, out *VK
 			out.AccessToken = string(in.String())
 		case "user_id":
 			out.UserID = int64(in.Int64())
-		case "email":
-			out.Email = string(in.String())
-		case "phone":
-			out.Phone = string(in.String())
-		case "first_name":
-			out.FirstName = string(in.String())
-		case "last_name":
-			out.LastName = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -71,26 +63,6 @@ func easyjson94f0a767EncodeEshkereInternalHandlerV1Dto(out *jwriter.Writer, in V
 		const prefix string = ",\"user_id\":"
 		out.RawString(prefix)
 		out.Int64(int64(in.UserID))
-	}
-	{
-		const prefix string = ",\"email\":"
-		out.RawString(prefix)
-		out.String(string(in.Email))
-	}
-	{
-		const prefix string = ",\"phone\":"
-		out.RawString(prefix)
-		out.String(string(in.Phone))
-	}
-	{
-		const prefix string = ",\"first_name\":"
-		out.RawString(prefix)
-		out.String(string(in.FirstName))
-	}
-	{
-		const prefix string = ",\"last_name\":"
-		out.RawString(prefix)
-		out.String(string(in.LastName))
 	}
 	out.RawByte('}')
 }

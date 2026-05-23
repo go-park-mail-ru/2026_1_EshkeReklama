@@ -13,7 +13,7 @@ import (
 type AuthClient interface {
 	Register(ctx context.Context, email, phone, password string) (advertiserID int64, sessionID string, expiresAt int64, err error)
 	Login(ctx context.Context, identifier, password string) (advertiserID int64, sessionID string, expiresAt int64, err error)
-	LoginVKID(ctx context.Context, accessToken string, userID int64) (advertiserID int64, sessionID string, expiresAt int64, err error)
+	LoginVKID(ctx context.Context, accessToken string, userID int64) (advertiserID int64, sessionID string, expiresAt int64, firstName string, lastName string, err error)
 	ValidateSession(ctx context.Context, sessionID string) (advertiserID int64, err error)
 	Logout(ctx context.Context, sessionID string) error
 	GetCredentials(ctx context.Context, advertiserID int64) (email, phone string, err error)

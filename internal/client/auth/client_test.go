@@ -55,7 +55,7 @@ func TestClientCallsAndMapsErrors(t *testing.T) {
 	if _, _, _, err := client.Login(context.Background(), "user@example.com", "bad"); err != errs.ErrInvalidCredentials {
 		t.Fatalf("expected invalid credentials, got %v", err)
 	}
-	if _, _, _, err := client.LoginVKID(context.Background(), "vk-token", 123); err != errs.ErrVKIDConflict {
+	if _, _, _, _, _, err := client.LoginVKID(context.Background(), "vk-token", 123); err != errs.ErrVKIDConflict {
 		t.Fatalf("expected vkid conflict, got %v", err)
 	}
 	if _, err := client.ValidateSession(context.Background(), "sid"); err != errs.ErrSessionNotFound {

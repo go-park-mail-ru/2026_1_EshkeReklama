@@ -1338,7 +1338,7 @@ const docTemplate = `{
         },
         "/advertisers/login/vk": {
             "post": {
-                "description": "Аутентифицирует рекламодателя по VK ID authorization code и открывает сессию",
+                "description": "Аутентифицирует рекламодателя по frontend-driven VK ID SDK payload и открывает сессию",
                 "consumes": [
                     "application/json"
                 ],
@@ -1351,7 +1351,7 @@ const docTemplate = `{
                 "summary": "Вход рекламодателя через VK ID",
                 "parameters": [
                     {
-                        "description": "code, device_id и code_verifier от VK ID",
+                        "description": "access_token и user_id от VK ID SDK",
                         "name": "input",
                         "in": "body",
                         "required": true,
@@ -4197,14 +4197,11 @@ const docTemplate = `{
         "dto.VKIDLoginRequest": {
             "type": "object",
             "properties": {
-                "code": {
+                "access_token": {
                     "type": "string"
                 },
-                "code_verifier": {
-                    "type": "string"
-                },
-                "device_id": {
-                    "type": "string"
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },

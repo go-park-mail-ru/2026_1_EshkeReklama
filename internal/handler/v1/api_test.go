@@ -27,7 +27,7 @@ type stubAuthClient struct {
 	credentials         map[int64]authTestCredentials
 	registerFn          func(ctx context.Context, email, phone, password string) (int64, string, int64, error)
 	loginFn             func(ctx context.Context, identifier, password string) (int64, string, int64, error)
-	loginVKIDFn         func(ctx context.Context, accessToken string, userID int64) (int64, string, int64, error)
+	loginVKIDFn         func(ctx context.Context, accessToken string, userID int64) (int64, string, int64, string, string, error)
 	validateFn          func(ctx context.Context, sessionID string) (int64, error)
 	logoutFn            func(ctx context.Context, sessionID string) error
 	getCredentialsFn    func(ctx context.Context, advertiserID int64) (string, string, error)
@@ -68,11 +68,11 @@ func (c *stubAuthClient) Login(ctx context.Context, identifier, password string)
 	return 0, "", 0, nil
 }
 
-func (c *stubAuthClient) LoginVKID(ctx context.Context, accessToken string, userID int64) (int64, string, int64, error) {
+func (c *stubAuthClient) LoginVKID(ctx context.Context, accessToken string, userID int64) (int64, string, int64, string, string, error) {
 	if c.loginVKIDFn != nil {
 		return c.loginVKIDFn(ctx, accessToken, userID)
 	}
-	return 0, "", 0, nil
+	return 0, "", 0, "", "", nil
 }
 
 func (c *stubAuthClient) ValidateSession(ctx context.Context, sessionID string) (int64, error) {
@@ -625,11 +625,11 @@ func TestLoginVKID_CreatesProfileForFirstLogin(t *testing.T) {
 
 	csrf := getCSRF(t, r)
 
-	ac.loginVKIDFn = func(_ context.Context, accessToken string, userID int64) (int64, string, int64, error) {
+	ac.loginVKIDFn = func(_ context.Context, accessToken string, userID int64) (int64, string, int64, string, string, error) {
 		if accessToken != "vk-token" || userID != 7001 {
 			t.Fatalf("unexpected vk id payload: accessToken=%s userID=%d", accessToken, userID)
 		}
-		return 7, "vk-sess", 9999999999, nil
+		return 7, "vk-sess", 9999999999, "Vasya", "Petrov", nil
 	}
 	ac.setCredentials(7, "vk@example.com", "9000000001")
 
@@ -645,8 +645,14 @@ func TestLoginVKID_CreatesProfileForFirstLogin(t *testing.T) {
 		}
 		return nil
 	}
+	svc.updateAdvertiserProfileFn = func(_ context.Context, in *serviceinput.UpdateAdvertiserProfile) (*models.Advertiser, error) {
+		if in == nil || in.AdvertiserID != 7 || in.Surname == nil || *in.Surname != "Petrov" {
+			t.Fatalf("unexpected profile update payload: %#v", in)
+		}
+		return &models.Advertiser{ID: 7, Name: "Vasya"}, nil
+	}
 
-	req := httptest.NewRequest(http.MethodPost, "/advertisers/login/vk", bytes.NewBufferString(`{"access_token":"vk-token","user_id":7001,"first_name":"Vasya"}`))
+	req := httptest.NewRequest(http.MethodPost, "/advertisers/login/vk", bytes.NewBufferString(`{"access_token":"vk-token","user_id":7001}`))
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)
 	rr := httptest.NewRecorder()

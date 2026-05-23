@@ -11,6 +11,7 @@ import (
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
+	serviceinput "eshkere/internal/service/input"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
 
@@ -135,7 +136,7 @@ func (a *API) LoginVKID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	advID, sessionID, expiresAt, err := a.authClient.LoginVKID(ctx, req.AccessToken, req.UserID)
+	advID, sessionID, expiresAt, firstName, lastName, err := a.authClient.LoginVKID(ctx, req.AccessToken, req.UserID)
 	if err != nil {
 		handler.HandleError(w, r, "auth advertiser via vk id", err)
 		return
@@ -147,7 +148,7 @@ func (a *API) LoginVKID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.ensureAdvertiserProfile(ctx, advID, req.FirstName, email); err != nil {
+	if err := a.ensureAdvertiserProfile(ctx, advID, firstName, lastName, email); err != nil {
 		_ = a.authClient.Logout(ctx, sessionID)
 		handler.HandleError(w, r, "ensure advertiser profile", err)
 		return
@@ -275,14 +276,24 @@ func (a *API) resolveUpdatedContacts(
 	return a.authClient.UpdateCredentials(ctx, advertiserID, email, phone)
 }
 
-func (a *API) ensureAdvertiserProfile(ctx context.Context, advertiserID int64, preferredName, email string) error {
+func (a *API) ensureAdvertiserProfile(ctx context.Context, advertiserID int64, preferredName, preferredSurname, email string) error {
 	if _, err := a.service.GetAdvertiserByID(ctx, int(advertiserID)); err == nil {
 		return nil
 	} else if !errors.Is(err, errs.NotFoundError) {
 		return err
 	}
 
-	return a.service.CreateAdvertiserProfile(ctx, advertiserID, preferredName, email)
+	if err := a.service.CreateAdvertiserProfile(ctx, advertiserID, preferredName, email); err != nil {
+		return err
+	}
+	if preferredSurname == "" {
+		return nil
+	}
+	_, err := a.service.UpdateAdvertiserProfile(ctx, &serviceinput.UpdateAdvertiserProfile{
+		AdvertiserID: int(advertiserID),
+		Surname:      &preferredSurname,
+	})
+	return err
 }
 
 // @Summary      Выход рекламодателя

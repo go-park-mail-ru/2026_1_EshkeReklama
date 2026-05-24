@@ -11,6 +11,7 @@ import (
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
+	svc "eshkere/internal/service"
 	serviceinput "eshkere/internal/service/input"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
@@ -347,8 +348,15 @@ func (a *API) GetBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	campaigns, err := a.service.ListAdCampaigns(ctx, advertiserID)
+	if err != nil {
+		handler.HandleError(w, r, "listing advertiser campaigns", err)
+		return
+	}
+
 	httpx.JSON(w, http.StatusOK, dto.BalanceResponse{
-		Balance: adv.Balance,
+		Balance:       adv.Balance,
+		DeliveryAlert: deliveryAlertResponse(svc.BuildAdvertiserDeliveryAlert(adv.Balance, campaigns)),
 	})
 }
 
@@ -385,9 +393,45 @@ func (a *API) TopUpBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	campaigns, err := a.service.ListAdCampaigns(ctx, advertiserID)
+	if err != nil {
+		handler.HandleError(w, r, "listing advertiser campaigns", err)
+		return
+	}
+
 	httpx.JSON(w, http.StatusOK, dto.BalanceResponse{
-		Balance: balance,
+		Balance:       balance,
+		DeliveryAlert: deliveryAlertResponse(svc.BuildAdvertiserDeliveryAlert(balance, campaigns)),
 	})
+}
+
+func deliveryAlertResponse(alert *svc.AdvertiserDeliveryAlert) *dto.DeliveryAlertResponse {
+	if alert == nil {
+		return nil
+	}
+
+	response := &dto.DeliveryAlertResponse{
+		Level:             string(alert.Level),
+		ActiveCampaigns:   alert.ActiveCampaigns,
+		AffectedCampaigns: alert.AffectedCampaigns,
+	}
+
+	switch alert.Level {
+	case svc.DeliveryAlertLowBalance:
+		response.Title = "Баланс на исходе"
+		response.Message = "Показы идут, но средств мало. Пополните баланс заранее, чтобы не прерывать рекламу."
+	case svc.DeliveryAlertAtRisk:
+		response.Title = "Реклама под риском остановки"
+		response.Message = "Активные кампании еще работают, но при текущем балансе могут скоро остановиться."
+	case svc.DeliveryAlertPartiallyStopped:
+		response.Title = "Часть кампаний остановлена"
+		response.Message = "У части активных кампаний уже недостаточно средств для продолжения показов."
+	case svc.DeliveryAlertFullyStopped:
+		response.Title = "Реклама остановлена из-за нехватки средств"
+		response.Message = "У активных кампаний недостаточно средств. Пополните баланс, чтобы возобновить показы."
+	}
+
+	return response
 }
 
 // @Summary      Обновление аватара рекламодателя

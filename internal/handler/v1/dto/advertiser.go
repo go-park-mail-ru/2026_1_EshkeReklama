@@ -76,8 +76,17 @@ type TopUpBalanceRequest struct {
 	Amount int64 `json:"amount"`
 }
 
+type DeliveryAlertResponse struct {
+	Level             string `json:"level"`
+	Title             string `json:"title"`
+	Message           string `json:"message"`
+	ActiveCampaigns   int    `json:"active_campaigns"`
+	AffectedCampaigns int    `json:"affected_campaigns"`
+}
+
 type BalanceResponse struct {
-	Balance int64 `json:"balance"`
+	Balance       int64                  `json:"balance"`
+	DeliveryAlert *DeliveryAlertResponse `json:"delivery_alert,omitempty"`
 }
 
 func AdvertiserToProfile(adv *models.Advertiser) AdvertiserProfileResponse {

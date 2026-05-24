@@ -736,6 +736,12 @@ func TestBalance_GetAndTopUp(t *testing.T) {
 		}
 		return &models.Advertiser{ID: 1, Balance: 100}, nil
 	}
+	svc.listAdCampaignsFn = func(_ context.Context, advertiserID int) ([]*models.AdCampaign, error) {
+		if advertiserID != 1 {
+			t.Fatalf("unexpected advertiser id in list campaigns: %d", advertiserID)
+		}
+		return []*models.AdCampaign{{ID: 10, Status: models.AdStatusWorking}}, nil
+	}
 	svc.topUpAdvertiserBalanceFn = func(_ context.Context, advertiserID int, amount int64) (int64, error) {
 		if advertiserID != 1 || amount != 150 {
 			t.Fatalf("unexpected topup args: advertiserID=%d amount=%d", advertiserID, amount)
@@ -752,6 +758,22 @@ func TestBalance_GetAndTopUp(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", getRR.Code, getRR.Body.String())
 	}
 
+	var getResp struct {
+		Data dto.BalanceResponse `json:"data"`
+	}
+	if err := json.Unmarshal(getRR.Body.Bytes(), &getResp); err != nil {
+		t.Fatalf("unmarshal get balance response: %v", err)
+	}
+	if getResp.Data.Balance != 100 {
+		t.Fatalf("expected balance=100 got %d", getResp.Data.Balance)
+	}
+	if getResp.Data.DeliveryAlert == nil {
+		t.Fatalf("expected delivery alert, body=%s", getRR.Body.String())
+	}
+	if getResp.Data.DeliveryAlert.Level != "at_risk" {
+		t.Fatalf("expected at_risk level got %q", getResp.Data.DeliveryAlert.Level)
+	}
+
 	topupReq := httptest.NewRequest(http.MethodPost, "/advertisers/balance/topup", bytes.NewBufferString(`{"amount":150}`))
 	topupReq.AddCookie(sess)
 	topupReq.AddCookie(csrf)
@@ -760,6 +782,22 @@ func TestBalance_GetAndTopUp(t *testing.T) {
 	r.ServeHTTP(topupRR, topupReq)
 	if topupRR.Code != http.StatusOK {
 		t.Fatalf("expected 200 got %d body=%s", topupRR.Code, topupRR.Body.String())
+	}
+
+	var topupResp struct {
+		Data dto.BalanceResponse `json:"data"`
+	}
+	if err := json.Unmarshal(topupRR.Body.Bytes(), &topupResp); err != nil {
+		t.Fatalf("unmarshal topup response: %v", err)
+	}
+	if topupResp.Data.Balance != 250 {
+		t.Fatalf("expected balance=250 got %d", topupResp.Data.Balance)
+	}
+	if topupResp.Data.DeliveryAlert == nil {
+		t.Fatalf("expected delivery alert after topup, body=%s", topupRR.Body.String())
+	}
+	if topupResp.Data.DeliveryAlert.Level != "low_balance" {
+		t.Fatalf("expected low_balance level after topup got %q", topupResp.Data.DeliveryAlert.Level)
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	analyticsch "eshkere/internal/analytics/clickhouse"
 	analyticskafka "eshkere/internal/analytics/kafka"
 	authclient "eshkere/internal/client/auth"
 	profileclient "eshkere/internal/client/profile"
@@ -144,7 +145,7 @@ func New(configPath string) *App {
 		PartnerSiteRepo:          partnerSiteRepo,
 		PartnerBlockRepo:         partnerBlockRepo,
 		PartnerBlockGeoRuleRepo:  partnerBlockGeoRuleRepo,
-		PartnerIncomeRepo:       partnerIncomeRepo,
+		PartnerIncomeRepo:        partnerIncomeRepo,
 		AdCampaignRepo:           adCampaignRepo,
 		AdGroupRepo:              adGroupRepo,
 		AdRepo:                   adRepo,
@@ -159,7 +160,7 @@ func New(configPath string) *App {
 		ProfileClient:            nil,
 		AdRequestStore:           adRequestStore,
 		AdEventPublisher:         adEventPublisher,
-		StatsReader:             statsReader,
+		StatsReader:              statsReader,
 		YookassaClient:           yookassaClient,
 	})
 	if err != nil {

@@ -49,6 +49,10 @@ type PartnerRepository interface {
 	SettleDailyEarnings(ctx context.Context, earningDate time.Time) (int64, error)
 }
 
+type PartnerIncomeRepository interface {
+	ListPartnerIncome(ctx context.Context, partnerID int, from, to time.Time) ([]PartnerIncomeRow, error)
+}
+
 type PartnerSiteRepository interface {
 	Create(ctx context.Context, site *models.PartnerSite) error
 	GetByID(ctx context.Context, siteID int) (*models.PartnerSite, error)
@@ -252,7 +256,7 @@ type Config struct {
 	AdRequestStore           AdRequestStore
 	AdEventPublisher         AdEventPublisher
 	YookassaClient           YookassaClient
-	StatsReader             StatsReader
+	StatsReader              StatsReader
 }
 
 type Service struct {
@@ -280,7 +284,7 @@ type Service struct {
 	adRequestStore           AdRequestStore
 	adEventPublisher         AdEventPublisher
 	yookassaClient           YookassaClient
-	statsReader             StatsReader
+	statsReader              StatsReader
 }
 
 func NewService(cfg *Config) (*Service, error) {
@@ -297,7 +301,7 @@ func NewService(cfg *Config) (*Service, error) {
 		partnerSiteRepo:          cfg.PartnerSiteRepo,
 		partnerBlockRepo:         cfg.PartnerBlockRepo,
 		partnerBlockGeoRuleRepo:  cfg.PartnerBlockGeoRuleRepo,
-		partnerIncomeRepo:       cfg.PartnerIncomeRepo,
+		partnerIncomeRepo:        cfg.PartnerIncomeRepo,
 		adCampaignRepo:           cfg.AdCampaignRepo,
 		adGroupRepo:              cfg.AdGroupRepo,
 		adRepo:                   cfg.AdRepo,
@@ -313,7 +317,7 @@ func NewService(cfg *Config) (*Service, error) {
 		adRequestStore:           cfg.AdRequestStore,
 		adEventPublisher:         cfg.AdEventPublisher,
 		yookassaClient:           cfg.YookassaClient,
-		statsReader:             cfg.StatsReader,
+		statsReader:              cfg.StatsReader,
 	}, nil
 }
 

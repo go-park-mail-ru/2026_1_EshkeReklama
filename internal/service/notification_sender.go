@@ -44,6 +44,7 @@ func (s *SMTPNotificationSender) SendBalanceAlert(ctx context.Context, to string
 	dialer := &net.Dialer{Timeout: 10 * time.Second}
 	conn, err := tls.DialWithDialer(dialer, "tcp", address, &tls.Config{
 		ServerName: s.host,
+		MinVersion: tls.VersionTLS12,
 	})
 	if err != nil {
 		return fmt.Errorf("dial smtp: %w", err)

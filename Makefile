@@ -1,4 +1,4 @@
-.PHONY: up down proto lint lint-fmt generate coverage
+.PHONY: up down down-reset proto lint lint-fmt generate coverage
 
 generate:
 	go generate ./...
@@ -16,6 +16,9 @@ up:
 	docker compose up -d --build
 
 down:
+	docker compose down
+
+down-reset:
 	docker compose down -v
 
 coverage:

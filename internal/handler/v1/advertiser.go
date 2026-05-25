@@ -28,6 +28,11 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 	advertisers.HandleFunc("/logout", a.Logout).Methods(http.MethodPost)
 	advertisers.Handle("/balance", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.GetBalance))).Methods(http.MethodGet)
 	advertisers.Handle("/balance/topup", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.TopUpBalance))).Methods(http.MethodPost)
+	advertisers.Handle("/balance/payment/create", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.CreateBalancePayment))).Methods(http.MethodPost)
+	advertisers.Handle("/balance/autopay", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.GetAutopaySettings))).Methods(http.MethodGet)
+	advertisers.Handle("/balance/autopay", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.UpdateAutopaySettings))).Methods(http.MethodPost)
+	advertisers.Handle("/notification-settings", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.GetNotificationSettings))).Methods(http.MethodGet)
+	advertisers.Handle("/notification-settings", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.UpdateNotificationSettings))).Methods(http.MethodPut)
 
 	advertisers.Handle("/me", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.Me))).Methods(http.MethodGet)
 	advertisers.Handle("/me", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.UpdateProfile))).Methods(http.MethodPut)
@@ -355,8 +360,10 @@ func (a *API) GetBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.JSON(w, http.StatusOK, dto.BalanceResponse{
-		Balance:       adv.Balance,
-		DeliveryAlert: deliveryAlertResponse(svc.BuildAdvertiserDeliveryAlert(adv.Balance, campaigns)),
+		Balance:                 adv.Balance,
+		SavedPaymentMethodID:    adv.SavedPaymentMethodID.String,
+		SavedPaymentMethodTitle: adv.SavedPaymentMethodTitle.String,
+		DeliveryAlert:           deliveryAlertResponse(svc.BuildAdvertiserDeliveryAlert(adv.Balance, campaigns)),
 	})
 }
 

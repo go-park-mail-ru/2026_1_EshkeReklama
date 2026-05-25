@@ -112,51 +112,58 @@ func (c *stubAuthClient) UpdateCredentials(ctx context.Context, advertiserID int
 
 // stubService implements the Service interface for handler tests.
 type stubService struct {
-	createAdvertiserProfileFn   func(ctx context.Context, id int64, name, email string) error
-	getAdvertiserByIDFn         func(ctx context.Context, id int) (*models.Advertiser, error)
-	updateAdvertiserProfileFn   func(ctx context.Context, in *serviceinput.UpdateAdvertiserProfile) (*models.Advertiser, error)
-	updateAdvertiserAvatarFn    func(ctx context.Context, advertiserID int, avatar []byte, avatarExt, avatarContentType string) (*models.Advertiser, error)
-	topUpAdvertiserBalanceFn    func(ctx context.Context, advertiserID int, amount int64) (int64, error)
-	generateFeedLinkFn          func(ctx context.Context, campaignID int) (string, error)
-	getAdsByFeedTokenFn         func(ctx context.Context, token string) ([]*models.Ad, error)
-	requestAdFn                 func(ctx context.Context, embedToken, visitorID string) (*service.AdRequestResult, error)
-	clickAdFn                   func(ctx context.Context, requestID string) (string, error)
-	createAdCampaignFn          func(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error)
-	updateAdCampaignFn          func(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdCampaign) error
-	turnOffAdCampaignFn         func(ctx context.Context, advertiserID, campaignID int) error
-	listAdCampaignsFn           func(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
-	deleteAdCampaignFn          func(ctx context.Context, advertiserID, campaignID int) error
-	createAdGroupFn             func(ctx context.Context, advertiserID int, in *serviceinput.CreateAdGroup) (*models.AdGroup, error)
-	updateAdGroupFn             func(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdGroup) error
-	listAdGroupsFn              func(ctx context.Context, advertiserID, campaignID int) ([]*models.AdGroup, error)
-	deleteAdGroupFn             func(ctx context.Context, advertiserID, groupID int) error
-	createAdFn                  func(ctx context.Context, advertiserID int, in *serviceinput.CreateAd) (*models.Ad, error)
-	getAdByIDFn                 func(ctx context.Context, adID int) (*models.Ad, error)
-	listModerationAdsFn         func(ctx context.Context) ([]*models.Ad, error)
-	updateAdFn                  func(ctx context.Context, advertiserID int, in *serviceinput.UpdateAd) error
-	updateAdModerationStatusFn  func(ctx context.Context, in *serviceinput.UpdateAdStatus) error
-	listAdsFn                   func(ctx context.Context, advertiserID, groupID int) ([]*models.Ad, error)
-	deleteAdFn                  func(ctx context.Context, advertiserID, adID int) error
-	createAppealFn              func(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
-	listAppealsFn               func(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
-	getAppealByIDFn             func(ctx context.Context, appealID int) (*models.Appeal, error)
-	createPartnerProfileFn      func(ctx context.Context, in *serviceinput.CreatePartnerProfile) error
-	getPartnerByIDFn            func(ctx context.Context, id int) (*models.Partner, error)
-	updatePartnerProfileFn      func(ctx context.Context, in *serviceinput.UpdatePartnerProfile) (*models.Partner, error)
-	createPartnerSiteFn         func(ctx context.Context, in *serviceinput.CreatePartnerSite) (*models.PartnerSite, error)
-	getPartnerSiteFn            func(ctx context.Context, siteID int) (*models.PartnerSite, error)
-	listPartnerSitesFn          func(ctx context.Context, partnerID int) ([]*models.PartnerSite, error)
-	updatePartnerSiteFn         func(ctx context.Context, in *serviceinput.UpdatePartnerSite) (*models.PartnerSite, error)
-	deletePartnerSiteFn         func(ctx context.Context, partnerID, siteID int) error
-	createPartnerBlockFn        func(ctx context.Context, partnerID int, in *serviceinput.CreatePartnerBlock) (*models.PartnerBlock, error)
-	getPartnerBlockFn           func(ctx context.Context, partnerID, siteID, blockID int) (*models.PartnerBlock, []*models.PartnerBlockGeoRule, error)
-	listPartnerBlocksFn         func(ctx context.Context, partnerID, siteID int) ([]*models.PartnerBlock, error)
-	updatePartnerBlockMetaFn    func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockMeta) (*models.PartnerBlock, error)
-	updatePartnerBlockGeneralFn func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockGeneral) (*models.PartnerBlock, error)
-	updatePartnerBlockGeoFn     func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockGeography) ([]*models.PartnerBlockGeoRule, error)
-	updatePartnerBlockSelfAdFn  func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockSelfAd) (*models.PartnerBlock, error)
-	deletePartnerBlockFn        func(ctx context.Context, partnerID, siteID, blockID int) error
-	getPartnerBlockEmbedCodeFn  func(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, error)
+	createAdvertiserProfileFn    func(ctx context.Context, id int64, name, email string) error
+	getAdvertiserByIDFn          func(ctx context.Context, id int) (*models.Advertiser, error)
+	updateAdvertiserProfileFn    func(ctx context.Context, in *serviceinput.UpdateAdvertiserProfile) (*models.Advertiser, error)
+	updateAdvertiserAvatarFn     func(ctx context.Context, advertiserID int, avatar []byte, avatarExt, avatarContentType string) (*models.Advertiser, error)
+	topUpAdvertiserBalanceFn     func(ctx context.Context, advertiserID int, amount int64) (int64, error)
+	createBalancePaymentFn       func(ctx context.Context, advertiserID int, amount int64) (*service.BalancePaymentResult, error)
+	completePaymentByWebhookFn   func(ctx context.Context, paymentID string) (*service.WebhookResult, error)
+	getAutopaySettingsFn         func(ctx context.Context, advertiserID int) (*models.AdvertiserAutopaySettings, error)
+	updateAutopaySettingsFn      func(ctx context.Context, settings *models.AdvertiserAutopaySettings) error
+	getNotificationSettingsFn    func(ctx context.Context, advertiserID int) (*models.AdvertiserNotificationSettings, error)
+	updateNotificationSettingsFn func(ctx context.Context, settings *models.AdvertiserNotificationSettings) error
+	runAutopayCycleFn            func(ctx context.Context) (int, error)
+	generateFeedLinkFn           func(ctx context.Context, campaignID int) (string, error)
+	getAdsByFeedTokenFn          func(ctx context.Context, token string) ([]*models.Ad, error)
+	requestAdFn                  func(ctx context.Context, embedToken, visitorID string) (*service.AdRequestResult, error)
+	clickAdFn                    func(ctx context.Context, requestID string) (string, error)
+	createAdCampaignFn           func(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error)
+	updateAdCampaignFn           func(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdCampaign) error
+	turnOffAdCampaignFn          func(ctx context.Context, advertiserID, campaignID int) error
+	listAdCampaignsFn            func(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
+	deleteAdCampaignFn           func(ctx context.Context, advertiserID, campaignID int) error
+	createAdGroupFn              func(ctx context.Context, advertiserID int, in *serviceinput.CreateAdGroup) (*models.AdGroup, error)
+	updateAdGroupFn              func(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdGroup) error
+	listAdGroupsFn               func(ctx context.Context, advertiserID, campaignID int) ([]*models.AdGroup, error)
+	deleteAdGroupFn              func(ctx context.Context, advertiserID, groupID int) error
+	createAdFn                   func(ctx context.Context, advertiserID int, in *serviceinput.CreateAd) (*models.Ad, error)
+	getAdByIDFn                  func(ctx context.Context, adID int) (*models.Ad, error)
+	listModerationAdsFn          func(ctx context.Context) ([]*models.Ad, error)
+	updateAdFn                   func(ctx context.Context, advertiserID int, in *serviceinput.UpdateAd) error
+	updateAdModerationStatusFn   func(ctx context.Context, in *serviceinput.UpdateAdStatus) error
+	listAdsFn                    func(ctx context.Context, advertiserID, groupID int) ([]*models.Ad, error)
+	deleteAdFn                   func(ctx context.Context, advertiserID, adID int) error
+	createAppealFn               func(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
+	listAppealsFn                func(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
+	getAppealByIDFn              func(ctx context.Context, appealID int) (*models.Appeal, error)
+	createPartnerProfileFn       func(ctx context.Context, in *serviceinput.CreatePartnerProfile) error
+	getPartnerByIDFn             func(ctx context.Context, id int) (*models.Partner, error)
+	updatePartnerProfileFn       func(ctx context.Context, in *serviceinput.UpdatePartnerProfile) (*models.Partner, error)
+	createPartnerSiteFn          func(ctx context.Context, in *serviceinput.CreatePartnerSite) (*models.PartnerSite, error)
+	getPartnerSiteFn             func(ctx context.Context, siteID int) (*models.PartnerSite, error)
+	listPartnerSitesFn           func(ctx context.Context, partnerID int) ([]*models.PartnerSite, error)
+	updatePartnerSiteFn          func(ctx context.Context, in *serviceinput.UpdatePartnerSite) (*models.PartnerSite, error)
+	deletePartnerSiteFn          func(ctx context.Context, partnerID, siteID int) error
+	createPartnerBlockFn         func(ctx context.Context, partnerID int, in *serviceinput.CreatePartnerBlock) (*models.PartnerBlock, error)
+	getPartnerBlockFn            func(ctx context.Context, partnerID, siteID, blockID int) (*models.PartnerBlock, []*models.PartnerBlockGeoRule, error)
+	listPartnerBlocksFn          func(ctx context.Context, partnerID, siteID int) ([]*models.PartnerBlock, error)
+	updatePartnerBlockMetaFn     func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockMeta) (*models.PartnerBlock, error)
+	updatePartnerBlockGeneralFn  func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockGeneral) (*models.PartnerBlock, error)
+	updatePartnerBlockGeoFn      func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockGeography) ([]*models.PartnerBlockGeoRule, error)
+	updatePartnerBlockSelfAdFn   func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockSelfAd) (*models.PartnerBlock, error)
+	deletePartnerBlockFn         func(ctx context.Context, partnerID, siteID, blockID int) error
+	getPartnerBlockEmbedCodeFn   func(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, error)
 }
 
 func (s *stubService) CreateAdvertiserProfile(ctx context.Context, id int64, name, email string) error {
@@ -190,6 +197,55 @@ func (s *stubService) UpdateAdvertiserAvatar(ctx context.Context, advertiserID i
 func (s *stubService) TopUpAdvertiserBalance(ctx context.Context, advertiserID int, amount int64) (int64, error) {
 	if s.topUpAdvertiserBalanceFn != nil {
 		return s.topUpAdvertiserBalanceFn(ctx, advertiserID, amount)
+	}
+	return 0, nil
+}
+
+func (s *stubService) CreateBalancePayment(ctx context.Context, advertiserID int, amount int64) (*service.BalancePaymentResult, error) {
+	if s.createBalancePaymentFn != nil {
+		return s.createBalancePaymentFn(ctx, advertiserID, amount)
+	}
+	return nil, nil
+}
+
+func (s *stubService) CompletePaymentByWebhook(ctx context.Context, paymentID string) (*service.WebhookResult, error) {
+	if s.completePaymentByWebhookFn != nil {
+		return s.completePaymentByWebhookFn(ctx, paymentID)
+	}
+	return nil, nil
+}
+
+func (s *stubService) GetAdvertiserAutopaySettings(ctx context.Context, advertiserID int) (*models.AdvertiserAutopaySettings, error) {
+	if s.getAutopaySettingsFn != nil {
+		return s.getAutopaySettingsFn(ctx, advertiserID)
+	}
+	return &models.AdvertiserAutopaySettings{}, nil
+}
+
+func (s *stubService) UpdateAdvertiserAutopaySettings(ctx context.Context, settings *models.AdvertiserAutopaySettings) error {
+	if s.updateAutopaySettingsFn != nil {
+		return s.updateAutopaySettingsFn(ctx, settings)
+	}
+	return nil
+}
+
+func (s *stubService) GetAdvertiserNotificationSettings(ctx context.Context, advertiserID int) (*models.AdvertiserNotificationSettings, error) {
+	if s.getNotificationSettingsFn != nil {
+		return s.getNotificationSettingsFn(ctx, advertiserID)
+	}
+	return &models.AdvertiserNotificationSettings{}, nil
+}
+
+func (s *stubService) UpdateAdvertiserNotificationSettings(ctx context.Context, settings *models.AdvertiserNotificationSettings) error {
+	if s.updateNotificationSettingsFn != nil {
+		return s.updateNotificationSettingsFn(ctx, settings)
+	}
+	return nil
+}
+
+func (s *stubService) RunAutopayCycle(ctx context.Context) (int, error) {
+	if s.runAutopayCycleFn != nil {
+		return s.runAutopayCycleFn(ctx)
 	}
 	return 0, nil
 }

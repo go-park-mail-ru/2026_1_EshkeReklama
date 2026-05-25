@@ -20,6 +20,7 @@ import (
 	"eshkere/internal/repository/postgres"
 	redisrepo "eshkere/internal/repository/redis"
 	"eshkere/internal/service"
+	"eshkere/internal/yookassa"
 
 	s3 "eshkere/internal/storage/s3"
 
@@ -28,13 +29,15 @@ import (
 )
 
 type App struct {
-	cfg           *config.Config
-	logger        *zap.SugaredLogger
-	closers       []io.Closer
-	service       *service.Service
-	authClient    *authclient.Client
-	profileClient *profileclient.Client
-	metrics       *observability.Metrics
+	cfg                *config.Config
+	logger             *zap.SugaredLogger
+	closers            []io.Closer
+	service            *service.Service
+	authClient         *authclient.Client
+	profileClient      *profileclient.Client
+	metrics            *observability.Metrics
+	emailSender        *service.SMTPNotificationSender
+	notificationDedupe *redisrepo.NotificationDedupeStore
 }
 
 func New(configPath string) *App {
@@ -69,6 +72,9 @@ func New(configPath string) *App {
 	closers = append(closers, redisPool)
 
 	advertiserRepo := postgres.NewAdvertiserRepository(db)
+	paymentTransactionRepo := postgres.NewPaymentTransactionRepository(db)
+	autopaySettingsRepo := postgres.NewAdvertiserAutopaySettingsRepository(db)
+	notificationSettingsRepo := postgres.NewAdvertiserNotificationSettingsRepository(db)
 	partnerRepo := postgres.NewPartnerRepository(db)
 	partnerSiteRepo := postgres.NewPartnerSiteRepository(db)
 	partnerBlockRepo := postgres.NewPartnerBlockRepository(db)
@@ -79,6 +85,7 @@ func New(configPath string) *App {
 	feedLinkRepo := postgres.NewFeedLinkRepository(db)
 	appealRepo := postgres.NewAppealRepository(db)
 	adRequestStore := redisrepo.NewAdRequestStore(redisPool)
+	notificationDedupe := redisrepo.NewNotificationDedupeStore(redisPool)
 	var adEventPublisher service.AdEventPublisher
 	if brokers := cfg.Kafka.BrokerList(); len(brokers) > 0 && cfg.Kafka.AdEventsTopic != "" {
 		publisher, err := analyticskafka.NewPublisher(brokers, cfg.Kafka.AdEventsTopic)
@@ -105,27 +112,38 @@ func New(configPath string) *App {
 	avatarStorage := s3.NewAvatarStorage(s3Client, "")
 	appealStorage := s3.NewAppealStorage(s3Client)
 	adStorage := s3.NewAdStorage(s3Client)
+	yookassaClient := yookassa.NewClient(yookassa.Config{
+		ShopID:     cfg.Yookassa.ShopID,
+		SecretKey:  cfg.Yookassa.SecretKey,
+		ReturnURL:  cfg.Yookassa.ReturnURL,
+		WebhookURL: cfg.Yookassa.WebhookURL,
+	})
+	emailSender := service.NewSMTPNotificationSender(cfg.SMTP)
 
 	svc, err := service.NewService(&service.Config{
-		AdvertiserRepo:          advertiserRepo,
-		PartnerRepo:             partnerRepo,
-		PartnerSiteRepo:         partnerSiteRepo,
-		PartnerBlockRepo:        partnerBlockRepo,
-		PartnerBlockGeoRuleRepo: partnerBlockGeoRuleRepo,
-		AdCampaignRepo:          adCampaignRepo,
-		AdGroupRepo:             adGroupRepo,
-		AdRepo:                  adRepo,
-		FeedLinkRepo:            feedLinkRepo,
-		AppealRepo:              appealRepo,
-		AvatarStorage:           avatarStorage,
-		AppealStorage:           appealStorage,
-		AdStorage:               adStorage,
-		AdActionRepo:            nil,
-		TopicRepo:               nil,
-		RegionRepo:              nil,
-		ProfileClient:           nil,
-		AdRequestStore:          adRequestStore,
-		AdEventPublisher:        adEventPublisher,
+		AdvertiserRepo:           advertiserRepo,
+		PaymentTransactionRepo:   paymentTransactionRepo,
+		AutopaySettingsRepo:      autopaySettingsRepo,
+		NotificationSettingsRepo: notificationSettingsRepo,
+		PartnerRepo:              partnerRepo,
+		PartnerSiteRepo:          partnerSiteRepo,
+		PartnerBlockRepo:         partnerBlockRepo,
+		PartnerBlockGeoRuleRepo:  partnerBlockGeoRuleRepo,
+		AdCampaignRepo:           adCampaignRepo,
+		AdGroupRepo:              adGroupRepo,
+		AdRepo:                   adRepo,
+		FeedLinkRepo:             feedLinkRepo,
+		AppealRepo:               appealRepo,
+		AvatarStorage:            avatarStorage,
+		AppealStorage:            appealStorage,
+		AdStorage:                adStorage,
+		AdActionRepo:             nil,
+		TopicRepo:                nil,
+		RegionRepo:               nil,
+		ProfileClient:            nil,
+		AdRequestStore:           adRequestStore,
+		AdEventPublisher:         adEventPublisher,
+		YookassaClient:           yookassaClient,
 	})
 	if err != nil {
 		logger.Fatalf("Failed to init service: %v", err)
@@ -147,13 +165,15 @@ func New(configPath string) *App {
 	svc.SetProfileClient(pc)
 
 	return &App{
-		cfg:           cfg,
-		logger:        logger,
-		closers:       closers,
-		service:       svc,
-		authClient:    ac,
-		profileClient: pc,
-		metrics:       metrics,
+		cfg:                cfg,
+		logger:             logger,
+		closers:            closers,
+		service:            svc,
+		authClient:         ac,
+		profileClient:      pc,
+		metrics:            metrics,
+		emailSender:        emailSender,
+		notificationDedupe: notificationDedupe,
 	}
 }
 
@@ -168,7 +188,7 @@ func (a *App) Run() error {
 		CookieName: "csrf_token",
 		HeaderName: "X-CSRF-Token",
 		Secure:     a.cfg.Session.CookieSecure,
-		SkipPaths:  []string{"/ad/request"},
+		SkipPaths:  []string{"/ad/request", "/api/webhook/yookassa"},
 	}))
 
 	handler.Register(router, v1.NewAPI(v1.APIConfig{
@@ -197,6 +217,7 @@ func (a *App) Run() error {
 		a.logger.Infow("http server started", "addr", apiServer.Addr)
 		serverErr <- apiServer.ListenAndServe()
 	}()
+	a.startBackgroundWorkers()
 	if metricsServer != nil {
 		servers = append(servers, metricsServer)
 		go func() {
@@ -206,6 +227,15 @@ func (a *App) Run() error {
 	}
 
 	return a.waitShutdown(servers, serverErr)
+}
+
+func (a *App) startBackgroundWorkers() {
+	if interval := a.cfg.BalanceAutomation.AutopayInterval; interval > 0 {
+		go a.runAutopayWorker(interval)
+	}
+	if interval := a.cfg.BalanceAutomation.NotificationInterval; interval > 0 {
+		go a.runNotificationWorker(interval)
+	}
 }
 
 func (a *App) waitShutdown(servers []*http.Server, serverErr <-chan error) error {

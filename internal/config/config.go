@@ -95,19 +95,41 @@ type ClickHouseConfig struct {
 	Password string `yaml:"password"`
 }
 
+type YookassaConfig struct {
+	ShopID     string `yaml:"shop_id"`
+	SecretKey  string `yaml:"secret_key"`
+	ReturnURL  string `yaml:"return_url"`
+	WebhookURL string `yaml:"webhook_url"`
+}
+
+type SMTPConfig struct {
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+}
+
+type BalanceAutomationConfig struct {
+	AutopayInterval      time.Duration `yaml:"autopay_interval"`
+	NotificationInterval time.Duration `yaml:"notification_interval"`
+}
+
 type Config struct {
-	HTTPServer      HTTPServerConfig     `yaml:"http_server"`
-	Postgres        PostgresConfig       `yaml:"postgres"`
-	Redis           RedisConfig          `yaml:"redis"`
-	Session         SessionConfig        `yaml:"session"`
-	AuthService     AuthServiceConfig    `yaml:"auth_service"`
-	ProfileService  ProfileServiceConfig `yaml:"profile_service"`
-	S3              S3Config             `yaml:"s3"`
-	CORS            CORSConfig           `yaml:"cors"`
-	Observability   ObservabilityConfig  `yaml:"observability"`
-	Kafka           KafkaConfig          `yaml:"kafka"`
-	ClickHouse      ClickHouseConfig     `yaml:"clickhouse"`
-	GracefulTimeout time.Duration        `yaml:"graceful_timeout"`
+	HTTPServer        HTTPServerConfig        `yaml:"http_server"`
+	Postgres          PostgresConfig          `yaml:"postgres"`
+	Redis             RedisConfig             `yaml:"redis"`
+	Session           SessionConfig           `yaml:"session"`
+	AuthService       AuthServiceConfig       `yaml:"auth_service"`
+	ProfileService    ProfileServiceConfig    `yaml:"profile_service"`
+	S3                S3Config                `yaml:"s3"`
+	CORS              CORSConfig              `yaml:"cors"`
+	Observability     ObservabilityConfig     `yaml:"observability"`
+	Kafka             KafkaConfig             `yaml:"kafka"`
+	ClickHouse        ClickHouseConfig        `yaml:"clickhouse"`
+	Yookassa          YookassaConfig          `yaml:"yookassa"`
+	SMTP              SMTPConfig              `yaml:"smtp"`
+	BalanceAutomation BalanceAutomationConfig `yaml:"balance_automation"`
+	GracefulTimeout   time.Duration           `yaml:"graceful_timeout"`
 }
 
 func ReadConfig(path string) (*Config, error) {

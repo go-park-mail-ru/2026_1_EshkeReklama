@@ -781,6 +781,10 @@ func easyjson94f0a767DecodeEshkereInternalHandlerV1Dto7(in *jlexer.Lexer, out *B
 		switch key {
 		case "balance":
 			out.Balance = int64(in.Int64())
+		case "saved_payment_method_id":
+			out.SavedPaymentMethodID = string(in.String())
+		case "saved_payment_method_title":
+			out.SavedPaymentMethodTitle = string(in.String())
 		case "delivery_alert":
 			if in.IsNull() {
 				in.Skip()
@@ -809,6 +813,16 @@ func easyjson94f0a767EncodeEshkereInternalHandlerV1Dto7(out *jwriter.Writer, in 
 		const prefix string = ",\"balance\":"
 		out.RawString(prefix[1:])
 		out.Int64(int64(in.Balance))
+	}
+	if in.SavedPaymentMethodID != "" {
+		const prefix string = ",\"saved_payment_method_id\":"
+		out.RawString(prefix)
+		out.String(string(in.SavedPaymentMethodID))
+	}
+	if in.SavedPaymentMethodTitle != "" {
+		const prefix string = ",\"saved_payment_method_title\":"
+		out.RawString(prefix)
+		out.String(string(in.SavedPaymentMethodTitle))
 	}
 	if in.DeliveryAlert != nil {
 		const prefix string = ",\"delivery_alert\":"

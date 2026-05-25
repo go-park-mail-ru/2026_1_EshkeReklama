@@ -76,6 +76,38 @@ type TopUpBalanceRequest struct {
 	Amount int64 `json:"amount"`
 }
 
+type CreatePaymentRequest struct {
+	Amount int64 `json:"amount"`
+}
+
+type CreatePaymentResponse struct {
+	PaymentURL string `json:"payment_url"`
+}
+
+type AutopaySettingsRequest struct {
+	Enabled   bool  `json:"enabled"`
+	Threshold int64 `json:"threshold"`
+	Limit     int64 `json:"limit"`
+}
+
+type AutopaySettingsResponse struct {
+	Enabled   bool  `json:"enabled"`
+	Threshold int64 `json:"threshold"`
+	Limit     int64 `json:"limit"`
+}
+
+type NotificationSettingsRequest struct {
+	EmailEnabled      bool  `json:"email_enabled"`
+	WarningThreshold  int64 `json:"warning_threshold"`
+	CriticalThreshold int64 `json:"critical_threshold"`
+}
+
+type NotificationSettingsResponse struct {
+	EmailEnabled      bool  `json:"email_enabled"`
+	WarningThreshold  int64 `json:"warning_threshold"`
+	CriticalThreshold int64 `json:"critical_threshold"`
+}
+
 type DeliveryAlertResponse struct {
 	Level             string `json:"level"`
 	Title             string `json:"title"`
@@ -85,8 +117,10 @@ type DeliveryAlertResponse struct {
 }
 
 type BalanceResponse struct {
-	Balance       int64                  `json:"balance"`
-	DeliveryAlert *DeliveryAlertResponse `json:"delivery_alert,omitempty"`
+	Balance                 int64                  `json:"balance"`
+	SavedPaymentMethodID    string                 `json:"saved_payment_method_id,omitempty"`
+	SavedPaymentMethodTitle string                 `json:"saved_payment_method_title,omitempty"`
+	DeliveryAlert           *DeliveryAlertResponse `json:"delivery_alert,omitempty"`
 }
 
 func AdvertiserToProfile(adv *models.Advertiser) AdvertiserProfileResponse {

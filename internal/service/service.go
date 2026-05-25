@@ -8,12 +8,38 @@ import (
 
 	"eshkere/internal/analytics"
 	"eshkere/internal/models"
+	"eshkere/internal/yookassa"
 )
 
 type AdvertiserRepository interface {
 	CreateProfile(ctx context.Context, id int64, name string) error
 	GetByID(ctx context.Context, id int) (*models.Advertiser, error)
 	Update(ctx context.Context, a *models.Advertiser) error
+}
+
+type PaymentTransactionRepository interface {
+	Create(ctx context.Context, tx *models.PaymentTransaction) error
+	GetByID(ctx context.Context, id string) (*models.PaymentTransaction, error)
+	Complete(ctx context.Context, paymentID string, status models.PaymentTransactionStatus, paymentMethodID string, paymentMethodTitle string) (*models.PaymentCompletionResult, error)
+}
+
+type AdvertiserAutopaySettingsRepository interface {
+	GetByAdvertiserID(ctx context.Context, advertiserID int) (*models.AdvertiserAutopaySettings, error)
+	Upsert(ctx context.Context, settings *models.AdvertiserAutopaySettings) error
+	ListEligible(ctx context.Context) ([]models.AdvertiserAutopayCandidate, error)
+}
+
+type AdvertiserNotificationSettingsRepository interface {
+	GetByAdvertiserID(ctx context.Context, advertiserID int) (*models.AdvertiserNotificationSettings, error)
+	Upsert(ctx context.Context, settings *models.AdvertiserNotificationSettings) error
+	ListEnabled(ctx context.Context) ([]models.AdvertiserNotificationSettings, error)
+}
+
+type YookassaClient interface {
+	Enabled() bool
+	CreateRedirectPayment(ctx context.Context, amountRub int64, description string, metadata map[string]string) (*yookassa.Payment, error)
+	CreateAutopayPayment(ctx context.Context, amountRub int64, paymentMethodID string, description string, metadata map[string]string) (*yookassa.Payment, error)
+	GetPayment(ctx context.Context, paymentID string) (*yookassa.Payment, error)
 }
 
 type PartnerRepository interface {
@@ -150,47 +176,55 @@ type AdRequestStore interface {
 }
 
 type Config struct {
-	AdvertiserRepo          AdvertiserRepository
-	PartnerRepo             PartnerRepository
-	PartnerSiteRepo         PartnerSiteRepository
-	PartnerBlockRepo        PartnerBlockRepository
-	PartnerBlockGeoRuleRepo PartnerBlockGeoRuleRepository
-	AdCampaignRepo          AdCampaignRepository
-	AdGroupRepo             AdGroupRepository
-	AdRepo                  AdRepository
-	FeedLinkRepo            FeedLinkRepository
-	AvatarStorage           AvatarStorage
-	AppealStorage           AppealStorage
-	AdStorage               AdStorage
-	AdActionRepo            AdActionRepository
-	TopicRepo               TopicRepository
-	RegionRepo              RegionRepository
-	AppealRepo              AppealRepository
-	ProfileClient           ProfileClient
-	AdRequestStore          AdRequestStore
-	AdEventPublisher        AdEventPublisher
+	AdvertiserRepo           AdvertiserRepository
+	PaymentTransactionRepo   PaymentTransactionRepository
+	AutopaySettingsRepo      AdvertiserAutopaySettingsRepository
+	NotificationSettingsRepo AdvertiserNotificationSettingsRepository
+	PartnerRepo              PartnerRepository
+	PartnerSiteRepo          PartnerSiteRepository
+	PartnerBlockRepo         PartnerBlockRepository
+	PartnerBlockGeoRuleRepo  PartnerBlockGeoRuleRepository
+	AdCampaignRepo           AdCampaignRepository
+	AdGroupRepo              AdGroupRepository
+	AdRepo                   AdRepository
+	FeedLinkRepo             FeedLinkRepository
+	AvatarStorage            AvatarStorage
+	AppealStorage            AppealStorage
+	AdStorage                AdStorage
+	AdActionRepo             AdActionRepository
+	TopicRepo                TopicRepository
+	RegionRepo               RegionRepository
+	AppealRepo               AppealRepository
+	ProfileClient            ProfileClient
+	AdRequestStore           AdRequestStore
+	AdEventPublisher         AdEventPublisher
+	YookassaClient           YookassaClient
 }
 
 type Service struct {
-	advertiserRepo          AdvertiserRepository
-	partnerRepo             PartnerRepository
-	partnerSiteRepo         PartnerSiteRepository
-	partnerBlockRepo        PartnerBlockRepository
-	partnerBlockGeoRuleRepo PartnerBlockGeoRuleRepository
-	adCampaignRepo          AdCampaignRepository
-	adGroupRepo             AdGroupRepository
-	adRepo                  AdRepository
-	feedLinkRepo            FeedLinkRepository
-	avatarStorage           AvatarStorage
-	appealStorage           AppealStorage
-	adStorage               AdStorage
-	adActionRepo            AdActionRepository
-	topicRepo               TopicRepository
-	regionRepo              RegionRepository
-	appealRepo              AppealRepository
-	profileClient           ProfileClient
-	adRequestStore          AdRequestStore
-	adEventPublisher        AdEventPublisher
+	advertiserRepo           AdvertiserRepository
+	paymentTransactionRepo   PaymentTransactionRepository
+	autopaySettingsRepo      AdvertiserAutopaySettingsRepository
+	notificationSettingsRepo AdvertiserNotificationSettingsRepository
+	partnerRepo              PartnerRepository
+	partnerSiteRepo          PartnerSiteRepository
+	partnerBlockRepo         PartnerBlockRepository
+	partnerBlockGeoRuleRepo  PartnerBlockGeoRuleRepository
+	adCampaignRepo           AdCampaignRepository
+	adGroupRepo              AdGroupRepository
+	adRepo                   AdRepository
+	feedLinkRepo             FeedLinkRepository
+	avatarStorage            AvatarStorage
+	appealStorage            AppealStorage
+	adStorage                AdStorage
+	adActionRepo             AdActionRepository
+	topicRepo                TopicRepository
+	regionRepo               RegionRepository
+	appealRepo               AppealRepository
+	profileClient            ProfileClient
+	adRequestStore           AdRequestStore
+	adEventPublisher         AdEventPublisher
+	yookassaClient           YookassaClient
 }
 
 func NewService(cfg *Config) (*Service, error) {
@@ -199,25 +233,29 @@ func NewService(cfg *Config) (*Service, error) {
 	}
 
 	return &Service{
-		advertiserRepo:          cfg.AdvertiserRepo,
-		partnerRepo:             cfg.PartnerRepo,
-		partnerSiteRepo:         cfg.PartnerSiteRepo,
-		partnerBlockRepo:        cfg.PartnerBlockRepo,
-		partnerBlockGeoRuleRepo: cfg.PartnerBlockGeoRuleRepo,
-		adCampaignRepo:          cfg.AdCampaignRepo,
-		adGroupRepo:             cfg.AdGroupRepo,
-		adRepo:                  cfg.AdRepo,
-		feedLinkRepo:            cfg.FeedLinkRepo,
-		avatarStorage:           cfg.AvatarStorage,
-		appealStorage:           cfg.AppealStorage,
-		adStorage:               cfg.AdStorage,
-		adActionRepo:            cfg.AdActionRepo,
-		topicRepo:               cfg.TopicRepo,
-		regionRepo:              cfg.RegionRepo,
-		appealRepo:              cfg.AppealRepo,
-		profileClient:           cfg.ProfileClient,
-		adRequestStore:          cfg.AdRequestStore,
-		adEventPublisher:        cfg.AdEventPublisher,
+		advertiserRepo:           cfg.AdvertiserRepo,
+		paymentTransactionRepo:   cfg.PaymentTransactionRepo,
+		autopaySettingsRepo:      cfg.AutopaySettingsRepo,
+		notificationSettingsRepo: cfg.NotificationSettingsRepo,
+		partnerRepo:              cfg.PartnerRepo,
+		partnerSiteRepo:          cfg.PartnerSiteRepo,
+		partnerBlockRepo:         cfg.PartnerBlockRepo,
+		partnerBlockGeoRuleRepo:  cfg.PartnerBlockGeoRuleRepo,
+		adCampaignRepo:           cfg.AdCampaignRepo,
+		adGroupRepo:              cfg.AdGroupRepo,
+		adRepo:                   cfg.AdRepo,
+		feedLinkRepo:             cfg.FeedLinkRepo,
+		avatarStorage:            cfg.AvatarStorage,
+		appealStorage:            cfg.AppealStorage,
+		adStorage:                cfg.AdStorage,
+		adActionRepo:             cfg.AdActionRepo,
+		topicRepo:                cfg.TopicRepo,
+		regionRepo:               cfg.RegionRepo,
+		appealRepo:               cfg.AppealRepo,
+		profileClient:            cfg.ProfileClient,
+		adRequestStore:           cfg.AdRequestStore,
+		adEventPublisher:         cfg.AdEventPublisher,
+		yookassaClient:           cfg.YookassaClient,
 	}, nil
 }
 

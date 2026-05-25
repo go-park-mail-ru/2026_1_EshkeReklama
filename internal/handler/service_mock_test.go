@@ -279,6 +279,109 @@ func (mr *MockServiceMockRecorder) TopUpAdvertiserBalance(ctx, advertiserID, amo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TopUpAdvertiserBalance", reflect.TypeOf((*MockService)(nil).TopUpAdvertiserBalance), ctx, advertiserID, amount)
 }
 
+// CreateBalancePayment mocks base method.
+func (m *MockService) CreateBalancePayment(ctx context.Context, advertiserID int, amount int64) (*service.BalancePaymentResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateBalancePayment", ctx, advertiserID, amount)
+	ret0, _ := ret[0].(*service.BalancePaymentResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateBalancePayment indicates an expected call of CreateBalancePayment.
+func (mr *MockServiceMockRecorder) CreateBalancePayment(ctx, advertiserID, amount any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBalancePayment", reflect.TypeOf((*MockService)(nil).CreateBalancePayment), ctx, advertiserID, amount)
+}
+
+// CompletePaymentByWebhook mocks base method.
+func (m *MockService) CompletePaymentByWebhook(ctx context.Context, paymentID string) (*service.WebhookResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CompletePaymentByWebhook", ctx, paymentID)
+	ret0, _ := ret[0].(*service.WebhookResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CompletePaymentByWebhook indicates an expected call of CompletePaymentByWebhook.
+func (mr *MockServiceMockRecorder) CompletePaymentByWebhook(ctx, paymentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompletePaymentByWebhook", reflect.TypeOf((*MockService)(nil).CompletePaymentByWebhook), ctx, paymentID)
+}
+
+// GetAdvertiserAutopaySettings mocks base method.
+func (m *MockService) GetAdvertiserAutopaySettings(ctx context.Context, advertiserID int) (*models.AdvertiserAutopaySettings, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAdvertiserAutopaySettings", ctx, advertiserID)
+	ret0, _ := ret[0].(*models.AdvertiserAutopaySettings)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAdvertiserAutopaySettings indicates an expected call of GetAdvertiserAutopaySettings.
+func (mr *MockServiceMockRecorder) GetAdvertiserAutopaySettings(ctx, advertiserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdvertiserAutopaySettings", reflect.TypeOf((*MockService)(nil).GetAdvertiserAutopaySettings), ctx, advertiserID)
+}
+
+// UpdateAdvertiserAutopaySettings mocks base method.
+func (m *MockService) UpdateAdvertiserAutopaySettings(ctx context.Context, settings *models.AdvertiserAutopaySettings) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAdvertiserAutopaySettings", ctx, settings)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateAdvertiserAutopaySettings indicates an expected call of UpdateAdvertiserAutopaySettings.
+func (mr *MockServiceMockRecorder) UpdateAdvertiserAutopaySettings(ctx, settings any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAdvertiserAutopaySettings", reflect.TypeOf((*MockService)(nil).UpdateAdvertiserAutopaySettings), ctx, settings)
+}
+
+// GetAdvertiserNotificationSettings mocks base method.
+func (m *MockService) GetAdvertiserNotificationSettings(ctx context.Context, advertiserID int) (*models.AdvertiserNotificationSettings, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAdvertiserNotificationSettings", ctx, advertiserID)
+	ret0, _ := ret[0].(*models.AdvertiserNotificationSettings)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAdvertiserNotificationSettings indicates an expected call of GetAdvertiserNotificationSettings.
+func (mr *MockServiceMockRecorder) GetAdvertiserNotificationSettings(ctx, advertiserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdvertiserNotificationSettings", reflect.TypeOf((*MockService)(nil).GetAdvertiserNotificationSettings), ctx, advertiserID)
+}
+
+// UpdateAdvertiserNotificationSettings mocks base method.
+func (m *MockService) UpdateAdvertiserNotificationSettings(ctx context.Context, settings *models.AdvertiserNotificationSettings) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAdvertiserNotificationSettings", ctx, settings)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateAdvertiserNotificationSettings indicates an expected call of UpdateAdvertiserNotificationSettings.
+func (mr *MockServiceMockRecorder) UpdateAdvertiserNotificationSettings(ctx, settings any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAdvertiserNotificationSettings", reflect.TypeOf((*MockService)(nil).UpdateAdvertiserNotificationSettings), ctx, settings)
+}
+
+// RunAutopayCycle mocks base method.
+func (m *MockService) RunAutopayCycle(ctx context.Context) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RunAutopayCycle", ctx)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RunAutopayCycle indicates an expected call of RunAutopayCycle.
+func (mr *MockServiceMockRecorder) RunAutopayCycle(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunAutopayCycle", reflect.TypeOf((*MockService)(nil).RunAutopayCycle), ctx)
+}
+
 // UpdateAd mocks base method.
 func (m *MockService) UpdateAd(ctx context.Context, advertiserID int, in *input.UpdateAd) error {
 	m.ctrl.T.Helper()

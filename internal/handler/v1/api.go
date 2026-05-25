@@ -26,6 +26,13 @@ type Service interface {
 	UpdateAdvertiserProfile(ctx context.Context, in *serviceinput.UpdateAdvertiserProfile) (*models.Advertiser, error)
 	UpdateAdvertiserAvatar(ctx context.Context, advertiserID int, avatar []byte, avatarExt, avatarContentType string) (*models.Advertiser, error)
 	TopUpAdvertiserBalance(ctx context.Context, advertiserID int, amount int64) (int64, error)
+	CreateBalancePayment(ctx context.Context, advertiserID int, amount int64) (*service.BalancePaymentResult, error)
+	CompletePaymentByWebhook(ctx context.Context, paymentID string) (*service.WebhookResult, error)
+	GetAdvertiserAutopaySettings(ctx context.Context, advertiserID int) (*models.AdvertiserAutopaySettings, error)
+	UpdateAdvertiserAutopaySettings(ctx context.Context, settings *models.AdvertiserAutopaySettings) error
+	GetAdvertiserNotificationSettings(ctx context.Context, advertiserID int) (*models.AdvertiserNotificationSettings, error)
+	UpdateAdvertiserNotificationSettings(ctx context.Context, settings *models.AdvertiserNotificationSettings) error
+	RunAutopayCycle(ctx context.Context) (int, error)
 
 	GenerateFeedLink(ctx context.Context, campaignID int) (string, error)
 	GetAdByFeedToken(ctx context.Context, token string) (*models.Ad, error)
@@ -108,6 +115,7 @@ func NewAPI(config APIConfig) *API {
 }
 
 func (a *API) RegisterRoutes(r *mux.Router) {
+	a.RegisterPaymentHandlers(r)
 	a.RegisterAdvertiserHandlers(r)
 	a.RegisterPartnerDictionaryHandlers(r)
 	a.RegisterPartnerSiteHandlers(r)

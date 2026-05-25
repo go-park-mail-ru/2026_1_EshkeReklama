@@ -184,23 +184,23 @@ type StatsBreakdownRow struct {
 }
 
 type PartnerIncomeRow struct {
-	Date        time.Time `json:"date"`
-	SiteID      int       `json:"site_id"`
-	SiteName    string    `json:"site_name"`
-	Domain      string    `json:"domain"`
-	BlockID     int       `json:"block_id"`
-	BlockName   string    `json:"block_name"`
-	Impressions int64     `json:"impressions"`
-	Reward      int64     `json:"reward"`
+	Date        time.Time
+	SiteID      int
+	SiteName    string
+	Domain      string
+	BlockID     int
+	BlockName   string
+	Impressions int64
+	Reward      int64
 }
 
 type PartnerIncomeStats struct {
-	From        time.Time          `json:"from"`
-	To          time.Time          `json:"to"`
-	Impressions int64              `json:"impressions"`
-	Reward      int64              `json:"reward"`
-	ECPM        float64            `json:"ecpm"`
-	Rows        []PartnerIncomeRow `json:"rows"`
+	From        time.Time
+	To          time.Time
+	Impressions int64
+	Reward      int64
+	ECPM        float64
+	Rows        []PartnerIncomeRow
 }
 
 type StatsReader interface {
@@ -326,27 +326,21 @@ func (s *Service) SetProfileClient(client ProfileClient) {
 }
 
 type DictionaryItem struct {
-	Code string `json:"code"`
-	Name string `json:"name"`
+	Code string
+	Name string
 }
 
 type BlockTypeDictionaryItem struct {
-	Code        string   `json:"code"`
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Platforms   []string `json:"platforms"`
+	Code        string
+	Name        string
+	Description string
+	Platforms   []string
 }
 
 type GeoTreeNode struct {
-	Code     string         `json:"code"`
-	Name     string         `json:"name"`
-	Children []*GeoTreeNode `json:"children"`
-}
-
-type PartnerBlockSettings struct {
-	OnlyConfigured bool                          `json:"only_configured"`
-	GlobalCPMV     *int64                        `json:"global_cpmv"`
-	Rules          []*models.PartnerBlockGeoRule `json:"rules"`
+	Code     string
+	Name     string
+	Children []*GeoTreeNode
 }
 
 var defaultSelfAdSettings = json.RawMessage(`{"reserved":true}`)

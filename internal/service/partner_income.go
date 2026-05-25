@@ -12,14 +12,14 @@ func (s *Service) GetPartnerIncomeStats(ctx context.Context, partnerID int, from
 	if partnerID <= 0 {
 		return nil, fmt.Errorf("%w: invalid partner id", errs.BadRequestError)
 	}
-	if s.partnerIncomeRepo == nil {
-		return &PartnerIncomeStats{From: from, To: to, Rows: []PartnerIncomeRow{}}, nil
-	}
 
 	from = dateOnly(from.UTC())
 	to = dateOnly(to.UTC())
 	if to.Before(from) {
 		return nil, fmt.Errorf("%w: invalid date range", errs.BadRequestError)
+	}
+	if s.partnerIncomeRepo == nil {
+		return nil, fmt.Errorf("%w: partner income repository is not configured", errs.NotImplementedError)
 	}
 
 	rows, err := s.partnerIncomeRepo.ListPartnerIncome(ctx, partnerID, from, to)

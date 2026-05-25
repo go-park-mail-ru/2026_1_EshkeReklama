@@ -65,6 +65,27 @@ definitions:
       title:
         type: string
     type: object
+  dto.AdStatsResponse:
+    properties:
+      period:
+        $ref: '#/definitions/dto.StatsPeriod'
+      placements:
+        items:
+          $ref: '#/definitions/dto.StatsEntityRow'
+        type: array
+      previous_totals:
+        $ref: '#/definitions/dto.StatsMetric'
+      timeline:
+        items:
+          $ref: '#/definitions/dto.StatsPoint'
+        type: array
+      totals:
+        $ref: '#/definitions/dto.StatsMetric'
+      unavailable_metrics:
+        items:
+          $ref: '#/definitions/dto.StatsUnavailableMetric'
+        type: array
+    type: object
   dto.AdvertiserProfileResponse:
     properties:
       avatar_url:
@@ -111,6 +132,37 @@ definitions:
     properties:
       balance:
         type: integer
+      delivery_alert:
+        $ref: '#/definitions/dto.DeliveryAlertResponse'
+      saved_payment_method_id:
+        type: string
+      saved_payment_method_title:
+        type: string
+    type: object
+  dto.CampaignStatsResponse:
+    properties:
+      groups:
+        items:
+          $ref: '#/definitions/dto.StatsEntityRow'
+        type: array
+      period:
+        $ref: '#/definitions/dto.StatsPeriod'
+      placements:
+        items:
+          $ref: '#/definitions/dto.StatsEntityRow'
+        type: array
+      previous_totals:
+        $ref: '#/definitions/dto.StatsMetric'
+      timeline:
+        items:
+          $ref: '#/definitions/dto.StatsPoint'
+        type: array
+      totals:
+        $ref: '#/definitions/dto.StatsMetric'
+      unavailable_metrics:
+        items:
+          $ref: '#/definitions/dto.StatsUnavailableMetric'
+        type: array
     type: object
   dto.CreateAdCampaignRequest:
     properties:
@@ -200,6 +252,44 @@ definitions:
     required:
     - domain
     - site_name
+    type: object
+  dto.DeliveryAlertResponse:
+    properties:
+      active_campaigns:
+        type: integer
+      affected_campaigns:
+        type: integer
+      level:
+        type: string
+      message:
+        type: string
+      title:
+        type: string
+    type: object
+  dto.GroupStatsResponse:
+    properties:
+      ads:
+        items:
+          $ref: '#/definitions/dto.StatsEntityRow'
+        type: array
+      period:
+        $ref: '#/definitions/dto.StatsPeriod'
+      placements:
+        items:
+          $ref: '#/definitions/dto.StatsEntityRow'
+        type: array
+      previous_totals:
+        $ref: '#/definitions/dto.StatsMetric'
+      timeline:
+        items:
+          $ref: '#/definitions/dto.StatsPoint'
+        type: array
+      totals:
+        $ref: '#/definitions/dto.StatsMetric'
+      unavailable_metrics:
+        items:
+          $ref: '#/definitions/dto.StatsUnavailableMetric'
+        type: array
     type: object
   dto.ListAdCampaignsResponse:
     properties:
@@ -382,6 +472,42 @@ definitions:
       reserved:
         type: boolean
     type: object
+  dto.PartnerIncomeRowResponse:
+    properties:
+      block_id:
+        type: integer
+      block_name:
+        type: string
+      date:
+        type: string
+      domain:
+        type: string
+      impressions:
+        type: integer
+      reward:
+        type: integer
+      site_id:
+        type: integer
+      site_name:
+        type: string
+    type: object
+  dto.PartnerIncomeStatsResponse:
+    properties:
+      ecpm:
+        type: number
+      from:
+        type: string
+      impressions:
+        type: integer
+      reward:
+        type: integer
+      rows:
+        items:
+          $ref: '#/definitions/dto.PartnerIncomeRowResponse'
+        type: array
+      to:
+        type: string
+    type: object
   dto.PartnerLoginRequest:
     properties:
       identifier:
@@ -499,6 +625,79 @@ definitions:
       id:
         type: integer
       phone:
+        type: string
+    type: object
+  dto.StatsEntityRow:
+    properties:
+      clicks:
+        type: integer
+      cpc:
+        type: number
+      ctr:
+        type: number
+      id:
+        type: integer
+      impressions:
+        type: integer
+      name:
+        type: string
+      partner_reward:
+        type: integer
+      platform_revenue:
+        type: integer
+      spend:
+        type: integer
+    type: object
+  dto.StatsMetric:
+    properties:
+      clicks:
+        type: integer
+      cpc:
+        type: number
+      ctr:
+        type: number
+      impressions:
+        type: integer
+      partner_reward:
+        type: integer
+      platform_revenue:
+        type: integer
+      spend:
+        type: integer
+    type: object
+  dto.StatsPeriod:
+    properties:
+      from:
+        type: string
+      to:
+        type: string
+    type: object
+  dto.StatsPoint:
+    properties:
+      clicks:
+        type: integer
+      cpc:
+        type: number
+      ctr:
+        type: number
+      date:
+        type: string
+      impressions:
+        type: integer
+      partner_reward:
+        type: integer
+      platform_revenue:
+        type: integer
+      spend:
+        type: integer
+    type: object
+  dto.StatsUnavailableMetric:
+    properties:
+      key:
+        type: string
+      label:
+        type: string
+      reason:
         type: string
     type: object
   dto.TopUpBalanceRequest:
@@ -1292,6 +1491,120 @@ paths:
       summary: Обновление объявления
       tags:
       - ads
+  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}/stats:
+    get:
+      description: Возвращает показатели объявления, динамику по дням и разбивку по
+        площадкам
+      parameters:
+      - description: ID кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы объявлений
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      - description: ID объявления
+        in: path
+        name: ad_id
+        required: true
+        type: integer
+      - description: Дата начала периода в формате YYYY-MM-DD
+        in: query
+        name: from
+        type: string
+      - description: Дата конца периода в формате YYYY-MM-DD
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AdStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "501":
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Статистика объявления
+      tags:
+      - stats
+  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/stats:
+    get:
+      description: Возвращает показатели группы, динамику по дням и разбивки по объявлениям/площадкам
+      parameters:
+      - description: ID кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы объявлений
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      - description: Дата начала периода в формате YYYY-MM-DD
+        in: query
+        name: from
+        type: string
+      - description: Дата конца периода в формате YYYY-MM-DD
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GroupStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "501":
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Статистика группы объявлений
+      tags:
+      - stats
   /ad_campaigns/{ad_campaign_id}/feed:
     post:
       consumes:
@@ -1322,6 +1635,56 @@ paths:
       summary: Создать feed-ссылку для кампании
       tags:
       - feed
+  /ad_campaigns/{ad_campaign_id}/stats:
+    get:
+      description: Возвращает показы, клики, CTR, расходы, CPC, вознаграждение партнерам,
+        выручку платформы, динамику по дням и разбивки по группам/площадкам
+      parameters:
+      - description: ID кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: Дата начала периода в формате YYYY-MM-DD
+        in: query
+        name: from
+        type: string
+      - description: Дата конца периода в формате YYYY-MM-DD
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CampaignStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "501":
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Статистика кампании
+      tags:
+      - stats
   /ad_campaigns/{ad_campaign_id}/status:
     patch:
       consumes:
@@ -1999,6 +2362,43 @@ paths:
       summary: Регионы регистрации
       tags:
       - partner_dictionaries
+  /partners/income/stats:
+    get:
+      description: Возвращает показы, начисленное вознаграждение, eCPM и детализацию
+        по дням, сайтам и рекламным блокам
+      parameters:
+      - description: Дата начала периода в формате YYYY-MM-DD
+        in: query
+        name: from
+        type: string
+      - description: Дата конца периода в формате YYYY-MM-DD
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PartnerIncomeStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Статистика дохода партнера
+      tags:
+      - partner_income
   /partners/login:
     post:
       consumes:

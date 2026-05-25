@@ -19,7 +19,7 @@ import (
 
 func (a *API) RegisterPartnerBlockHandlers(r *mux.Router) {
 	partnerBlocks := r.PathPrefix("/partners/sites/{site_id}/blocks").Subrouter()
-	partnerBlocks.Use(middleware.Auth(a.authClient, a.cookieConfig.Name))
+	partnerBlocks.Use(middleware.PartnerAuth(a.authClient, a.cookieConfig.Name))
 	partnerBlocks.HandleFunc("", a.ListPartnerBlocks).Methods(http.MethodGet)
 	partnerBlocks.HandleFunc("", a.CreatePartnerBlock).Methods(http.MethodPost)
 	partnerBlocks.HandleFunc("/{block_id}", a.GetPartnerBlock).Methods(http.MethodGet)
@@ -85,9 +85,9 @@ func supportedPlatformsForBlockType(blockType models.PartnerBlockType) []string 
 // @Router       /partners/sites/{site_id}/blocks [get]
 // @Security     CookieAuth
 func (a *API) ListPartnerBlocks(w http.ResponseWriter, r *http.Request) {
-	partnerID, err := ctxutils.AdvertiserIDFromContext(r.Context())
+	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
 	if err != nil {
-		handler.HandleError(w, r, "advertiser id from ctx", err)
+		handler.HandleError(w, r, "partner id from ctx", err)
 		return
 	}
 	siteID, err := strconv.Atoi(mux.Vars(r)["site_id"])
@@ -122,9 +122,9 @@ func (a *API) ListPartnerBlocks(w http.ResponseWriter, r *http.Request) {
 // @Router       /partners/sites/{site_id}/blocks [post]
 // @Security     CookieAuth
 func (a *API) CreatePartnerBlock(w http.ResponseWriter, r *http.Request) {
-	partnerID, err := ctxutils.AdvertiserIDFromContext(r.Context())
+	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
 	if err != nil {
-		handler.HandleError(w, r, "advertiser id from ctx", err)
+		handler.HandleError(w, r, "partner id from ctx", err)
 		return
 	}
 	siteID, err := strconv.Atoi(mux.Vars(r)["site_id"])
@@ -165,9 +165,9 @@ func (a *API) CreatePartnerBlock(w http.ResponseWriter, r *http.Request) {
 // @Router       /partners/sites/{site_id}/blocks/{block_id} [get]
 // @Security     CookieAuth
 func (a *API) GetPartnerBlock(w http.ResponseWriter, r *http.Request) {
-	partnerID, err := ctxutils.AdvertiserIDFromContext(r.Context())
+	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
 	if err != nil {
-		handler.HandleError(w, r, "advertiser id from ctx", err)
+		handler.HandleError(w, r, "partner id from ctx", err)
 		return
 	}
 	siteID, blockID, err := parseSiteAndBlockIDs(r)
@@ -200,9 +200,9 @@ func (a *API) GetPartnerBlock(w http.ResponseWriter, r *http.Request) {
 // @Router       /partners/sites/{site_id}/blocks/{block_id}/meta [put]
 // @Security     CookieAuth
 func (a *API) UpdatePartnerBlockMeta(w http.ResponseWriter, r *http.Request) {
-	partnerID, err := ctxutils.AdvertiserIDFromContext(r.Context())
+	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
 	if err != nil {
-		handler.HandleError(w, r, "advertiser id from ctx", err)
+		handler.HandleError(w, r, "partner id from ctx", err)
 		return
 	}
 	siteID, blockID, err := parseSiteAndBlockIDs(r)
@@ -245,9 +245,9 @@ func (a *API) UpdatePartnerBlockMeta(w http.ResponseWriter, r *http.Request) {
 // @Router       /partners/sites/{site_id}/blocks/{block_id}/general [put]
 // @Security     CookieAuth
 func (a *API) UpdatePartnerBlockGeneral(w http.ResponseWriter, r *http.Request) {
-	partnerID, err := ctxutils.AdvertiserIDFromContext(r.Context())
+	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
 	if err != nil {
-		handler.HandleError(w, r, "advertiser id from ctx", err)
+		handler.HandleError(w, r, "partner id from ctx", err)
 		return
 	}
 	siteID, blockID, err := parseSiteAndBlockIDs(r)
@@ -302,9 +302,9 @@ func (a *API) UpdatePartnerBlockGeneral(w http.ResponseWriter, r *http.Request) 
 // @Router       /partners/sites/{site_id}/blocks/{block_id}/geography [put]
 // @Security     CookieAuth
 func (a *API) UpdatePartnerBlockGeography(w http.ResponseWriter, r *http.Request) {
-	partnerID, err := ctxutils.AdvertiserIDFromContext(r.Context())
+	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
 	if err != nil {
-		handler.HandleError(w, r, "advertiser id from ctx", err)
+		handler.HandleError(w, r, "partner id from ctx", err)
 		return
 	}
 	siteID, blockID, err := parseSiteAndBlockIDs(r)
@@ -358,9 +358,9 @@ func (a *API) UpdatePartnerBlockGeography(w http.ResponseWriter, r *http.Request
 // @Router       /partners/sites/{site_id}/blocks/{block_id}/self-ad [put]
 // @Security     CookieAuth
 func (a *API) UpdatePartnerBlockSelfAd(w http.ResponseWriter, r *http.Request) {
-	partnerID, err := ctxutils.AdvertiserIDFromContext(r.Context())
+	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
 	if err != nil {
-		handler.HandleError(w, r, "advertiser id from ctx", err)
+		handler.HandleError(w, r, "partner id from ctx", err)
 		return
 	}
 	siteID, blockID, err := parseSiteAndBlockIDs(r)
@@ -395,9 +395,9 @@ func (a *API) UpdatePartnerBlockSelfAd(w http.ResponseWriter, r *http.Request) {
 // @Router       /partners/sites/{site_id}/blocks/{block_id} [delete]
 // @Security     CookieAuth
 func (a *API) DeletePartnerBlock(w http.ResponseWriter, r *http.Request) {
-	partnerID, err := ctxutils.AdvertiserIDFromContext(r.Context())
+	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
 	if err != nil {
-		handler.HandleError(w, r, "advertiser id from ctx", err)
+		handler.HandleError(w, r, "partner id from ctx", err)
 		return
 	}
 	siteID, blockID, err := parseSiteAndBlockIDs(r)
@@ -426,9 +426,9 @@ func (a *API) DeletePartnerBlock(w http.ResponseWriter, r *http.Request) {
 // @Router       /partners/sites/{site_id}/blocks/{block_id}/embed [get]
 // @Security     CookieAuth
 func (a *API) GetPartnerBlockEmbed(w http.ResponseWriter, r *http.Request) {
-	partnerID, err := ctxutils.AdvertiserIDFromContext(r.Context())
+	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
 	if err != nil {
-		handler.HandleError(w, r, "advertiser id from ctx", err)
+		handler.HandleError(w, r, "partner id from ctx", err)
 		return
 	}
 	siteID, blockID, err := parseSiteAndBlockIDs(r)

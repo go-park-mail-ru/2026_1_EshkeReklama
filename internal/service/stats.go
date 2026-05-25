@@ -10,64 +10,64 @@ import (
 )
 
 type StatsMetric struct {
-	Impressions     int64   `json:"impressions"`
-	Clicks          int64   `json:"clicks"`
-	CTR             float64 `json:"ctr"`
-	Spend           int64   `json:"spend"`
-	CPC             float64 `json:"cpc"`
-	PartnerReward   int64   `json:"partner_reward"`
-	PlatformRevenue int64   `json:"platform_revenue"`
+	Impressions     int64
+	Clicks          int64
+	CTR             float64
+	Spend           int64
+	CPC             float64
+	PartnerReward   int64
+	PlatformRevenue int64
 }
 
 type StatsPeriod struct {
-	From string `json:"from"`
-	To   string `json:"to"`
+	From time.Time
+	To   time.Time
 }
 
 type StatsPoint struct {
-	Date string `json:"date"`
+	Date time.Time
 	StatsMetric
 }
 
 type StatsEntityRow struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	ID   int
+	Name string
 	StatsMetric
 }
 
 type StatsUnavailableMetric struct {
-	Key    string `json:"key"`
-	Label  string `json:"label"`
-	Reason string `json:"reason"`
+	Key    string
+	Label  string
+	Reason string
 }
 
 type CampaignStats struct {
-	Period             StatsPeriod              `json:"period"`
-	Totals             StatsMetric              `json:"totals"`
-	PreviousTotals     StatsMetric              `json:"previous_totals"`
-	Timeline           []StatsPoint             `json:"timeline"`
-	Groups             []StatsEntityRow         `json:"groups"`
-	Placements         []StatsEntityRow         `json:"placements"`
-	UnavailableMetrics []StatsUnavailableMetric `json:"unavailable_metrics"`
+	Period             StatsPeriod
+	Totals             StatsMetric
+	PreviousTotals     StatsMetric
+	Timeline           []StatsPoint
+	Groups             []StatsEntityRow
+	Placements         []StatsEntityRow
+	UnavailableMetrics []StatsUnavailableMetric
 }
 
 type GroupStats struct {
-	Period             StatsPeriod              `json:"period"`
-	Totals             StatsMetric              `json:"totals"`
-	PreviousTotals     StatsMetric              `json:"previous_totals"`
-	Timeline           []StatsPoint             `json:"timeline"`
-	Ads                []StatsEntityRow         `json:"ads"`
-	Placements         []StatsEntityRow         `json:"placements"`
-	UnavailableMetrics []StatsUnavailableMetric `json:"unavailable_metrics"`
+	Period             StatsPeriod
+	Totals             StatsMetric
+	PreviousTotals     StatsMetric
+	Timeline           []StatsPoint
+	Ads                []StatsEntityRow
+	Placements         []StatsEntityRow
+	UnavailableMetrics []StatsUnavailableMetric
 }
 
 type AdStats struct {
-	Period             StatsPeriod              `json:"period"`
-	Totals             StatsMetric              `json:"totals"`
-	PreviousTotals     StatsMetric              `json:"previous_totals"`
-	Timeline           []StatsPoint             `json:"timeline"`
-	Placements         []StatsEntityRow         `json:"placements"`
-	UnavailableMetrics []StatsUnavailableMetric `json:"unavailable_metrics"`
+	Period             StatsPeriod
+	Totals             StatsMetric
+	PreviousTotals     StatsMetric
+	Timeline           []StatsPoint
+	Placements         []StatsEntityRow
+	UnavailableMetrics []StatsUnavailableMetric
 }
 
 var unavailableConversionMetrics = []StatsUnavailableMetric{
@@ -247,7 +247,7 @@ func buildStatsFilters(campaignID, groupID, adID int, from, to time.Time) (Stats
 }
 
 func periodResponse(from, to time.Time) StatsPeriod {
-	return StatsPeriod{From: from.Format("2006-01-02"), To: to.Format("2006-01-02")}
+	return StatsPeriod{From: dateOnly(from), To: dateOnly(to)}
 }
 
 func metricFromTotals(t StatsTotals) StatsMetric {
@@ -275,7 +275,7 @@ func pointsFromTimeline(points []StatsTimelinePoint) []StatsPoint {
 	out := make([]StatsPoint, 0, len(points))
 	for _, point := range points {
 		out = append(out, StatsPoint{
-			Date:        point.Date.Format("2006-01-02"),
+			Date:        dateOnly(point.Date),
 			StatsMetric: metricFromTotals(point.Totals),
 		})
 	}

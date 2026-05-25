@@ -17,7 +17,73 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto(in *jlexer.Lexer, out *UpdateAdCampaignRequest) {
+func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto(in *jlexer.Lexer, out *UpdateAdCampaignStatusRequest) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "status":
+			out.Status = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto(out *jwriter.Writer, in UpdateAdCampaignStatusRequest) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"status\":"
+		out.RawString(prefix[1:])
+		out.String(string(in.Status))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v UpdateAdCampaignStatusRequest) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v UpdateAdCampaignStatusRequest) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *UpdateAdCampaignStatusRequest) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *UpdateAdCampaignStatusRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto(l, v)
+}
+func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto1(in *jlexer.Lexer, out *UpdateAdCampaignRequest) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -86,7 +152,7 @@ func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto(in *jlexer.Lexer, out *Up
 		in.Consumed()
 	}
 }
-func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto(out *jwriter.Writer, in UpdateAdCampaignRequest) {
+func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto1(out *jwriter.Writer, in UpdateAdCampaignRequest) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -132,27 +198,27 @@ func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto(out *jwriter.Writer, in U
 // MarshalJSON supports json.Marshaler interface
 func (v UpdateAdCampaignRequest) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto(&w, v)
+	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto1(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v UpdateAdCampaignRequest) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto(w, v)
+	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto1(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *UpdateAdCampaignRequest) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto(&r, v)
+	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto1(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *UpdateAdCampaignRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto(l, v)
+	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto1(l, v)
 }
-func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto1(in *jlexer.Lexer, out *ListAdCampaignsResponse) {
+func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto2(in *jlexer.Lexer, out *ListAdCampaignsResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -214,7 +280,7 @@ func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto1(in *jlexer.Lexer, out *L
 		in.Consumed()
 	}
 }
-func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto1(out *jwriter.Writer, in ListAdCampaignsResponse) {
+func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto2(out *jwriter.Writer, in ListAdCampaignsResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -249,27 +315,27 @@ func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto1(out *jwriter.Writer, in 
 // MarshalJSON supports json.Marshaler interface
 func (v ListAdCampaignsResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto1(&w, v)
+	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto2(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ListAdCampaignsResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto1(w, v)
+	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto2(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ListAdCampaignsResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto1(&r, v)
+	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto2(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ListAdCampaignsResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto1(l, v)
+	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto2(l, v)
 }
-func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto2(in *jlexer.Lexer, out *CreateAdCampaignResponse) {
+func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto3(in *jlexer.Lexer, out *CreateAdCampaignResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -300,7 +366,7 @@ func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto2(in *jlexer.Lexer, out *C
 		in.Consumed()
 	}
 }
-func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto2(out *jwriter.Writer, in CreateAdCampaignResponse) {
+func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto3(out *jwriter.Writer, in CreateAdCampaignResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -315,27 +381,27 @@ func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto2(out *jwriter.Writer, in 
 // MarshalJSON supports json.Marshaler interface
 func (v CreateAdCampaignResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto2(&w, v)
+	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto3(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v CreateAdCampaignResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto2(w, v)
+	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto3(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *CreateAdCampaignResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto2(&r, v)
+	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto3(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *CreateAdCampaignResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto2(l, v)
+	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto3(l, v)
 }
-func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto3(in *jlexer.Lexer, out *CreateAdCampaignRequest) {
+func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto4(in *jlexer.Lexer, out *CreateAdCampaignRequest) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -372,7 +438,7 @@ func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto3(in *jlexer.Lexer, out *C
 		in.Consumed()
 	}
 }
-func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto3(out *jwriter.Writer, in CreateAdCampaignRequest) {
+func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto4(out *jwriter.Writer, in CreateAdCampaignRequest) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -402,27 +468,27 @@ func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto3(out *jwriter.Writer, in 
 // MarshalJSON supports json.Marshaler interface
 func (v CreateAdCampaignRequest) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto3(&w, v)
+	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto4(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v CreateAdCampaignRequest) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto3(w, v)
+	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto4(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *CreateAdCampaignRequest) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto3(&r, v)
+	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto4(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *CreateAdCampaignRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto3(l, v)
+	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto4(l, v)
 }
-func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto4(in *jlexer.Lexer, out *AdCampaignResponse) {
+func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto5(in *jlexer.Lexer, out *AdCampaignResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -463,7 +529,7 @@ func easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto4(in *jlexer.Lexer, out *A
 		in.Consumed()
 	}
 }
-func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto4(out *jwriter.Writer, in AdCampaignResponse) {
+func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto5(out *jwriter.Writer, in AdCampaignResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -503,23 +569,23 @@ func easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto4(out *jwriter.Writer, in 
 // MarshalJSON supports json.Marshaler interface
 func (v AdCampaignResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto4(&w, v)
+	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto5(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v AdCampaignResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto4(w, v)
+	easyjson1ff0c272EncodeEshkereInternalHandlerV1Dto5(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *AdCampaignResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto4(&r, v)
+	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto5(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *AdCampaignResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto4(l, v)
+	easyjson1ff0c272DecodeEshkereInternalHandlerV1Dto5(l, v)
 }

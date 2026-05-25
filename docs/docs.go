@@ -886,6 +886,179 @@ const docTemplate = `{
                 }
             }
         },
+        "/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}/stats": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Возвращает показатели объявления, динамику по дням и разбивку по площадкам",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stats"
+                ],
+                "summary": "Статистика объявления",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID кампании",
+                        "name": "ad_campaign_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID группы объявлений",
+                        "name": "ad_group_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID объявления",
+                        "name": "ad_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Дата начала периода в формате YYYY-MM-DD",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Дата конца периода в формате YYYY-MM-DD",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AdStatsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "501": {
+                        "description": "Not Implemented",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/stats": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Возвращает показатели группы, динамику по дням и разбивки по объявлениям/площадкам",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stats"
+                ],
+                "summary": "Статистика группы объявлений",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID кампании",
+                        "name": "ad_campaign_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID группы объявлений",
+                        "name": "ad_group_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Дата начала периода в формате YYYY-MM-DD",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Дата конца периода в формате YYYY-MM-DD",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GroupStatsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "501": {
+                        "description": "Not Implemented",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/ad_campaigns/{ad_campaign_id}/feed": {
             "post": {
                 "description": "Генерирует уникальную feed-ссылку для рекламной кампании",
@@ -924,6 +1097,82 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/ad_campaigns/{ad_campaign_id}/stats": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Возвращает показы, клики, CTR, расходы, CPC, вознаграждение партнерам, выручку платформы, динамику по дням и разбивки по группам/площадкам",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stats"
+                ],
+                "summary": "Статистика кампании",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID кампании",
+                        "name": "ad_campaign_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Дата начала периода в формате YYYY-MM-DD",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Дата конца периода в формате YYYY-MM-DD",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CampaignStatsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "501": {
+                        "description": "Not Implemented",
                         "schema": {
                             "$ref": "#/definitions/httpx.Error"
                         }
@@ -1965,6 +2214,63 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/partners/income/stats": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Возвращает показы, начисленное вознаграждение, eCPM и детализацию по дням, сайтам и рекламным блокам",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "partner_income"
+                ],
+                "summary": "Статистика дохода партнера",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Дата начала периода в формате YYYY-MM-DD",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Дата конца периода в формате YYYY-MM-DD",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PartnerIncomeStatsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.Error"
                         }
                     }
                 }
@@ -3242,6 +3548,38 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.AdStatsResponse": {
+            "type": "object",
+            "properties": {
+                "period": {
+                    "$ref": "#/definitions/dto.StatsPeriod"
+                },
+                "placements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StatsEntityRow"
+                    }
+                },
+                "previous_totals": {
+                    "$ref": "#/definitions/dto.StatsMetric"
+                },
+                "timeline": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StatsPoint"
+                    }
+                },
+                "totals": {
+                    "$ref": "#/definitions/dto.StatsMetric"
+                },
+                "unavailable_metrics": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StatsUnavailableMetric"
+                    }
+                }
+            }
+        },
         "dto.AdvertiserProfileResponse": {
             "type": "object",
             "properties": {
@@ -3311,6 +3649,53 @@ const docTemplate = `{
             "properties": {
                 "balance": {
                     "type": "integer"
+                },
+                "delivery_alert": {
+                    "$ref": "#/definitions/dto.DeliveryAlertResponse"
+                },
+                "saved_payment_method_id": {
+                    "type": "string"
+                },
+                "saved_payment_method_title": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CampaignStatsResponse": {
+            "type": "object",
+            "properties": {
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StatsEntityRow"
+                    }
+                },
+                "period": {
+                    "$ref": "#/definitions/dto.StatsPeriod"
+                },
+                "placements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StatsEntityRow"
+                    }
+                },
+                "previous_totals": {
+                    "$ref": "#/definitions/dto.StatsMetric"
+                },
+                "timeline": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StatsPoint"
+                    }
+                },
+                "totals": {
+                    "$ref": "#/definitions/dto.StatsMetric"
+                },
+                "unavailable_metrics": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StatsUnavailableMetric"
+                    }
                 }
             }
         },
@@ -3440,6 +3825,64 @@ const docTemplate = `{
                 },
                 "site_name": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.DeliveryAlertResponse": {
+            "type": "object",
+            "properties": {
+                "active_campaigns": {
+                    "type": "integer"
+                },
+                "affected_campaigns": {
+                    "type": "integer"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.GroupStatsResponse": {
+            "type": "object",
+            "properties": {
+                "ads": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StatsEntityRow"
+                    }
+                },
+                "period": {
+                    "$ref": "#/definitions/dto.StatsPeriod"
+                },
+                "placements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StatsEntityRow"
+                    }
+                },
+                "previous_totals": {
+                    "$ref": "#/definitions/dto.StatsMetric"
+                },
+                "timeline": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StatsPoint"
+                    }
+                },
+                "totals": {
+                    "$ref": "#/definitions/dto.StatsMetric"
+                },
+                "unavailable_metrics": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StatsUnavailableMetric"
+                    }
                 }
             }
         },
@@ -3723,6 +4166,61 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.PartnerIncomeRowResponse": {
+            "type": "object",
+            "properties": {
+                "block_id": {
+                    "type": "integer"
+                },
+                "block_name": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "domain": {
+                    "type": "string"
+                },
+                "impressions": {
+                    "type": "integer"
+                },
+                "reward": {
+                    "type": "integer"
+                },
+                "site_id": {
+                    "type": "integer"
+                },
+                "site_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PartnerIncomeStatsResponse": {
+            "type": "object",
+            "properties": {
+                "ecpm": {
+                    "type": "number"
+                },
+                "from": {
+                    "type": "string"
+                },
+                "impressions": {
+                    "type": "integer"
+                },
+                "reward": {
+                    "type": "integer"
+                },
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PartnerIncomeRowResponse"
+                    }
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.PartnerLoginRequest": {
             "type": "object",
             "required": [
@@ -3893,6 +4391,118 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.StatsEntityRow": {
+            "type": "object",
+            "properties": {
+                "clicks": {
+                    "type": "integer"
+                },
+                "cpc": {
+                    "type": "number"
+                },
+                "ctr": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "impressions": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "partner_reward": {
+                    "type": "integer"
+                },
+                "platform_revenue": {
+                    "type": "integer"
+                },
+                "spend": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.StatsMetric": {
+            "type": "object",
+            "properties": {
+                "clicks": {
+                    "type": "integer"
+                },
+                "cpc": {
+                    "type": "number"
+                },
+                "ctr": {
+                    "type": "number"
+                },
+                "impressions": {
+                    "type": "integer"
+                },
+                "partner_reward": {
+                    "type": "integer"
+                },
+                "platform_revenue": {
+                    "type": "integer"
+                },
+                "spend": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.StatsPeriod": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.StatsPoint": {
+            "type": "object",
+            "properties": {
+                "clicks": {
+                    "type": "integer"
+                },
+                "cpc": {
+                    "type": "number"
+                },
+                "ctr": {
+                    "type": "number"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "impressions": {
+                    "type": "integer"
+                },
+                "partner_reward": {
+                    "type": "integer"
+                },
+                "platform_revenue": {
+                    "type": "integer"
+                },
+                "spend": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.StatsUnavailableMetric": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "reason": {
                     "type": "string"
                 }
             }

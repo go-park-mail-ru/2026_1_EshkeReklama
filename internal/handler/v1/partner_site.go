@@ -15,7 +15,7 @@ import (
 
 func (a *API) RegisterPartnerSiteHandlers(r *mux.Router) {
 	partnerSites := r.PathPrefix("/partners/sites").Subrouter()
-	partnerSites.Use(middleware.Auth(a.authClient, a.cookieConfig.Name))
+	partnerSites.Use(middleware.PartnerAuth(a.authClient, a.cookieConfig.Name))
 	partnerSites.HandleFunc("", a.ListPartnerSites).Methods(http.MethodGet)
 	partnerSites.HandleFunc("", a.CreatePartnerSite).Methods(http.MethodPost)
 	partnerSites.HandleFunc("/{site_id}", a.GetPartnerSite).Methods(http.MethodGet)
@@ -33,9 +33,9 @@ func (a *API) RegisterPartnerSiteHandlers(r *mux.Router) {
 // @Router       /partners/sites [get]
 // @Security     CookieAuth
 func (a *API) ListPartnerSites(w http.ResponseWriter, r *http.Request) {
-	partnerID, err := ctxutils.AdvertiserIDFromContext(r.Context())
+	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
 	if err != nil {
-		handler.HandleError(w, r, "advertiser id from ctx", err)
+		handler.HandleError(w, r, "partner id from ctx", err)
 		return
 	}
 	sites, err := a.service.ListPartnerSites(r.Context(), partnerID)
@@ -63,9 +63,9 @@ func (a *API) ListPartnerSites(w http.ResponseWriter, r *http.Request) {
 // @Router       /partners/sites [post]
 // @Security     CookieAuth
 func (a *API) CreatePartnerSite(w http.ResponseWriter, r *http.Request) {
-	partnerID, err := ctxutils.AdvertiserIDFromContext(r.Context())
+	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
 	if err != nil {
-		handler.HandleError(w, r, "advertiser id from ctx", err)
+		handler.HandleError(w, r, "partner id from ctx", err)
 		return
 	}
 	req, err := newJSONRequest[dto.CreatePartnerSiteRequest](r)
@@ -94,9 +94,9 @@ func (a *API) CreatePartnerSite(w http.ResponseWriter, r *http.Request) {
 // @Router       /partners/sites/{site_id} [get]
 // @Security     CookieAuth
 func (a *API) GetPartnerSite(w http.ResponseWriter, r *http.Request) {
-	partnerID, err := ctxutils.AdvertiserIDFromContext(r.Context())
+	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
 	if err != nil {
-		handler.HandleError(w, r, "advertiser id from ctx", err)
+		handler.HandleError(w, r, "partner id from ctx", err)
 		return
 	}
 	siteID, err := strconv.Atoi(mux.Vars(r)["site_id"])
@@ -132,9 +132,9 @@ func (a *API) GetPartnerSite(w http.ResponseWriter, r *http.Request) {
 // @Router       /partners/sites/{site_id} [put]
 // @Security     CookieAuth
 func (a *API) UpdatePartnerSite(w http.ResponseWriter, r *http.Request) {
-	partnerID, err := ctxutils.AdvertiserIDFromContext(r.Context())
+	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
 	if err != nil {
-		handler.HandleError(w, r, "advertiser id from ctx", err)
+		handler.HandleError(w, r, "partner id from ctx", err)
 		return
 	}
 	siteID, err := strconv.Atoi(mux.Vars(r)["site_id"])
@@ -168,9 +168,9 @@ func (a *API) UpdatePartnerSite(w http.ResponseWriter, r *http.Request) {
 // @Router       /partners/sites/{site_id} [delete]
 // @Security     CookieAuth
 func (a *API) DeletePartnerSite(w http.ResponseWriter, r *http.Request) {
-	partnerID, err := ctxutils.AdvertiserIDFromContext(r.Context())
+	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
 	if err != nil {
-		handler.HandleError(w, r, "advertiser id from ctx", err)
+		handler.HandleError(w, r, "partner id from ctx", err)
 		return
 	}
 	siteID, err := strconv.Atoi(mux.Vars(r)["site_id"])

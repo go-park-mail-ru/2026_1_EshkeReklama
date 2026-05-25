@@ -79,6 +79,7 @@ func New(configPath string) *App {
 	partnerSiteRepo := postgres.NewPartnerSiteRepository(db)
 	partnerBlockRepo := postgres.NewPartnerBlockRepository(db)
 	partnerBlockGeoRuleRepo := postgres.NewPartnerBlockGeoRuleRepository(db)
+	partnerIncomeRepo := postgres.NewPartnerIncomeRepository(db)
 	adGroupRepo := postgres.NewAdGroupRepository(db)
 	adRepo := postgres.NewAdRepository(db)
 	adCampaignRepo := postgres.NewAdCampaignRepository(db)
@@ -87,6 +88,7 @@ func New(configPath string) *App {
 	adRequestStore := redisrepo.NewAdRequestStore(redisPool)
 	notificationDedupe := redisrepo.NewNotificationDedupeStore(redisPool)
 	var adEventPublisher service.AdEventPublisher
+	var statsReader service.StatsReader
 	if brokers := cfg.Kafka.BrokerList(); len(brokers) > 0 && cfg.Kafka.AdEventsTopic != "" {
 		publisher, err := analyticskafka.NewPublisher(brokers, cfg.Kafka.AdEventsTopic)
 		if err != nil {
@@ -94,6 +96,19 @@ func New(configPath string) *App {
 		}
 		closers = append(closers, publisher)
 		adEventPublisher = publisher
+	}
+	if cfg.ClickHouse.Addr != "" {
+		reader, err := analyticsch.NewReader(context.Background(), analyticsch.Config{
+			Addr:     cfg.ClickHouse.Addr,
+			Database: cfg.ClickHouse.Database,
+			Username: cfg.ClickHouse.Username,
+			Password: cfg.ClickHouse.Password,
+		})
+		if err != nil {
+			logger.Fatalf("Failed to init ClickHouse stats reader: %v", err)
+		}
+		closers = append(closers, reader)
+		statsReader = reader
 	}
 
 	s3Client, err := s3.NewClient(context.Background(), s3.Config{
@@ -129,6 +144,7 @@ func New(configPath string) *App {
 		PartnerSiteRepo:          partnerSiteRepo,
 		PartnerBlockRepo:         partnerBlockRepo,
 		PartnerBlockGeoRuleRepo:  partnerBlockGeoRuleRepo,
+		PartnerIncomeRepo:       partnerIncomeRepo,
 		AdCampaignRepo:           adCampaignRepo,
 		AdGroupRepo:              adGroupRepo,
 		AdRepo:                   adRepo,
@@ -143,6 +159,7 @@ func New(configPath string) *App {
 		ProfileClient:            nil,
 		AdRequestStore:           adRequestStore,
 		AdEventPublisher:         adEventPublisher,
+		StatsReader:             statsReader,
 		YookassaClient:           yookassaClient,
 	})
 	if err != nil {

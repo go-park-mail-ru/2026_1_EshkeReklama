@@ -97,6 +97,7 @@ func TestCreateAd_SetsModerationStatus(t *testing.T) {
 	if _, err := svc.CreateAd(context.Background(), 7, &serviceinput.CreateAd{
 		AdGroupID: 2,
 		Title:     "t",
+		TargetURL: "https://example.com",
 	}); err != nil {
 		t.Fatalf("CreateAd: %v", err)
 	}
@@ -211,6 +212,30 @@ func TestUpdateAd_TurnOnWithoutMoneySetsNotEnoughMoney(t *testing.T) {
 	status := models.AdStatusWorking
 	if err := svc.UpdateAd(context.Background(), 7, &serviceinput.UpdateAd{ID: 9, Status: &status}); err != nil {
 		t.Fatalf("UpdateAd: %v", err)
+	}
+}
+
+func TestValidateAdTargetURL(t *testing.T) {
+	validURLs := []string{
+		"https://example.com",
+		"http://example.com/path?utm=1",
+	}
+	for _, rawURL := range validURLs {
+		if err := validateAdTargetURL(rawURL); err != nil {
+			t.Fatalf("expected %q to be valid: %v", rawURL, err)
+		}
+	}
+
+	invalidURLs := []string{
+		"",
+		"132331",
+		"/click/132331",
+		"ftp://example.com",
+	}
+	for _, rawURL := range invalidURLs {
+		if err := validateAdTargetURL(rawURL); !errors.Is(err, errs.BadRequestError) {
+			t.Fatalf("expected bad request for %q, got %v", rawURL, err)
+		}
 	}
 }
 

@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"time"
 
 	"eshkere/internal/models"
 	"eshkere/internal/service"
@@ -44,11 +45,13 @@ type Service interface {
 	TurnOffAdCampaign(ctx context.Context, advertiserID, campaignID int) error
 	ListAdCampaigns(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
 	DeleteAdCampaign(ctx context.Context, advertiserID, campaignID int) error
+	GetCampaignStats(ctx context.Context, advertiserID, campaignID int, from, to time.Time) (*service.CampaignStats, error)
 
 	CreateAdGroup(ctx context.Context, advertiserID int, in *serviceinput.CreateAdGroup) (*models.AdGroup, error)
 	UpdateAdGroup(ctx context.Context, advertiserID int, in *serviceinput.UpdateAdGroup) error
 	ListAdGroups(ctx context.Context, advertiserID, campaignID int) ([]*models.AdGroup, error)
 	DeleteAdGroup(ctx context.Context, advertiserID, groupID int) error
+	GetGroupStats(ctx context.Context, advertiserID, campaignID, groupID int, from, to time.Time) (*service.GroupStats, error)
 
 	CreateAd(ctx context.Context, advertiserID int, in *serviceinput.CreateAd) (*models.Ad, error)
 	GetAdByID(ctx context.Context, adID int) (*models.Ad, error)
@@ -57,6 +60,7 @@ type Service interface {
 	UpdateAdModerationStatus(ctx context.Context, in *serviceinput.UpdateAdStatus) error
 	ListAds(ctx context.Context, advertiserID, groupID int) ([]*models.Ad, error)
 	DeleteAd(ctx context.Context, advertiserID, adID int) error
+	GetAdStats(ctx context.Context, advertiserID, campaignID, groupID, adID int, from, to time.Time) (*service.AdStats, error)
 
 	CreateAppeal(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
 	ListAppeals(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
@@ -85,6 +89,7 @@ type Service interface {
 	ListPartnerPayoutCurrencies(ctx context.Context) []service.DictionaryItem
 	ListPartnerBlockTypes(ctx context.Context) []service.BlockTypeDictionaryItem
 	GetPartnerGeoTree(ctx context.Context) []*service.GeoTreeNode
+	GetPartnerIncomeStats(ctx context.Context, partnerID int, from, to time.Time) (*service.PartnerIncomeStats, error)
 }
 
 type CookieConfig struct {
@@ -119,8 +124,10 @@ func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterAdvertiserHandlers(r)
 	a.RegisterPartnerDictionaryHandlers(r)
 	a.RegisterPartnerSiteHandlers(r)
+	a.RegisterPartnerIncomeHandlers(r)
 	a.RegisterPartnerBlockHandlers(r)
 	a.RegisterAdRequestHandlers(r)
+	a.RegisterStatsHandlers(r)
 	a.RegisterAdCampaignHandlers(r)
 	a.RegisterAdGroupHandlers(r)
 	a.RegisterAdsHandlers(r)

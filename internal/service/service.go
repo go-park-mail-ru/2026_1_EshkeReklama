@@ -153,6 +153,58 @@ type AdEventPublisher interface {
 	PublishAdEvent(ctx context.Context, event analytics.AdEvent) error
 }
 
+type StatsFilter struct {
+	CampaignID int
+	AdGroupID  int
+	AdID       int
+	From       time.Time
+	To         time.Time
+}
+
+type StatsTotals struct {
+	Impressions     int64
+	Clicks          int64
+	Spend           int64
+	PartnerReward   int64
+	PlatformRevenue int64
+}
+
+type StatsTimelinePoint struct {
+	Date   time.Time
+	Totals StatsTotals
+}
+
+type StatsBreakdownRow struct {
+	ID     int
+	Totals StatsTotals
+}
+
+type PartnerIncomeRow struct {
+	Date        time.Time `json:"date"`
+	SiteID      int       `json:"site_id"`
+	SiteName    string    `json:"site_name"`
+	Domain      string    `json:"domain"`
+	BlockID     int       `json:"block_id"`
+	BlockName   string    `json:"block_name"`
+	Impressions int64     `json:"impressions"`
+	Reward      int64     `json:"reward"`
+}
+
+type PartnerIncomeStats struct {
+	From        time.Time          `json:"from"`
+	To          time.Time          `json:"to"`
+	Impressions int64              `json:"impressions"`
+	Reward      int64              `json:"reward"`
+	ECPM        float64            `json:"ecpm"`
+	Rows        []PartnerIncomeRow `json:"rows"`
+}
+
+type StatsReader interface {
+	Totals(ctx context.Context, filter StatsFilter) (StatsTotals, error)
+	Timeline(ctx context.Context, filter StatsFilter) ([]StatsTimelinePoint, error)
+	Breakdown(ctx context.Context, filter StatsFilter, dimension string) ([]StatsBreakdownRow, error)
+}
+
 type AdRequestRecord struct {
 	RequestID       string
 	VisitorID       string
@@ -184,6 +236,7 @@ type Config struct {
 	PartnerSiteRepo          PartnerSiteRepository
 	PartnerBlockRepo         PartnerBlockRepository
 	PartnerBlockGeoRuleRepo  PartnerBlockGeoRuleRepository
+	PartnerIncomeRepo        PartnerIncomeRepository
 	AdCampaignRepo           AdCampaignRepository
 	AdGroupRepo              AdGroupRepository
 	AdRepo                   AdRepository
@@ -199,6 +252,7 @@ type Config struct {
 	AdRequestStore           AdRequestStore
 	AdEventPublisher         AdEventPublisher
 	YookassaClient           YookassaClient
+	StatsReader             StatsReader
 }
 
 type Service struct {
@@ -210,6 +264,7 @@ type Service struct {
 	partnerSiteRepo          PartnerSiteRepository
 	partnerBlockRepo         PartnerBlockRepository
 	partnerBlockGeoRuleRepo  PartnerBlockGeoRuleRepository
+	partnerIncomeRepo        PartnerIncomeRepository
 	adCampaignRepo           AdCampaignRepository
 	adGroupRepo              AdGroupRepository
 	adRepo                   AdRepository
@@ -225,6 +280,7 @@ type Service struct {
 	adRequestStore           AdRequestStore
 	adEventPublisher         AdEventPublisher
 	yookassaClient           YookassaClient
+	statsReader             StatsReader
 }
 
 func NewService(cfg *Config) (*Service, error) {
@@ -241,6 +297,7 @@ func NewService(cfg *Config) (*Service, error) {
 		partnerSiteRepo:          cfg.PartnerSiteRepo,
 		partnerBlockRepo:         cfg.PartnerBlockRepo,
 		partnerBlockGeoRuleRepo:  cfg.PartnerBlockGeoRuleRepo,
+		partnerIncomeRepo:       cfg.PartnerIncomeRepo,
 		adCampaignRepo:           cfg.AdCampaignRepo,
 		adGroupRepo:              cfg.AdGroupRepo,
 		adRepo:                   cfg.AdRepo,
@@ -256,6 +313,7 @@ func NewService(cfg *Config) (*Service, error) {
 		adRequestStore:           cfg.AdRequestStore,
 		adEventPublisher:         cfg.AdEventPublisher,
 		yookassaClient:           cfg.YookassaClient,
+		statsReader:             cfg.StatsReader,
 	}, nil
 }
 

@@ -15,6 +15,7 @@ import (
 	service "eshkere/internal/service"
 	input "eshkere/internal/service/input"
 	reflect "reflect"
+	time "time"
 
 	gomock "go.uber.org/mock/gomock"
 )
@@ -85,6 +86,21 @@ func (m *MockService) GetAdByID(ctx context.Context, adID int) (*models.Ad, erro
 func (mr *MockServiceMockRecorder) GetAdByID(ctx, adID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdByID", reflect.TypeOf((*MockService)(nil).GetAdByID), ctx, adID)
+}
+
+// GetAdStats mocks base method.
+func (m *MockService) GetAdStats(ctx context.Context, advertiserID, campaignID, groupID, adID int, from, to time.Time) (*service.AdStats, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAdStats", ctx, advertiserID, campaignID, groupID, adID, from, to)
+	ret0, _ := ret[0].(*service.AdStats)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAdStats indicates an expected call of GetAdStats.
+func (mr *MockServiceMockRecorder) GetAdStats(ctx, advertiserID, campaignID, groupID, adID, from, to any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdStats", reflect.TypeOf((*MockService)(nil).GetAdStats), ctx, advertiserID, campaignID, groupID, adID, from, to)
 }
 
 // ListModerationAds mocks base method.
@@ -234,6 +250,21 @@ func (mr *MockServiceMockRecorder) ListAdCampaigns(ctx, advertiserID any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAdCampaigns", reflect.TypeOf((*MockService)(nil).ListAdCampaigns), ctx, advertiserID)
 }
 
+// GetCampaignStats mocks base method.
+func (m *MockService) GetCampaignStats(ctx context.Context, advertiserID, campaignID int, from, to time.Time) (*service.CampaignStats, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCampaignStats", ctx, advertiserID, campaignID, from, to)
+	ret0, _ := ret[0].(*service.CampaignStats)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCampaignStats indicates an expected call of GetCampaignStats.
+func (mr *MockServiceMockRecorder) GetCampaignStats(ctx, advertiserID, campaignID, from, to any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampaignStats", reflect.TypeOf((*MockService)(nil).GetCampaignStats), ctx, advertiserID, campaignID, from, to)
+}
+
 // ListAdGroups mocks base method.
 func (m *MockService) ListAdGroups(ctx context.Context, advertiserID, campaignID int) ([]*models.AdGroup, error) {
 	m.ctrl.T.Helper()
@@ -247,6 +278,21 @@ func (m *MockService) ListAdGroups(ctx context.Context, advertiserID, campaignID
 func (mr *MockServiceMockRecorder) ListAdGroups(ctx, advertiserID, campaignID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAdGroups", reflect.TypeOf((*MockService)(nil).ListAdGroups), ctx, advertiserID, campaignID)
+}
+
+// GetGroupStats mocks base method.
+func (m *MockService) GetGroupStats(ctx context.Context, advertiserID, campaignID, groupID int, from, to time.Time) (*service.GroupStats, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGroupStats", ctx, advertiserID, campaignID, groupID, from, to)
+	ret0, _ := ret[0].(*service.GroupStats)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGroupStats indicates an expected call of GetGroupStats.
+func (mr *MockServiceMockRecorder) GetGroupStats(ctx, advertiserID, campaignID, groupID, from, to any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupStats", reflect.TypeOf((*MockService)(nil).GetGroupStats), ctx, advertiserID, campaignID, groupID, from, to)
 }
 
 // ListAds mocks base method.
@@ -741,4 +787,19 @@ func (m *MockService) GetAppealByID(ctx context.Context, appealID int) (*models.
 func (mr *MockServiceMockRecorder) GetAppealByID(ctx, appealID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAppealByID", reflect.TypeOf((*MockService)(nil).GetAppealByID), ctx, appealID)
+}
+
+// GetPartnerIncomeStats mocks base method.
+func (m *MockService) GetPartnerIncomeStats(ctx context.Context, partnerID int, from, to time.Time) (*service.PartnerIncomeStats, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPartnerIncomeStats", ctx, partnerID, from, to)
+	ret0, _ := ret[0].(*service.PartnerIncomeStats)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPartnerIncomeStats indicates an expected call of GetPartnerIncomeStats.
+func (mr *MockServiceMockRecorder) GetPartnerIncomeStats(ctx, partnerID, from, to any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPartnerIncomeStats", reflect.TypeOf((*MockService)(nil).GetPartnerIncomeStats), ctx, partnerID, from, to)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -16,6 +17,10 @@ func (s *Service) CreateAd(ctx context.Context, advertiserID int, in *serviceinp
 	if _, err := s.ownedGroup(ctx, advertiserID, in.AdGroupID); err != nil {
 		return nil, err
 	}
+	if err := validateAdTargetURL(in.TargetURL); err != nil {
+		return nil, err
+	}
+
 	ad := &models.Ad{
 		AdGroupID: in.AdGroupID,
 		Status:    models.AdStatusModeration,
@@ -87,6 +92,9 @@ func (s *Service) UpdateAd(ctx context.Context, advertiserID int, in *serviceinp
 		contentChanged = true
 	}
 	if in.TargetURL != nil {
+		if err := validateAdTargetURL(*in.TargetURL); err != nil {
+			return err
+		}
 		currentAd.TargetURL = *in.TargetURL
 		contentChanged = true
 	}
@@ -303,4 +311,15 @@ func (s *Service) decorateAdImageURL(ad *models.Ad) {
 	}
 
 	ad.ImageURL = imageURL
+}
+
+func validateAdTargetURL(rawURL string) error {
+	parsed, err := url.ParseRequestURI(rawURL)
+	if err != nil || parsed == nil || parsed.Scheme == "" || parsed.Host == "" {
+		return fmt.Errorf("%w: target_url must be an absolute http or https url", errs.BadRequestError)
+	}
+	if parsed.Scheme != "http" && parsed.Scheme != "https" {
+		return fmt.Errorf("%w: target_url must be an absolute http or https url", errs.BadRequestError)
+	}
+	return nil
 }

@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -52,8 +54,13 @@ func main() {
 	}
 	defer writer.Close()
 
+	brokers := cfg.Kafka.BrokerList()
+	if err := ensureTopic(ctx, brokers, cfg.Kafka.AdEventsTopic); err != nil {
+		log.Fatalf("ensure kafka topic: %v", err)
+	}
+
 	reader := kafkago.NewReader(kafkago.ReaderConfig{
-		Brokers:  cfg.Kafka.BrokerList(),
+		Brokers:  brokers,
 		Topic:    cfg.Kafka.AdEventsTopic,
 		GroupID:  consumerGroup(cfg.Kafka.ConsumerGroup),
 		MinBytes: 1,
@@ -72,6 +79,45 @@ func main() {
 	}
 }
 
+func ensureTopic(ctx context.Context, brokers []string, topic string) error {
+	if len(brokers) == 0 {
+		return errors.New("kafka brokers cannot be empty")
+	}
+	if topic == "" {
+		return errors.New("kafka topic cannot be empty")
+	}
+
+	dialer := &kafkago.Dialer{Timeout: 5 * time.Second}
+	conn, err := dialer.DialContext(ctx, "tcp", brokers[0])
+	if err != nil {
+		return fmt.Errorf("dial kafka broker: %w", err)
+	}
+	defer conn.Close()
+
+	controller, err := conn.Controller()
+	if err != nil {
+		return fmt.Errorf("get kafka controller: %w", err)
+	}
+
+	controllerAddr := net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port))
+	controllerConn, err := dialer.DialContext(ctx, "tcp", controllerAddr)
+	if err != nil {
+		return fmt.Errorf("dial kafka controller: %w", err)
+	}
+	defer controllerConn.Close()
+
+	if err = controllerConn.CreateTopics(kafkago.TopicConfig{
+		Topic:             topic,
+		NumPartitions:     1,
+		ReplicationFactor: 1,
+	}); err != nil {
+		return fmt.Errorf("create kafka topic %s: %w", topic, err)
+	}
+
+	log.Printf("kafka topic is ready: %s", topic)
+	return nil
+}
+
 func consumerGroup(group string) string {
 	if group != "" {
 		return group
@@ -88,6 +134,7 @@ func run(ctx context.Context, reader *kafkago.Reader, writer eventWriter, batchS
 	defer timer.Stop()
 
 	flush := func() error {
+		defer resetTimer(timer, flushTimeout)
 		if len(events) == 0 {
 			return nil
 		}
@@ -99,9 +146,9 @@ func run(ctx context.Context, reader *kafkago.Reader, writer eventWriter, batchS
 		if err := reader.CommitMessages(flushCtx, messages...); err != nil {
 			return err
 		}
+		log.Printf("flushed ad events: count=%d", len(events))
 		events = events[:0]
 		messages = messages[:0]
-		resetTimer(timer, flushTimeout)
 		return nil
 	}
 

@@ -75,9 +75,7 @@ jobs:
             docker compose ps
 
             endpoints=(
-              "http://127.0.0.1:9100/healthz"
-              "http://127.0.0.1:9101/healthz"
-              "http://127.0.0.1:9102/healthz"
+              "g"
             )
 
             for endpoint in "${endpoints[@]}"; do

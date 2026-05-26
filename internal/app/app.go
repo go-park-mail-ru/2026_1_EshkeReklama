@@ -197,6 +197,10 @@ func New(configPath string) *App {
 
 func (a *App) Run() error {
 	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+	}).Methods(http.MethodGet)
 	router.Use(middleware2.RequestContext(a.logger))
 	router.Use(a.metrics.HTTPMiddleware(observability.HTTPMiddlewareConfig{
 		SkipPaths: []string{"/metrics", "/healthz"},

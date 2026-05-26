@@ -75,7 +75,7 @@ jobs:
             docker compose ps
 
             endpoints=(
-              "g"
+              "https://eshkereklama.ru/healthz"
             )
 
             for endpoint in "${endpoints[@]}"; do

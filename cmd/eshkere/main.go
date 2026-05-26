@@ -1,9 +1,10 @@
 package main
 
 import (
-	"eshkere/internal/app"
 	"flag"
 	"log"
+
+	"eshkere/internal/app"
 
 	"github.com/joho/godotenv"
 )

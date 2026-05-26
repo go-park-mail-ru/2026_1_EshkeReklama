@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package eshkere.auth.v1;
+
+option go_package = "eshkere/pkg/pb/auth/v1;authv1";
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc LoginVKID(LoginVKIDRequest) returns (LoginResponse);
+  rpc ValidateSession(ValidateSessionRequest) returns (ValidateSessionResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc GetCredentials(GetCredentialsRequest) returns (GetCredentialsResponse);
+  rpc UpdateCredentials(UpdateCredentialsRequest) returns (UpdateCredentialsResponse);
+}
+
+message RegisterRequest {
+  string email    = 1;
+  string phone    = 2;
+  string password = 3;
+}
+
+message RegisterResponse {
+  int64  advertiser_id = 1;
+  string session_id    = 2;
+  int64  expires_at    = 3;
+}
+
+message LoginRequest {
+  string identifier = 1;
+  string password   = 2;
+}
+
+message LoginVKIDRequest {
+  string access_token = 1;
+  int64 user_id = 2;
+}
+
+message LoginResponse {
+  int64  advertiser_id = 1;
+  string session_id    = 2;
+  int64  expires_at    = 3;
+  string first_name    = 4;
+  string last_name     = 5;
+}
+
+message ValidateSessionRequest {
+  string session_id = 1;
+}
+
+message ValidateSessionResponse {
+  int64 advertiser_id = 1;
+  int64 expires_at    = 2;
+}
+
+message LogoutRequest {
+  string session_id = 1;
+}
+
+message LogoutResponse {}
+
+message GetCredentialsRequest {
+  int64 advertiser_id = 1;
+}
+
+message GetCredentialsResponse {
+  int64 advertiser_id = 1;
+  string email = 2;
+  string phone = 3;
+}
+
+message UpdateCredentialsRequest {
+  int64 advertiser_id = 1;
+  string email = 2;
+  string phone = 3;
+}
+
+message UpdateCredentialsResponse {
+  int64 advertiser_id = 1;
+  string email = 2;
+  string phone = 3;
+}

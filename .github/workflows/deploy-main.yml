@@ -1,0 +1,99 @@
+name: Deploy Main
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.4.0
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run tests
+        run: go test ./...
+
+  deploy:
+    needs:
+      - lint
+      - test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || '22' }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            cd "${{ secrets.DEPLOY_PATH }}"
+            git checkout main
+            git pull --ff-only origin main
+            docker compose up -d --build --remove-orphans
+            docker compose ps
+
+            endpoints=(
+              "http://127.0.0.1:9100/healthz"
+              "http://127.0.0.1:9101/healthz"
+              "http://127.0.0.1:9102/healthz"
+            )
+
+            for endpoint in "${endpoints[@]}"; do
+              echo "Checking ${endpoint}"
+              ok=0
+              for attempt in {1..20}; do
+                if curl --fail --silent --show-error "$endpoint" >/dev/null; then
+                  ok=1
+                  break
+                fi
+                sleep 3
+              done
+
+              if [ "$ok" -ne 1 ]; then
+                echo "Service health check failed for ${endpoint}"
+                docker compose ps
+                exit 1
+              fi
+            done

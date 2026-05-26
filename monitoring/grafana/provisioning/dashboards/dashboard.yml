@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: EshkeReklama
+    orgId: 1
+    folder: EshkeReklama
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

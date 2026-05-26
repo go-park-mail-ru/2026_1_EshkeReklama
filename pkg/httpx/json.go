@@ -7,13 +7,11 @@ import (
 )
 
 type Success struct {
-	Status string      `json:"status"`
-	Data   interface{} `json:"data,omitempty"`
+	Data interface{} `json:"data,omitempty"`
 }
 
 type Error struct {
-	Status string `json:"status"`
-	Error  string `json:"error"`
+	Error string `json:"error"`
 }
 
 func DecodeJSON(r *http.Request, v interface{}) error {
@@ -32,9 +30,10 @@ func JSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
-	_ = json.NewEncoder(w).Encode(Success{
-		Status: "ok",
-		Data:   data,
+	enc := json.NewEncoder(w)
+	enc.SetEscapeHTML(true)
+	_ = enc.Encode(Success{
+		Data: data,
 	})
 }
 
@@ -42,9 +41,10 @@ func ErrorJSON(w http.ResponseWriter, statusCode int, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
-	_ = json.NewEncoder(w).Encode(Error{
-		Status: "error",
-		Error:  message,
+	enc := json.NewEncoder(w)
+	enc.SetEscapeHTML(true)
+	_ = enc.Encode(Error{
+		Error: message,
 	})
 }
 
@@ -52,10 +52,30 @@ func BadRequest(w http.ResponseWriter, message string) {
 	ErrorJSON(w, http.StatusBadRequest, message)
 }
 
+func AlreadyExists(w http.ResponseWriter, message string) {
+	ErrorJSON(w, http.StatusConflict, message)
+}
+
+func BusinessLogic(w http.ResponseWriter, message string) {
+	ErrorJSON(w, http.StatusUnprocessableEntity, message)
+}
+
 func Unauthorized(w http.ResponseWriter, message string) {
 	ErrorJSON(w, http.StatusUnauthorized, message)
 }
 
-func InternalError(w http.ResponseWriter) {
-	ErrorJSON(w, http.StatusInternalServerError, "internal server error")
+func Forbidden(w http.ResponseWriter, message string) {
+	ErrorJSON(w, http.StatusForbidden, message)
+}
+
+func NotFound(w http.ResponseWriter, message string) {
+	ErrorJSON(w, http.StatusNotFound, message)
+}
+
+func InternalError(w http.ResponseWriter, message string) {
+	ErrorJSON(w, http.StatusInternalServerError, message)
+}
+
+func NotImplemented(w http.ResponseWriter, message string) {
+	ErrorJSON(w, http.StatusNotImplemented, message)
 }

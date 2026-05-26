@@ -1,40 +1,367 @@
 basePath: /
 definitions:
-  httpx.Error:
+  dto.AdCampaignResponse:
     properties:
-      error:
+      cpm_price:
+        type: integer
+      daily_budget:
+        type: integer
+      id:
+        type: integer
+      main_action:
+        type: string
+      name:
         type: string
       status:
         type: string
     type: object
-  internal.AdResponse:
+  dto.AdGroupResponse:
+    properties:
+      age_from:
+        type: integer
+      age_to:
+        type: integer
+      gender:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      region_id:
+        type: integer
+      topic_id:
+        type: integer
+    type: object
+  dto.AdRequest:
+    properties:
+      embed_token:
+        type: string
+      visitor_id:
+        type: string
+    required:
+    - embed_token
+    type: object
+  dto.AdRequestResponse:
+    properties:
+      ad:
+        $ref: '#/definitions/dto.AdResponse'
+      click_url:
+        type: string
+      request_id:
+        type: string
+    type: object
+  dto.AdResponse:
     properties:
       id:
         type: integer
-      price:
-        type: integer
-      target_action:
+      image_url:
+        type: string
+      short_desc:
+        type: string
+      status:
+        type: string
+      target_url:
         type: string
       title:
         type: string
     type: object
-  internal.ListAdsResponse:
+  dto.AdStatsResponse:
+    properties:
+      period:
+        $ref: '#/definitions/dto.StatsPeriod'
+      placements:
+        items:
+          $ref: '#/definitions/dto.StatsEntityRow'
+        type: array
+      previous_totals:
+        $ref: '#/definitions/dto.StatsMetric'
+      timeline:
+        items:
+          $ref: '#/definitions/dto.StatsPoint'
+        type: array
+      totals:
+        $ref: '#/definitions/dto.StatsMetric'
+      unavailable_metrics:
+        items:
+          $ref: '#/definitions/dto.StatsUnavailableMetric'
+        type: array
+    type: object
+  dto.AdvertiserProfileResponse:
+    properties:
+      avatar_url:
+        type: string
+      balance:
+        type: integer
+      city:
+        type: string
+      company:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      phone:
+        type: string
+      role:
+        type: string
+      surname:
+        type: string
+      tariff:
+        type: string
+    type: object
+  dto.AppealResponse:
+    properties:
+      category:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+    type: object
+  dto.BalanceResponse:
+    properties:
+      balance:
+        type: integer
+      delivery_alert:
+        $ref: '#/definitions/dto.DeliveryAlertResponse'
+      saved_payment_method_id:
+        type: string
+      saved_payment_method_title:
+        type: string
+    type: object
+  dto.CampaignStatsResponse:
+    properties:
+      groups:
+        items:
+          $ref: '#/definitions/dto.StatsEntityRow'
+        type: array
+      period:
+        $ref: '#/definitions/dto.StatsPeriod'
+      placements:
+        items:
+          $ref: '#/definitions/dto.StatsEntityRow'
+        type: array
+      previous_totals:
+        $ref: '#/definitions/dto.StatsMetric'
+      timeline:
+        items:
+          $ref: '#/definitions/dto.StatsPoint'
+        type: array
+      totals:
+        $ref: '#/definitions/dto.StatsMetric'
+      unavailable_metrics:
+        items:
+          $ref: '#/definitions/dto.StatsUnavailableMetric'
+        type: array
+    type: object
+  dto.CreateAdCampaignRequest:
+    properties:
+      cpm_price:
+        type: integer
+      daily_budget:
+        type: integer
+      main_action:
+        type: string
+      name:
+        type: string
+    required:
+    - cpm_price
+    - daily_budget
+    - main_action
+    - name
+    type: object
+  dto.CreateAdCampaignResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.CreateAdGroupRequest:
+    properties:
+      age_from:
+        type: integer
+      age_to:
+        type: integer
+      gender:
+        enum:
+        - male
+        - female
+        - any
+        type: string
+      name:
+        type: string
+      region_id:
+        type: integer
+      topic_id:
+        type: integer
+    required:
+    - age_from
+    - age_to
+    - gender
+    - name
+    - region_id
+    - topic_id
+    type: object
+  dto.CreateAdGroupResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.CreateAdResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.CreateAppealResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.CreatePartnerBlockRequest:
+    properties:
+      block_type:
+        enum:
+        - banner
+        - fullscreen
+        - floor_ad
+        - top_ad
+        - feed
+        - in_image
+        type: string
+      name:
+        type: string
+    required:
+    - block_type
+    - name
+    type: object
+  dto.CreatePartnerSiteRequest:
+    properties:
+      domain:
+        type: string
+      site_name:
+        type: string
+    required:
+    - domain
+    - site_name
+    type: object
+  dto.DeliveryAlertResponse:
+    properties:
+      active_campaigns:
+        type: integer
+      affected_campaigns:
+        type: integer
+      level:
+        type: string
+      message:
+        type: string
+      title:
+        type: string
+    type: object
+  dto.GroupStatsResponse:
     properties:
       ads:
         items:
-          $ref: '#/definitions/internal.AdResponse'
+          $ref: '#/definitions/dto.StatsEntityRow'
         type: array
+      period:
+        $ref: '#/definitions/dto.StatsPeriod'
+      placements:
+        items:
+          $ref: '#/definitions/dto.StatsEntityRow'
+        type: array
+      previous_totals:
+        $ref: '#/definitions/dto.StatsMetric'
+      timeline:
+        items:
+          $ref: '#/definitions/dto.StatsPoint'
+        type: array
+      totals:
+        $ref: '#/definitions/dto.StatsMetric'
+      unavailable_metrics:
+        items:
+          $ref: '#/definitions/dto.StatsUnavailableMetric'
+        type: array
+    type: object
+  dto.ListAdCampaignsResponse:
+    properties:
       advertiser_id:
         type: integer
+      campaigns:
+        items:
+          $ref: '#/definitions/dto.AdCampaignResponse'
+        type: array
     type: object
-  internal.LoginRequest:
+  dto.ListAdGroupsResponse:
+    properties:
+      ad_campaign_id:
+        type: integer
+      groups:
+        items:
+          $ref: '#/definitions/dto.AdGroupResponse'
+        type: array
+    type: object
+  dto.ListAdminAdsResponse:
+    properties:
+      ads:
+        items:
+          $ref: '#/definitions/dto.AdResponse'
+        type: array
+    type: object
+  dto.ListAdsResponse:
+    properties:
+      ads:
+        items:
+          $ref: '#/definitions/dto.AdResponse'
+        type: array
+      group_id:
+        type: integer
+    type: object
+  dto.ListAppealsResponse:
+    properties:
+      advertiser_id:
+        type: integer
+      appeals:
+        items:
+          $ref: '#/definitions/dto.AppealResponse'
+        type: array
+    type: object
+  dto.ListPartnerBlocksResponse:
+    properties:
+      blocks:
+        items:
+          $ref: '#/definitions/dto.PartnerBlockResponse'
+        type: array
+      site_id:
+        type: integer
+    type: object
+  dto.ListPartnerSitesResponse:
+    properties:
+      partner_id:
+        type: integer
+      sites:
+        items:
+          $ref: '#/definitions/dto.PartnerSiteResponse'
+        type: array
+    type: object
+  dto.LoginRequest:
     properties:
       identifier:
         type: string
       password:
         type: string
     type: object
-  internal.LoginResponse:
+  dto.LoginResponse:
     properties:
       email:
         type: string
@@ -43,16 +370,257 @@ definitions:
       phone:
         type: string
     type: object
-  internal.RegisterRequest:
+  dto.PartnerAuthResponse:
     properties:
       email:
+        type: string
+      id:
+        type: integer
+      phone:
+        type: string
+    type: object
+  dto.PartnerBlockDetailsResponse:
+    properties:
+      block_type:
+        type: string
+      created_at:
+        type: string
+      general_settings:
+        $ref: '#/definitions/dto.PartnerBlockGeneralSettingsResponse'
+      geography_settings:
+        $ref: '#/definitions/dto.PartnerBlockGeographySettingsResponse'
+      id:
+        type: integer
+      name:
+        type: string
+      self_ad_settings:
+        $ref: '#/definitions/dto.PartnerBlockSelfAdSettingsResponse'
+      site_id:
+        type: integer
+      status:
+        type: string
+      supported_platforms:
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: string
+    type: object
+  dto.PartnerBlockEmbedResponse:
+    properties:
+      embed_token:
+        type: string
+      html_snippet:
+        type: string
+    type: object
+  dto.PartnerBlockGeneralSettingsResponse:
+    properties:
+      amp_mode:
+        type: string
+      border_mode:
+        type: string
+      corner_mode:
+        type: string
+      cpm_strategy:
+        type: string
+      interscroller_background_color:
+        type: string
+      interscroller_mode:
+        type: string
+      revenue_share_bps:
+        type: integer
+      size_mode:
+        type: string
+      theme:
+        type: string
+    type: object
+  dto.PartnerBlockGeoRuleResponse:
+    properties:
+      cpmv:
+        type: integer
+      geo_code:
+        type: string
+      is_enabled:
+        type: boolean
+    type: object
+  dto.PartnerBlockGeographySettingsResponse:
+    properties:
+      global_cpmv:
+        type: integer
+      only_configured:
+        type: boolean
+      rules:
+        items:
+          $ref: '#/definitions/dto.PartnerBlockGeoRuleResponse'
+        type: array
+    type: object
+  dto.PartnerBlockResponse:
+    properties:
+      block_type:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.PartnerBlockSelfAdSettingsResponse:
+    properties:
+      reserved:
+        type: boolean
+    type: object
+  dto.PartnerIncomeRowResponse:
+    properties:
+      block_id:
+        type: integer
+      block_name:
+        type: string
+      date:
+        type: string
+      domain:
+        type: string
+      impressions:
+        type: integer
+      reward:
+        type: integer
+      site_id:
+        type: integer
+      site_name:
+        type: string
+    type: object
+  dto.PartnerIncomeStatsResponse:
+    properties:
+      ecpm:
+        type: number
+      from:
+        type: string
+      impressions:
+        type: integer
+      reward:
+        type: integer
+      rows:
+        items:
+          $ref: '#/definitions/dto.PartnerIncomeRowResponse'
+        type: array
+      to:
+        type: string
+    type: object
+  dto.PartnerLoginRequest:
+    properties:
+      identifier:
+        type: string
+      password:
+        type: string
+    required:
+    - identifier
+    - password
+    type: object
+  dto.PartnerProfileResponse:
+    properties:
+      balance:
+        type: integer
+      birth_date:
+        type: string
+      cooperation_form:
+        type: string
+      country_code:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      middle_name:
+        type: string
+      payout_currency:
+        type: string
+      phone:
+        type: string
+      registration_region_code:
+        type: string
+    type: object
+  dto.PartnerRegisterRequest:
+    properties:
+      birth_date:
+        type: string
+      cooperation_form:
+        enum:
+        - self_employed
+        - individual_entrepreneur
+        - legal_entity
+        type: string
+      country_code:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      middle_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      payout_currency:
+        enum:
+        - RUB
+        - USD
+        - EUR
+        type: string
+      phone:
+        type: string
+      registration_region_code:
+        type: string
+    required:
+    - birth_date
+    - cooperation_form
+    - country_code
+    - email
+    - first_name
+    - last_name
+    - password
+    - payout_currency
+    - phone
+    - registration_region_code
+    type: object
+  dto.PartnerSiteResponse:
+    properties:
+      created_at:
+        type: string
+      domain:
+        type: string
+      id:
+        type: integer
+      site_name:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
         type: string
       password:
         type: string
       phone:
         type: string
     type: object
-  internal.RegisterResponse:
+  dto.RegisterResponse:
     properties:
       email:
         type: string
@@ -60,6 +628,298 @@ definitions:
         type: integer
       phone:
         type: string
+    type: object
+  dto.StatsEntityRow:
+    properties:
+      clicks:
+        type: integer
+      cpc:
+        type: number
+      ctr:
+        type: number
+      id:
+        type: integer
+      impressions:
+        type: integer
+      name:
+        type: string
+      partner_reward:
+        type: integer
+      platform_revenue:
+        type: integer
+      spend:
+        type: integer
+    type: object
+  dto.StatsMetric:
+    properties:
+      clicks:
+        type: integer
+      cpc:
+        type: number
+      ctr:
+        type: number
+      impressions:
+        type: integer
+      partner_reward:
+        type: integer
+      platform_revenue:
+        type: integer
+      spend:
+        type: integer
+    type: object
+  dto.StatsPeriod:
+    properties:
+      from:
+        type: string
+      to:
+        type: string
+    type: object
+  dto.StatsPoint:
+    properties:
+      clicks:
+        type: integer
+      cpc:
+        type: number
+      ctr:
+        type: number
+      date:
+        type: string
+      impressions:
+        type: integer
+      partner_reward:
+        type: integer
+      platform_revenue:
+        type: integer
+      spend:
+        type: integer
+    type: object
+  dto.StatsUnavailableMetric:
+    properties:
+      key:
+        type: string
+      label:
+        type: string
+      reason:
+        type: string
+    type: object
+  dto.TopUpBalanceRequest:
+    properties:
+      amount:
+        type: integer
+    type: object
+  dto.UpdateAdCampaignRequest:
+    properties:
+      cpm_price:
+        minimum: 0
+        type: integer
+      daily_budget:
+        minimum: 0
+        type: integer
+      main_action:
+        minLength: 1
+        type: string
+      name:
+        minLength: 1
+        type: string
+    type: object
+  dto.UpdateAdCampaignStatusRequest:
+    properties:
+      status:
+        enum:
+        - turned_off
+        type: string
+    required:
+    - status
+    type: object
+  dto.UpdateAdGroupRequest:
+    properties:
+      age_from:
+        minimum: 1
+        type: integer
+      age_to:
+        minimum: 1
+        type: integer
+      gender:
+        enum:
+        - male
+        - female
+        - any
+        minLength: 1
+        type: string
+      name:
+        minLength: 1
+        type: string
+      region_id:
+        minimum: 1
+        type: integer
+      topic_id:
+        minimum: 1
+        type: integer
+    type: object
+  dto.UpdateAdStatusRequest:
+    properties:
+      status:
+        enum:
+        - approve
+        - disapprove
+        type: string
+    required:
+    - status
+    type: object
+  dto.UpdateAdvertiserProfileRequest:
+    properties:
+      city:
+        type: string
+      company:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      surname:
+        type: string
+      tariff:
+        type: string
+    type: object
+  dto.UpdatePartnerBlockGeneralRequest:
+    properties:
+      amp_mode:
+        enum:
+        - disabled
+        - enabled
+        type: string
+      border_mode:
+        enum:
+        - auto
+        - enabled
+        - disabled
+        type: string
+      corner_mode:
+        enum:
+        - auto
+        - rounded
+        - square
+        type: string
+      cpm_strategy:
+        enum:
+        - max_income
+        type: string
+      interscroller_background_color:
+        type: string
+      interscroller_mode:
+        enum:
+        - auto
+        - enabled
+        - disabled
+        type: string
+      revenue_share_bps:
+        maximum: 10000
+        minimum: 0
+        type: integer
+      size_mode:
+        enum:
+        - adaptive
+        type: string
+      theme:
+        enum:
+        - light
+        - dark
+        type: string
+    type: object
+  dto.UpdatePartnerBlockGeographyRequest:
+    properties:
+      global_cpmv:
+        type: integer
+      only_configured:
+        type: boolean
+      rules:
+        items:
+          $ref: '#/definitions/dto.UpdatePartnerBlockGeographyRuleRequest'
+        type: array
+    type: object
+  dto.UpdatePartnerBlockGeographyRuleRequest:
+    properties:
+      cpmv:
+        type: integer
+      geo_code:
+        type: string
+      is_enabled:
+        type: boolean
+    required:
+    - geo_code
+    type: object
+  dto.UpdatePartnerBlockMetaRequest:
+    properties:
+      name:
+        type: string
+      status:
+        enum:
+        - active
+        - inactive
+        type: string
+    type: object
+  dto.UpdatePartnerBlockSelfAdRequest:
+    properties:
+      reserved:
+        type: boolean
+    type: object
+  dto.UpdatePartnerProfileRequest:
+    properties:
+      birth_date:
+        type: string
+      cooperation_form:
+        enum:
+        - self_employed
+        - individual_entrepreneur
+        - legal_entity
+        type: string
+      country_code:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      middle_name:
+        type: string
+      payout_currency:
+        enum:
+        - RUB
+        - USD
+        - EUR
+        type: string
+      phone:
+        type: string
+      registration_region_code:
+        type: string
+    type: object
+  dto.UpdatePartnerSiteRequest:
+    properties:
+      domain:
+        type: string
+      site_name:
+        type: string
+      status:
+        type: string
+    type: object
+  dto.VKIDLoginRequest:
+    properties:
+      access_token:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  httpx.Error:
+    properties:
+      error:
+        type: string
+    type: object
+  httpx.Success:
+    properties:
+      data: {}
     type: object
 host: localhost:8000
 info:
@@ -68,56 +928,1069 @@ info:
   title: Eshke Reklama API
   version: "1.0"
 paths:
-  /ads:
-    get:
-      description: Возвращает список всех кампаний текущего рекламодателя
+  /ad/request:
+    post:
+      consumes:
+      - application/json
+      description: Возвращает объявление для вставленного на сайт партнёра рекламного
+        блока по embed_token
+      parameters:
+      - description: Публичный токен рекламного блока
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AdRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal.ListAdsResponse'
+            $ref: '#/definitions/dto.AdRequestResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Запрос рекламы для публичного блока
+      tags:
+      - public_ads
+  /ad_campaigns:
+    get:
+      description: Кампании рекламодателя из сессии
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListAdCampaignsResponse'
         "401":
           description: Unauthorized
           schema:
             $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
       security:
-        - CookieAuth: []
+      - CookieAuth: []
       summary: Список рекламных кампаний
       tags:
-        - ads
-  /advertiser/login:
+      - ad_campaigns
     post:
       consumes:
-        - application/json
-      description: Аутентифицирует рекламодателя по email или телефону и паролю
+      - application/json
+      description: Создаёт кампанию; рекламодатель определяется по сессии
       parameters:
-        - description: Данные для входа
-          in: body
-          name: input
-          required: true
-          schema:
-            $ref: '#/definitions/internal.LoginRequest'
+      - description: Параметры кампании
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAdCampaignRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal.LoginResponse'
+            $ref: '#/definitions/dto.CreateAdCampaignResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Создание рекламной кампании
+      tags:
+      - ad_campaigns
+  /ad_campaigns/{ad_campaign_id}:
+    delete:
+      parameters:
+      - description: ID кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Удаление рекламной кампании
+      tags:
+      - ad_campaigns
+    put:
+      consumes:
+      - application/json
+      description: Частичное обновление полей кампании
+      parameters:
+      - description: ID кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: Поля для обновления
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAdCampaignRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление рекламной кампании
+      tags:
+      - ad_campaigns
+  /ad_campaigns/{ad_campaign_id}/ad_groups:
+    get:
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListAdGroupsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Список групп объявлений
+      tags:
+      - ad_groups
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: Параметры группы
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAdGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CreateAdGroupResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Создание группы объявлений
+      tags:
+      - ad_groups
+  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}:
+    delete:
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Удаление группы объявлений
+      tags:
+      - ad_groups
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      - description: Поля для обновления
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAdGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление группы объявлений
+      tags:
+      - ad_groups
+  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads:
+    get:
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы объявлений
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListAdsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Список объявлений группы
+      tags:
+      - ads
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы объявлений
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      - description: Заголовок объявления
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Короткое описание объявления
+        in: formData
+        name: short_desc
+        required: true
+        type: string
+      - description: Целевой URL
+        in: formData
+        name: target_url
+        required: true
+        type: string
+      - description: Изображение объявления
+        in: formData
+        name: image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CreateAdResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Создание объявления
+      tags:
+      - ads
+  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}:
+    delete:
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы объявлений
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      - description: ID объявления
+        in: path
+        name: ad_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Удаление объявления
+      tags:
+      - ads
+    put:
+      consumes:
+      - multipart/form-data
+      description: Пользователь может только включать и выключать объявление; изменение
+        контента повторно отправляет его на модерацию
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы объявлений
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      - description: ID объявления
+        in: path
+        name: ad_id
+        required: true
+        type: integer
+      - description: Новый заголовок объявления
+        in: formData
+        name: title
+        type: string
+      - description: Новый статус объявления
+        enum:
+        - turned_off
+        - working
+        in: formData
+        name: status
+        type: string
+      - description: Новое короткое описание объявления
+        in: formData
+        name: short_desc
+        type: string
+      - description: Новый целевой URL
+        in: formData
+        name: target_url
+        type: string
+      - description: Новое изображение объявления
+        in: formData
+        name: image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление объявления
+      tags:
+      - ads
+  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}/stats:
+    get:
+      description: Возвращает показатели объявления, динамику по дням и разбивку по
+        площадкам
+      parameters:
+      - description: ID кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы объявлений
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      - description: ID объявления
+        in: path
+        name: ad_id
+        required: true
+        type: integer
+      - description: Дата начала периода в формате YYYY-MM-DD
+        in: query
+        name: from
+        type: string
+      - description: Дата конца периода в формате YYYY-MM-DD
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AdStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "501":
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Статистика объявления
+      tags:
+      - stats
+  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/stats:
+    get:
+      description: Возвращает показатели группы, динамику по дням и разбивки по объявлениям/площадкам
+      parameters:
+      - description: ID кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: ID группы объявлений
+        in: path
+        name: ad_group_id
+        required: true
+        type: integer
+      - description: Дата начала периода в формате YYYY-MM-DD
+        in: query
+        name: from
+        type: string
+      - description: Дата конца периода в формате YYYY-MM-DD
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GroupStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "501":
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Статистика группы объявлений
+      tags:
+      - stats
+  /ad_campaigns/{ad_campaign_id}/feed:
+    post:
+      consumes:
+      - application/json
+      description: Генерирует уникальную feed-ссылку для рекламной кампании
+      parameters:
+      - description: ID рекламной кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Создать feed-ссылку для кампании
+      tags:
+      - feed
+  /ad_campaigns/{ad_campaign_id}/stats:
+    get:
+      description: Возвращает показы, клики, CTR, расходы, CPC, вознаграждение партнерам,
+        выручку платформы, динамику по дням и разбивки по группам/площадкам
+      parameters:
+      - description: ID кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: Дата начала периода в формате YYYY-MM-DD
+        in: query
+        name: from
+        type: string
+      - description: Дата конца периода в формате YYYY-MM-DD
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CampaignStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "501":
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Статистика кампании
+      tags:
+      - stats
+  /ad_campaigns/{ad_campaign_id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Переводит кампанию и все объявления внутри неё в статус turned_off
+      parameters:
+      - description: ID кампании
+        in: path
+        name: ad_campaign_id
+        required: true
+        type: integer
+      - description: Новый статус кампании
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAdCampaignStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Выключение рекламной кампании
+      tags:
+      - ad_campaigns
+  /admin/ads:
+    get:
+      description: Возвращает все объявления со статусом moderation
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListAdminAdsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Очередь объявлений на модерации
+      tags:
+      - admin
+  /admin/ads/{ad_id}:
+    get:
+      description: Возвращает объявление по ID для модерации
+      parameters:
+      - description: ID объявления
+        in: path
+        name: ad_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AdResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Просмотр объявления администратором
+      tags:
+      - admin
+  /admin/ads/{ad_id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Одобряет или отклоняет объявление; при одобрении итоговый статус
+        зависит от доступных средств
+      parameters:
+      - description: ID объявления
+        in: path
+        name: ad_id
+        required: true
+        type: integer
+      - description: Решение модерации
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAdStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpx.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Решение модерации объявления
+      tags:
+      - admin
+  /advertisers/balance:
+    get:
+      description: Возвращает текущий баланс рекламодателя по сессии
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BalanceResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Баланс рекламодателя
+      tags:
+      - advertiser
+  /advertisers/balance/topup:
+    post:
+      consumes:
+      - application/json
+      description: Пополняет баланс текущего рекламодателя
+      parameters:
+      - description: Сумма пополнения
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TopUpBalanceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BalanceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Пополнение баланса
+      tags:
+      - advertiser
+  /advertisers/login:
+    post:
+      consumes:
+      - application/json
+      description: Аутентифицирует рекламодателя по email или телефону и паролю
+      parameters:
+      - description: Данные для входа
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.LoginResponse'
         "400":
           description: Invalid identifier или password
           schema:
             $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Неверные учётные данные
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
       summary: Вход рекламодателя
       tags:
-        - advertiser
-  /advertiser/logout:
+      - advertiser
+  /advertisers/login/vk:
+    post:
+      consumes:
+      - application/json
+      description: Аутентифицирует рекламодателя по frontend-driven VK ID SDK payload
+        и открывает сессию
+      parameters:
+      - description: access_token и user_id от VK ID SDK
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VKIDLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Вход рекламодателя через VK ID
+      tags:
+      - advertiser
+  /advertisers/logout:
     post:
       description: Завершает сессию текущего рекламодателя
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
@@ -125,40 +1998,1170 @@ paths:
             additionalProperties:
               type: string
             type: object
-      security:
-        - CookieAuth: []
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
       summary: Выход рекламодателя
       tags:
-        - advertiser
-  /advertiser/register:
-    post:
-      consumes:
-        - application/json
-      description: Создает новый аккаунт и открывает сессию
-      parameters:
-        - description: Данные для регистрации
-          in: body
-          name: input
-          required: true
-          schema:
-            $ref: '#/definitions/internal.RegisterRequest'
+      - advertiser
+  /advertisers/me:
+    get:
+      description: Возвращает данные текущего пользователя по сессии
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal.RegisterResponse'
+            $ref: '#/definitions/dto.AdvertiserProfileResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Профиль рекламодателя
+      tags:
+      - advertiser
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные текущего рекламодателя по сессии
+      parameters:
+      - description: Поля для обновления профиля
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAdvertiserProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AdvertiserProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление профиля рекламодателя
+      tags:
+      - advertiser
+  /advertisers/me/avatar:
+    put:
+      consumes:
+      - multipart/form-data
+      description: Загружает JPEG, PNG или WEBP аватар текущего рекламодателя
+      parameters:
+      - description: Файл аватара
+        in: formData
+        name: avatar
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AdvertiserProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление аватара рекламодателя
+      tags:
+      - advertiser
+  /advertisers/register:
+    post:
+      consumes:
+      - application/json
+      description: Создает новый аккаунт и открывает сессию
+      parameters:
+      - description: Данные для регистрации
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RegisterResponse'
         "400":
           description: Invalid request или User already exists
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/httpx.Error'
       summary: Регистрация рекламодателя
       tags:
       - advertiser
+  /appeals:
+    get:
+      description: Возвращает список обращений текущего рекламодателя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListAppealsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Список обращений
+      tags:
+      - appeal
+    post:
+      consumes:
+      - multipart/form-data
+      description: Создает обращение в техподдержку. Можно передать optional скриншот
+      parameters:
+      - description: Категория обращения
+        enum:
+        - bug
+        - suggestion
+        - complaint
+        - question
+        in: formData
+        name: category
+        required: true
+        type: string
+      - description: Заголовок обращения
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Описание проблемы или вопроса
+        in: formData
+        name: description
+        required: true
+        type: string
+      - description: Имя пользователя
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Email для обратной связи
+        in: formData
+        name: email
+        required: true
+        type: string
+      - description: Скриншот проблемы
+        in: formData
+        name: screenshot
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateAppealResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Создание обращения
+      tags:
+      - appeal
+  /appeals/{appeal_id}:
+    get:
+      description: Возвращает одно обращение текущего рекламодателя по id
+      parameters:
+      - description: ID обращения
+        in: path
+        name: appeal_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AppealResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Получить обращение
+      tags:
+      - appeal
+  /feed/{token}:
+    get:
+      description: Возвращает объявления по публичному feed-токену; при отсутствии
+        объявлений возвращает пустой список
+      parameters:
+      - description: Feed-токен
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Публичный feed объявлений
+      tags:
+      - feed
+  /partners/dictionaries/block-types:
+    get:
+      description: Справочник доступных типов блоков
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Типы рекламных блоков
+      tags:
+      - partner_dictionaries
+  /partners/dictionaries/cooperation-forms:
+    get:
+      description: Справочник форм сотрудничества
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Формы сотрудничества
+      tags:
+      - partner_dictionaries
+  /partners/dictionaries/countries:
+    get:
+      description: Справочник стран для анкеты партнера
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Страны партнера
+      tags:
+      - partner_dictionaries
+  /partners/dictionaries/geo-tree:
+    get:
+      description: Возвращает географическое дерево для настроек блока
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Дерево географии
+      tags:
+      - partner_dictionaries
+  /partners/dictionaries/payout-currencies:
+    get:
+      description: Справочник валют выплат
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Валюты выплат
+      tags:
+      - partner_dictionaries
+  /partners/dictionaries/registration-regions:
+    get:
+      description: Справочник регионов регистрации по стране
+      parameters:
+      - description: Код страны
+        in: query
+        name: country_code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Регионы регистрации
+      tags:
+      - partner_dictionaries
+  /partners/income/stats:
+    get:
+      description: Возвращает показы, начисленное вознаграждение, eCPM и детализацию
+        по дням, сайтам и рекламным блокам
+      parameters:
+      - description: Дата начала периода в формате YYYY-MM-DD
+        in: query
+        name: from
+        type: string
+      - description: Дата конца периода в формате YYYY-MM-DD
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PartnerIncomeStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Статистика дохода партнера
+      tags:
+      - partner_income
+  /partners/login:
+    post:
+      consumes:
+      - application/json
+      description: Логин по email или телефону и паролю
+      parameters:
+      - description: Учетные данные
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PartnerLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PartnerAuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Вход партнера
+      tags:
+      - partner
+  /partners/logout:
+    post:
+      description: Завершает текущую партнерскую сессию
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Выход партнера
+      tags:
+      - partner
+  /partners/me:
+    get:
+      description: Возвращает профиль текущего партнера по сессии
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PartnerProfileResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Профиль партнера
+      tags:
+      - partner
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные текущего партнера
+      parameters:
+      - description: Поля профиля
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePartnerProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PartnerProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление профиля партнера
+      tags:
+      - partner
+  /partners/register:
+    post:
+      consumes:
+      - application/json
+      description: Создает профиль партнера и открывает сессию
+      parameters:
+      - description: Данные партнера
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PartnerRegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PartnerAuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      summary: Регистрация партнера
+      tags:
+      - partner
+  /partners/sites:
+    get:
+      description: Возвращает все сайты текущего партнера
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListPartnerSitesResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Список сайтов партнера
+      tags:
+      - partner_sites
+    post:
+      consumes:
+      - application/json
+      description: Добавляет новый домен в раздел "Реклама на сайтах"
+      parameters:
+      - description: Домен и название сайта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePartnerSiteRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Создание сайта партнера
+      tags:
+      - partner_sites
+  /partners/sites/{site_id}:
+    delete:
+      description: Удаляет сайт текущего партнера
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Удаление сайта партнера
+      tags:
+      - partner_sites
+    get:
+      description: Возвращает один сайт текущего партнера
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PartnerSiteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Сайт партнера
+      tags:
+      - partner_sites
+    put:
+      consumes:
+      - application/json
+      description: Обновляет домен и название сайта
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: Поля сайта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePartnerSiteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PartnerSiteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление сайта партнера
+      tags:
+      - partner_sites
+  /partners/sites/{site_id}/blocks:
+    get:
+      description: Возвращает все рекламные блоки сайта текущего партнера
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListPartnerBlocksResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Список блоков сайта
+      tags:
+      - partner_blocks
+    post:
+      consumes:
+      - application/json
+      description: 'Первый шаг конструктора: тип блока и название'
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: Параметры блока
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePartnerBlockRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Создание рекламного блока
+      tags:
+      - partner_blocks
+  /partners/sites/{site_id}/blocks/{block_id}:
+    delete:
+      description: Удаляет рекламный блок сайта
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: ID блока
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Удаление блока
+      tags:
+      - partner_blocks
+    get:
+      description: Возвращает полную карточку блока со всеми настройками
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: ID блока
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PartnerBlockDetailsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Детали рекламного блока
+      tags:
+      - partner_blocks
+  /partners/sites/{site_id}/blocks/{block_id}/embed:
+    get:
+      description: Возвращает embed_token, iframe URL и HTML snippet iframe для вставки
+        рекламного блока
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: ID блока
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PartnerBlockEmbedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Embed-код блока
+      tags:
+      - partner_blocks
+  /partners/sites/{site_id}/blocks/{block_id}/general:
+    put:
+      consumes:
+      - application/json
+      description: Сохраняет вкладку "Общие"
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: ID блока
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      - description: Общие настройки
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePartnerBlockGeneralRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Общие настройки блока
+      tags:
+      - partner_blocks
+  /partners/sites/{site_id}/blocks/{block_id}/geography:
+    put:
+      consumes:
+      - application/json
+      description: Сохраняет вкладку "География"
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: ID блока
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      - description: Настройки географии
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePartnerBlockGeographyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: География блока
+      tags:
+      - partner_blocks
+  /partners/sites/{site_id}/blocks/{block_id}/meta:
+    put:
+      consumes:
+      - application/json
+      description: Обновляет мета-данные блока
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: ID блока
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      - description: Имя блока
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePartnerBlockMetaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Обновление названия блока
+      tags:
+      - partner_blocks
+  /partners/sites/{site_id}/blocks/{block_id}/self-ad:
+    put:
+      consumes:
+      - application/json
+      description: Сохраняет вкладку "Своя реклама" в reserved-режиме
+      parameters:
+      - description: ID сайта
+        in: path
+        name: site_id
+        required: true
+        type: integer
+      - description: ID блока
+        in: path
+        name: block_id
+        required: true
+        type: integer
+      - description: Настройки вкладки
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePartnerBlockSelfAdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.Error'
+      security:
+      - CookieAuth: []
+      summary: Своя реклама
+      tags:
+      - partner_blocks
 securityDefinitions:
   CookieAuth:
-    in: header
+    in: cookie
     name: session_id
     type: apiKey
 swagger: "2.0"

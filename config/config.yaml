@@ -12,8 +12,74 @@ postgres:
 
 graceful_timeout: 20s
 
+redis:
+  host: ${REDIS_HOST}
+  port: 6379
+  password: ${REDIS_PASSWORD}
+  db: 0
+  max_idle: 4
+  max_active: 16
+  idle_timeout: 5m
+  wait: true
+  connect_timeout: 5s
+  read_timeout: 5s
+  write_timeout: 5s
+  ping_after_idle_for: 1m
+
+session:
+  ttl: 24h
+  cookie_name: "session_id"
+  cookie_path: "/"
+  cookie_secure: false
+
+s3:
+  endpoint: ${S3_ENDPOINT}
+  region: ${S3_REGION}
+  bucket: ${S3_BUCKET}
+  access_key: ${S3_ACCESS_KEY}
+  secret_key: ${S3_SECRET_KEY}
+  public_base_url: ${S3_PUBLIC_BASE_URL}
+  # для MinIO / кастомного endpoint обычно true; для нативного AWS S3 — false
+  force_path_style: true
+
+auth_service:
+  grpc_addr: ${AUTH_GRPC_ADDR}
+
+profile_service:
+  grpc_addr: ${PROFILE_GRPC_ADDR}
+
 cors:
   allowed_origins:
     - "http://localhost:8080"
     - "http://127.0.0.1:8080"
     - "http://212.233.96.112:8080"
+
+observability:
+  metrics_addr: ${APP_METRICS_ADDR}
+
+kafka:
+  brokers: ${KAFKA_BROKERS}
+  ad_events_topic: ${KAFKA_AD_EVENTS_TOPIC}
+  consumer_group: ${KAFKA_CONSUMER_GROUP}
+
+clickhouse:
+  addr: ${CLICKHOUSE_ADDR}
+  database: ${CLICKHOUSE_DB}
+  username: ${CLICKHOUSE_USER}
+  password: ${CLICKHOUSE_PASSWORD}
+
+yookassa:
+  shop_id: ${YOOKASSA_SHOP_ID}
+  secret_key: ${YOOKASSA_SECRET_KEY}
+  return_url: ${YOOKASSA_RETURN_URL}
+  webhook_url: ${YOOKASSA_WEBHOOK_URL}
+
+smtp:
+  host: smtp.yandex.ru
+  port: 465
+  user: noreply@eshkereklama.ru
+  password: ${SMTP_PASSWORD}
+
+balance_automation:
+  autopay_interval: 5m
+  notification_interval: 15m

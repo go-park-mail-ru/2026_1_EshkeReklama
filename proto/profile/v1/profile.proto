@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package eshkere.profile.v1;
+
+option go_package = "eshkere/pkg/pb/profile/v1;profilev1";
+
+service ProfileService {
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  rpc TrackEvent(TrackEventRequest) returns (TrackEventResponse);
+}
+
+message GetProfileRequest {
+  string visitor_id = 1;
+}
+
+message TopicScore {
+  int32 topic_id = 1;
+  double score = 2;
+}
+
+message GetProfileResponse {
+  bool found = 1;
+  repeated TopicScore topics = 2;
+}
+
+message TrackEventRequest {
+  string visitor_id = 1;
+  int32 topic_id = 2;
+  string event_type = 3;
+}
+
+message TrackEventResponse {}

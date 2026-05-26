@@ -1,0 +1,220 @@
+package v1
+
+import (
+	"net/http"
+	"strconv"
+
+	"eshkere/internal/handler"
+	"eshkere/internal/handler/middleware"
+	"eshkere/internal/handler/v1/dto"
+	"eshkere/internal/models"
+	"eshkere/pkg/ctxutils"
+	"eshkere/pkg/httpx"
+
+	"github.com/gorilla/mux"
+)
+
+func (a *API) RegisterAdCampaignHandlers(r *mux.Router) {
+	campaigns := r.PathPrefix("/ad_campaigns").Subrouter()
+
+	campaigns.Use(middleware.Auth(a.authClient, a.cookieConfig.Name))
+	campaigns.HandleFunc("", a.CreateAdCampaign).Methods(http.MethodPost)
+	campaigns.HandleFunc("", a.ListAdCampaigns).Methods(http.MethodGet)
+	campaigns.HandleFunc("/{ad_campaign_id}", a.UpdateAdCampaign).Methods(http.MethodPut)
+	campaigns.HandleFunc("/{ad_campaign_id}/status", a.UpdateAdCampaignStatus).Methods(http.MethodPatch)
+	campaigns.HandleFunc("/{ad_campaign_id}", a.DeleteAdCampaign).Methods(http.MethodDelete)
+}
+
+// CreateAdCampaign создаёт рекламную кампанию для текущего рекламодателя (ID из сессии).
+// @Summary      Создание рекламной кампании
+// @Description  Создаёт кампанию; рекламодатель определяется по сессии
+// @Tags         ad_campaigns
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.CreateAdCampaignRequest  true  "Параметры кампании"
+// @Success      200   {object}  dto.CreateAdCampaignResponse
+// @Failure      400   {object}  httpx.Error
+// @Failure      401   {object}  httpx.Error
+// @Failure      500   {object}  httpx.Error
+// @Router       /ad_campaigns [post]
+// @Security     CookieAuth
+func (a *API) CreateAdCampaign(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
+
+	req, err := newJSONRequest[dto.CreateAdCampaignRequest](r)
+	if err != nil {
+		httpx.BadRequest(w, "invalid request")
+		return
+	}
+
+	created, err := a.service.CreateAdCampaign(ctx, req.ToInput(advertiserID))
+	if err != nil {
+		handler.HandleError(w, r, "creating campaign", err)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, dto.CreateAdCampaignResponse{
+		ID: created.ID,
+	})
+}
+
+// UpdateAdCampaign обновляет рекламную кампанию.
+// @Summary      Обновление рекламной кампании
+// @Description  Частичное обновление полей кампании
+// @Tags         ad_campaigns
+// @Accept       json
+// @Produce      json
+// @Param        ad_campaign_id  path      int                         true  "ID кампании"
+// @Param        body            body      dto.UpdateAdCampaignRequest true  "Поля для обновления"
+// @Success      200             {object}  httpx.Success
+// @Failure      400             {object}  httpx.Error
+// @Failure      401             {object}  httpx.Error
+// @Failure      404             {object}  httpx.Error
+// @Failure      500             {object}  httpx.Error
+// @Router       /ad_campaigns/{ad_campaign_id} [put]
+// @Security     CookieAuth
+func (a *API) UpdateAdCampaign(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
+
+	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
+	if err != nil {
+		handler.HandleError(w, r, "parsing campaign id", err)
+		return
+	}
+
+	req, err := newJSONRequest[dto.UpdateAdCampaignRequest](r)
+	if err != nil {
+		httpx.BadRequest(w, "invalid request")
+		return
+	}
+
+	if err = a.service.UpdateAdCampaign(ctx, advertiserID, req.ToInput(campaignID)); err != nil {
+		handler.HandleError(w, r, "updating campaign", err)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, nil)
+}
+
+// UpdateAdCampaignStatus выключает рекламную кампанию и все её объявления.
+// @Summary      Выключение рекламной кампании
+// @Description  Переводит кампанию и все объявления внутри неё в статус turned_off
+// @Tags         ad_campaigns
+// @Accept       json
+// @Produce      json
+// @Param        ad_campaign_id  path      int                                true  "ID кампании"
+// @Param        body            body      dto.UpdateAdCampaignStatusRequest  true  "Новый статус кампании"
+// @Success      200             {object}  httpx.Success
+// @Failure      400             {object}  httpx.Error
+// @Failure      401             {object}  httpx.Error
+// @Failure      404             {object}  httpx.Error
+// @Failure      500             {object}  httpx.Error
+// @Router       /ad_campaigns/{ad_campaign_id}/status [patch]
+// @Security     CookieAuth
+func (a *API) UpdateAdCampaignStatus(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
+
+	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
+	if err != nil {
+		handler.HandleError(w, r, "parsing campaign id", err)
+		return
+	}
+
+	req, err := newJSONRequest[dto.UpdateAdCampaignStatusRequest](r)
+	if err != nil {
+		httpx.BadRequest(w, "invalid request")
+		return
+	}
+	if req.Status != string(models.AdStatusTurnedOff) {
+		httpx.BadRequest(w, "invalid status")
+		return
+	}
+
+	if err = a.service.TurnOffAdCampaign(ctx, advertiserID, campaignID); err != nil {
+		handler.HandleError(w, r, "updating campaign status", err)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, nil)
+}
+
+// ListAdCampaigns возвращает список кампаний текущего рекламодателя.
+// @Summary      Список рекламных кампаний
+// @Description  Кампании рекламодателя из сессии
+// @Tags         ad_campaigns
+// @Produce      json
+// @Success      200   {object}  dto.ListAdCampaignsResponse
+// @Failure      401   {object}  httpx.Error
+// @Failure      500   {object}  httpx.Error
+// @Router       /ad_campaigns [get]
+// @Security     CookieAuth
+func (a *API) ListAdCampaigns(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
+
+	campaigns, err := a.service.ListAdCampaigns(ctx, advertiserID)
+	if err != nil {
+		handler.HandleError(w, r, "listing campaigns", err)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, dto.ToListAdCampaignsResponse(advertiserID, campaigns))
+}
+
+// DeleteAdCampaign удаляет рекламную кампанию.
+// @Summary      Удаление рекламной кампании
+// @Tags         ad_campaigns
+// @Produce      json
+// @Param        ad_campaign_id  path  int  true  "ID кампании"
+// @Success      200             {object}  httpx.Success
+// @Failure      400             {object}  httpx.Error
+// @Failure      401             {object}  httpx.Error
+// @Failure      404             {object}  httpx.Error
+// @Failure      500             {object}  httpx.Error
+// @Router       /ad_campaigns/{ad_campaign_id} [delete]
+// @Security     CookieAuth
+func (a *API) DeleteAdCampaign(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
+
+	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
+	if err != nil {
+		handler.HandleError(w, r, "parsing campaign id", err)
+		return
+	}
+
+	if err = a.service.DeleteAdCampaign(ctx, advertiserID, campaignID); err != nil {
+		handler.HandleError(w, r, "deleting campaign", err)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, nil)
+}

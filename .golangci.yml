@@ -1,0 +1,69 @@
+version: "2"
+
+run:
+  timeout: 3m
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - eshkere
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - gosec
+    - govet
+    - ineffassign
+    - misspell
+    - staticcheck
+    - unused
+
+  settings:
+    misspell:
+      locale: US
+      extra-words:
+        - typo: "cancelled"
+          correction: "cancelled"
+    staticcheck:
+      checks:
+        - all
+        - -QF*
+        - -ST*
+        - -SA1019
+
+  exclusions:
+    presets: []
+    paths:
+      - docs
+    generated: strict
+    rules:
+      - path: '(.+)_test\.go'
+        linters:
+          - errcheck
+          - gosec
+
+      - text: "G115:"
+        linters:
+          - gosec
+
+      - path: internal/repository/postgres/partner_block\.go
+        text: "G101:"
+        linters:
+          - gosec
+
+      - text: "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv|.*Rollback). is not checked"
+        linters:
+          - errcheck
+
+      - text: "should check returned error before deferring"
+        linters:
+          - errcheck

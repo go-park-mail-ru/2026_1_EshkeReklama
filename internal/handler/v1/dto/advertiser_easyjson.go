@@ -1348,6 +1348,8 @@ func easyjson94f0a767DecodeEshkereInternalHandlerV1Dto15(in *jlexer.Lexer, out *
 			out.City = string(in.String())
 		case "tariff":
 			out.Tariff = string(in.String())
+		case "role":
+			out.Role = string(in.String())
 		case "created_at":
 			out.CreatedAt = string(in.String())
 		default:
@@ -1413,6 +1415,11 @@ func easyjson94f0a767EncodeEshkereInternalHandlerV1Dto15(out *jwriter.Writer, in
 		const prefix string = ",\"tariff\":"
 		out.RawString(prefix)
 		out.String(string(in.Tariff))
+	}
+	{
+		const prefix string = ",\"role\":"
+		out.RawString(prefix)
+		out.String(string(in.Role))
 	}
 	{
 		const prefix string = ",\"created_at\":"

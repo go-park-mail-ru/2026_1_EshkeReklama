@@ -52,7 +52,7 @@ func (r *AdvertiserRepository) GetByID(ctx context.Context, id int) (*models.Adv
 		&a.City,
 		&a.Tariff,
 		&a.Role,
-		&a.SavedPaymentMethodID,
+		&a.SavedPaymentMethodID, // TODO: убрать
 		&a.SavedPaymentMethodTitle,
 		&a.CreatedAt,
 		&a.UpdatedAt,

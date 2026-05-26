@@ -69,6 +69,7 @@ type AdvertiserProfileResponse struct {
 	Company   string `json:"company"`
 	City      string `json:"city"`
 	Tariff    string `json:"tariff"`
+	Role      string `json:"role"`
 	CreatedAt string `json:"created_at"`
 }
 
@@ -142,6 +143,7 @@ func AdvertiserWithContactsToProfile(adv *models.Advertiser, email, phone string
 		Company:   adv.Company.String,
 		City:      adv.City.String,
 		Tariff:    string(adv.Tariff),
+		Role:      string(adv.Role),
 		CreatedAt: adv.CreatedAt.Format(time.RFC3339),
 	}
 }

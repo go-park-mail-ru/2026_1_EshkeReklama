@@ -30,6 +30,6 @@ lint:
 swagger:
 	swag init -g main.go -d ./cmd/eshkere,./internal/app,./internal/handler,./internal/handler/v1,./internal/handler/v1/dto,./internal/models,./internal/handler/middleware,./pkg/httpx
 
-# пример создания новой миграции, замените add_new_type на имя миграции
+# пример создания новой миграции, замени add_new_type на имя миграции
 migrations-create-example:
 	migrate create -digits 6 -ext sql -dir db/migrations -seq add_new_type

@@ -26,7 +26,7 @@ func (a *API) RegisterAdRequestHandlers(r *mux.Router) {
 // @Failure      400      {object}  httpx.Error
 // @Failure      404      {object}  httpx.Error
 // @Failure      500      {object}  httpx.Error
-// @Router       /ad/request [post]
+// @Router       /api/ad/request [post]
 func (a *API) RequestAd(w http.ResponseWriter, r *http.Request) {
 	req, err := newJSONRequest[dto.AdRequest](r)
 	if err != nil {
@@ -40,7 +40,7 @@ func (a *API) RequestAd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clickURL := fmt.Sprintf("%s/click/%s", requestBaseURL(r), result.RequestID)
+	clickURL := fmt.Sprintf("%s%s/click/%s", requestBaseURL(r), APIPrefix, result.RequestID)
 	httpx.JSON(w, http.StatusOK, dto.AdRequestResponse{
 		RequestID: result.RequestID,
 		Ad:        dto.ToAdResponse(result.Ad),

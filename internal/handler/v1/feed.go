@@ -24,7 +24,7 @@ func (a *API) RegisterFeedHandlers(r *mux.Router) {
 // @Success      200    {object}  map[string]interface{}
 // @Failure      404    {object}  httpx.Error
 // @Failure      500    {object}  httpx.Error
-// @Router       /feed/{token} [get]
+// @Router       /api/feed/{token} [get]
 func (a *API) GetFeed(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	token := mux.Vars(r)["token"]
@@ -47,7 +47,7 @@ func (a *API) GetFeed(w http.ResponseWriter, r *http.Request) {
 // @Success      201    {object}  map[string]interface{}
 // @Failure      400    {object}  httpx.Error
 // @Failure      500    {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id}/feed [post]
+// @Router       /api/ad_campaigns/{ad_campaign_id}/feed [post]
 func (a *API) CreateFeed(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

@@ -37,7 +37,7 @@ func (a *API) RegisterAdvertiserStatsHandlers(r *mux.Router) {
 // @Failure      404             {object}  httpx.Error
 // @Failure      501             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id}/stats [get]
+// @Router       /api/ad_campaigns/{ad_campaign_id}/stats [get]
 // @Security     CookieAuth
 func (a *API) GetCampaignStats(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -82,7 +82,7 @@ func (a *API) GetCampaignStats(w http.ResponseWriter, r *http.Request) {
 // @Failure      404             {object}  httpx.Error
 // @Failure      501             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/stats [get]
+// @Router       /api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/stats [get]
 // @Security     CookieAuth
 func (a *API) GetGroupStats(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -134,7 +134,7 @@ func (a *API) GetGroupStats(w http.ResponseWriter, r *http.Request) {
 // @Failure      404             {object}  httpx.Error
 // @Failure      501             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}/stats [get]
+// @Router       /api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}/stats [get]
 // @Security     CookieAuth
 func (a *API) GetAdStats(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

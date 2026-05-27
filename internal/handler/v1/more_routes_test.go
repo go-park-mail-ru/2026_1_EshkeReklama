@@ -60,7 +60,7 @@ func TestAdCampaign_UpdateListDelete(t *testing.T) {
 		return nil
 	}
 
-	updateReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/5", bytes.NewBufferString(`{"name":"new"}`))
+	updateReq := httptest.NewRequest(http.MethodPut, APIPrefix+"/ad_campaigns/5", bytes.NewBufferString(`{"name":"new"}`))
 	updateReq.AddCookie(sess)
 	updateReq.AddCookie(csrf)
 	updateReq.Header.Set("X-CSRF-Token", csrf.Value)
@@ -70,7 +70,7 @@ func TestAdCampaign_UpdateListDelete(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", updateRR.Code, updateRR.Body.String())
 	}
 
-	listReq := httptest.NewRequest(http.MethodGet, "/ad_campaigns", nil)
+	listReq := httptest.NewRequest(http.MethodGet, APIPrefix+"/ad_campaigns", nil)
 	listReq.AddCookie(sess)
 	listReq.AddCookie(csrf)
 	listRR := httptest.NewRecorder()
@@ -88,7 +88,7 @@ func TestAdCampaign_UpdateListDelete(t *testing.T) {
 		t.Fatalf("unexpected campaigns: %+v", listEnvelope.Data.Campaigns)
 	}
 
-	statusReq := httptest.NewRequest(http.MethodPatch, "/ad_campaigns/5/status", bytes.NewBufferString(`{"status":"turned_off"}`))
+	statusReq := httptest.NewRequest(http.MethodPatch, APIPrefix+"/ad_campaigns/5/status", bytes.NewBufferString(`{"status":"turned_off"}`))
 	statusReq.AddCookie(sess)
 	statusReq.AddCookie(csrf)
 	statusReq.Header.Set("X-CSRF-Token", csrf.Value)
@@ -98,7 +98,7 @@ func TestAdCampaign_UpdateListDelete(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", statusRR.Code, statusRR.Body.String())
 	}
 
-	deleteReq := httptest.NewRequest(http.MethodDelete, "/ad_campaigns/5", nil)
+	deleteReq := httptest.NewRequest(http.MethodDelete, APIPrefix+"/ad_campaigns/5", nil)
 	deleteReq.AddCookie(sess)
 	deleteReq.AddCookie(csrf)
 	deleteReq.Header.Set("X-CSRF-Token", csrf.Value)
@@ -145,7 +145,7 @@ func TestAdGroup_UpdateListDelete(t *testing.T) {
 		return nil
 	}
 
-	updateReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/9/ad_groups/3", bytes.NewBufferString(`{"name":"new-group"}`))
+	updateReq := httptest.NewRequest(http.MethodPut, APIPrefix+"/ad_campaigns/9/ad_groups/3", bytes.NewBufferString(`{"name":"new-group"}`))
 	updateReq.AddCookie(sess)
 	updateReq.AddCookie(csrf)
 	updateReq.Header.Set("X-CSRF-Token", csrf.Value)
@@ -155,7 +155,7 @@ func TestAdGroup_UpdateListDelete(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", updateRR.Code, updateRR.Body.String())
 	}
 
-	listReq := httptest.NewRequest(http.MethodGet, "/ad_campaigns/9/ad_groups", nil)
+	listReq := httptest.NewRequest(http.MethodGet, APIPrefix+"/ad_campaigns/9/ad_groups", nil)
 	listReq.AddCookie(sess)
 	listReq.AddCookie(csrf)
 	listRR := httptest.NewRecorder()
@@ -164,7 +164,7 @@ func TestAdGroup_UpdateListDelete(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", listRR.Code, listRR.Body.String())
 	}
 
-	deleteReq := httptest.NewRequest(http.MethodDelete, "/ad_campaigns/9/ad_groups/3", nil)
+	deleteReq := httptest.NewRequest(http.MethodDelete, APIPrefix+"/ad_campaigns/9/ad_groups/3", nil)
 	deleteReq.AddCookie(sess)
 	deleteReq.AddCookie(csrf)
 	deleteReq.Header.Set("X-CSRF-Token", csrf.Value)
@@ -211,7 +211,7 @@ func TestAd_UpdateDelete(t *testing.T) {
 		t.Fatalf("Close writer: %v", err)
 	}
 
-	updateReq := httptest.NewRequest(http.MethodPut, "/ad_campaigns/1/ad_groups/2/ads/8", &updateBody)
+	updateReq := httptest.NewRequest(http.MethodPut, APIPrefix+"/ad_campaigns/1/ad_groups/2/ads/8", &updateBody)
 	updateReq.Header.Set("Content-Type", updateWriter.FormDataContentType())
 	updateReq.AddCookie(sess)
 	updateReq.AddCookie(csrf)
@@ -222,7 +222,7 @@ func TestAd_UpdateDelete(t *testing.T) {
 		t.Fatalf("expected 200 got %d body=%s", updateRR.Code, updateRR.Body.String())
 	}
 
-	deleteReq := httptest.NewRequest(http.MethodDelete, "/ad_campaigns/1/ad_groups/2/ads/8", nil)
+	deleteReq := httptest.NewRequest(http.MethodDelete, APIPrefix+"/ad_campaigns/1/ad_groups/2/ads/8", nil)
 	deleteReq.AddCookie(sess)
 	deleteReq.AddCookie(csrf)
 	deleteReq.Header.Set("X-CSRF-Token", csrf.Value)
@@ -273,7 +273,7 @@ func TestAdvertiser_UpdateAvatar_OK(t *testing.T) {
 	}
 	ac.setCredentials(1, "a@a.test", "9001234567")
 
-	req := httptest.NewRequest(http.MethodPut, "/advertisers/me/avatar", &body)
+	req := httptest.NewRequest(http.MethodPut, APIPrefix+"/advertisers/me/avatar", &body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.AddCookie(sess)
 	req.AddCookie(csrf)
@@ -329,7 +329,7 @@ func TestAppeal_CreateMultipartWithoutScreenshot_OK(t *testing.T) {
 		t.Fatalf("Close writer: %v", err)
 	}
 
-	req := httptest.NewRequest(http.MethodPost, "/appeals", &body)
+	req := httptest.NewRequest(http.MethodPost, APIPrefix+"/appeals", &body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)
@@ -403,7 +403,7 @@ func TestAppeal_CreateMultipartWithScreenshot_OK(t *testing.T) {
 		t.Fatalf("Close writer: %v", err)
 	}
 
-	req := httptest.NewRequest(http.MethodPost, "/appeals", &body)
+	req := httptest.NewRequest(http.MethodPost, APIPrefix+"/appeals", &body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)
@@ -432,7 +432,7 @@ func TestAppeal_CreateJSONRejected(t *testing.T) {
 
 	csrf := getCSRF(t, r)
 
-	req := httptest.NewRequest(http.MethodPost, "/appeals", bytes.NewBufferString(`{"category":"question","title":"How to top up?","description":"Need help","name":"Ivan","email":"ivan@example.com"}`))
+	req := httptest.NewRequest(http.MethodPost, APIPrefix+"/appeals", bytes.NewBufferString(`{"category":"question","title":"How to top up?","description":"Need help","name":"Ivan","email":"ivan@example.com"}`))
 	req.Header.Set("Content-Type", "application/json")
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)

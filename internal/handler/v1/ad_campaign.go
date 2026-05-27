@@ -36,7 +36,7 @@ func (a *API) RegisterAdCampaignHandlers(r *mux.Router) {
 // @Failure      400   {object}  httpx.Error
 // @Failure      401   {object}  httpx.Error
 // @Failure      500   {object}  httpx.Error
-// @Router       /ad_campaigns [post]
+// @Router       /api/ad_campaigns [post]
 // @Security     CookieAuth
 func (a *API) CreateAdCampaign(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -77,7 +77,7 @@ func (a *API) CreateAdCampaign(w http.ResponseWriter, r *http.Request) {
 // @Failure      401             {object}  httpx.Error
 // @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id} [put]
+// @Router       /api/ad_campaigns/{ad_campaign_id} [put]
 // @Security     CookieAuth
 func (a *API) UpdateAdCampaign(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -121,7 +121,7 @@ func (a *API) UpdateAdCampaign(w http.ResponseWriter, r *http.Request) {
 // @Failure      401             {object}  httpx.Error
 // @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id}/status [patch]
+// @Router       /api/ad_campaigns/{ad_campaign_id}/status [patch]
 // @Security     CookieAuth
 func (a *API) UpdateAdCampaignStatus(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -164,7 +164,7 @@ func (a *API) UpdateAdCampaignStatus(w http.ResponseWriter, r *http.Request) {
 // @Success      200   {object}  dto.ListAdCampaignsResponse
 // @Failure      401   {object}  httpx.Error
 // @Failure      500   {object}  httpx.Error
-// @Router       /ad_campaigns [get]
+// @Router       /api/ad_campaigns [get]
 // @Security     CookieAuth
 func (a *API) ListAdCampaigns(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -194,7 +194,7 @@ func (a *API) ListAdCampaigns(w http.ResponseWriter, r *http.Request) {
 // @Failure      401             {object}  httpx.Error
 // @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id} [delete]
+// @Router       /api/ad_campaigns/{ad_campaign_id} [delete]
 // @Security     CookieAuth
 func (a *API) DeleteAdCampaign(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

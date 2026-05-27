@@ -37,7 +37,7 @@ func TestAdRequest_AcceptsEmbedTokenWithoutCSRF(t *testing.T) {
 		}, nil
 	}
 
-	req := httptest.NewRequest(http.MethodPost, "/ad/request", bytes.NewBufferString(`{"embed_token":"pb_live123","visitor_id":"v1"}`))
+	req := httptest.NewRequest(http.MethodPost, APIPrefix+"/ad/request", bytes.NewBufferString(`{"embed_token":"pb_live123","visitor_id":"v1"}`))
 	req.Header.Set("Content-Type", "application/json")
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
@@ -80,7 +80,7 @@ func TestPartnerBlockEmbed_ResponseContainsIframe(t *testing.T) {
 			nil
 	}
 
-	req := httptest.NewRequest(http.MethodGet, "/partners/sites/101/blocks/9001/embed", nil)
+	req := httptest.NewRequest(http.MethodGet, APIPrefix+"/partners/sites/101/blocks/9001/embed", nil)
 	req.AddCookie(sess)
 	req.AddCookie(csrf)
 	rr := httptest.NewRecorder()
@@ -114,7 +114,7 @@ func TestPartnerBlockFrame_ReturnsRenderableHTML(t *testing.T) {
 	svc := &stubService{}
 	r := newTestRouter(ac, svc)
 
-	req := httptest.NewRequest(http.MethodGet, "/public/partner/blocks/pb_frame123/frame", nil)
+	req := httptest.NewRequest(http.MethodGet, APIPrefix+"/public/partner/blocks/pb_frame123/frame", nil)
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 
@@ -129,7 +129,7 @@ func TestPartnerBlockFrame_ReturnsRenderableHTML(t *testing.T) {
 		`const embedToken = "pb_frame123";`,
 		`localStorage.getItem`,
 		`visitor_id: visitorId()`,
-		`fetch("/ad/request"`,
+		`fetch("/api/ad/request"`,
 		`renderFallback`,
 	} {
 		if !strings.Contains(body, want) {
@@ -150,7 +150,7 @@ func TestClickAd_RedirectsToTarget(t *testing.T) {
 		return "https://target.example/path", nil
 	}
 
-	req := httptest.NewRequest(http.MethodGet, "/click/req123", nil)
+	req := httptest.NewRequest(http.MethodGet, APIPrefix+"/click/req123", nil)
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 

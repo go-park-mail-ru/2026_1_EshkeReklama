@@ -26,7 +26,7 @@ var yookassaWebhookIPNets = mustParseCIDRs([]string{
 })
 
 func (a *API) RegisterPaymentHandlers(r *mux.Router) {
-	r.HandleFunc("/api/webhook/yookassa", a.YookassaWebhook).Methods(http.MethodPost)
+	r.HandleFunc("/webhook/yookassa", a.YookassaWebhook).Methods(http.MethodPost)
 }
 
 func (a *API) CreateBalancePayment(w http.ResponseWriter, r *http.Request) {

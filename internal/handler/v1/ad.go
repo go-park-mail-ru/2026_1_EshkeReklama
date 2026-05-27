@@ -40,7 +40,7 @@ func (a *API) RegisterAdsHandlers(r *mux.Router) {
 // @Failure      401             {object}  httpx.Error
 // @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads [post]
+// @Router       /api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads [post]
 // @Security     CookieAuth
 func (a *API) CreateAd(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -94,7 +94,7 @@ func (a *API) CreateAd(w http.ResponseWriter, r *http.Request) {
 // @Failure      404             {object}  httpx.Error
 // @Failure      422             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id} [put]
+// @Router       /api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id} [put]
 // @Security     CookieAuth
 func (a *API) UpdateAd(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -162,7 +162,7 @@ func newCreateAdInput(r *http.Request, groupID int) (*serviceinput.CreateAd, err
 // @Failure      401             {object}  httpx.Error
 // @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads [get]
+// @Router       /api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads [get]
 // @Security     CookieAuth
 func (a *API) ListAds(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -200,7 +200,7 @@ func (a *API) ListAds(w http.ResponseWriter, r *http.Request) {
 // @Failure      401             {object}  httpx.Error
 // @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id} [delete]
+// @Router       /api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id} [delete]
 // @Security     CookieAuth
 func (a *API) DeleteAd(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

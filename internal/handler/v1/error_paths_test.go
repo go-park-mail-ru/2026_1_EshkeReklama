@@ -23,7 +23,7 @@ func TestHandlers_BadRequests(t *testing.T) {
 	sess := createSessionCookie(t, ac, 1)
 
 	// invalid ad_group_id (route var not int)
-	req := httptest.NewRequest(http.MethodPost, "/ad_campaigns/1/ad_groups/zzz/ads", nil)
+	req := httptest.NewRequest(http.MethodPost, APIPrefix+"/ad_campaigns/1/ad_groups/zzz/ads", nil)
 	req.AddCookie(sess)
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)
@@ -34,7 +34,7 @@ func TestHandlers_BadRequests(t *testing.T) {
 	}
 
 	// invalid ad_campaign_id for ad group
-	req2 := httptest.NewRequest(http.MethodPost, "/ad_campaigns/nope/ad_groups", bytes.NewBufferString(`{"topic_id":1,"region_id":2,"name":"g","age_from":18,"age_to":25,"gender":"any"}`))
+	req2 := httptest.NewRequest(http.MethodPost, APIPrefix+"/ad_campaigns/nope/ad_groups", bytes.NewBufferString(`{"topic_id":1,"region_id":2,"name":"g","age_from":18,"age_to":25,"gender":"any"}`))
 	req2.AddCookie(sess)
 	req2.AddCookie(csrf)
 	req2.Header.Set("X-CSRF-Token", csrf.Value)
@@ -45,7 +45,7 @@ func TestHandlers_BadRequests(t *testing.T) {
 	}
 
 	// invalid json for ad_campaigns create
-	req3 := httptest.NewRequest(http.MethodPost, "/ad_campaigns", bytes.NewBufferString(`{"name":`))
+	req3 := httptest.NewRequest(http.MethodPost, APIPrefix+"/ad_campaigns", bytes.NewBufferString(`{"name":`))
 	req3.AddCookie(sess)
 	req3.AddCookie(csrf)
 	req3.Header.Set("X-CSRF-Token", csrf.Value)
@@ -59,7 +59,7 @@ func TestHandlers_BadRequests(t *testing.T) {
 	svc.createAdCampaignFn = func(_ context.Context, _ *serviceinput.CreateAdCampaign) (*models.AdCampaign, error) {
 		return nil, errs.BadRequestError
 	}
-	req4 := httptest.NewRequest(http.MethodPost, "/ad_campaigns", bytes.NewBufferString(`{"name":"camp"}`))
+	req4 := httptest.NewRequest(http.MethodPost, APIPrefix+"/ad_campaigns", bytes.NewBufferString(`{"name":"camp"}`))
 	req4.AddCookie(sess)
 	req4.AddCookie(csrf)
 	req4.Header.Set("X-CSRF-Token", csrf.Value)
@@ -82,7 +82,7 @@ func TestFeed_NotFound(t *testing.T) {
 		return nil, errs.NotFoundError
 	}
 
-	req := httptest.NewRequest(http.MethodGet, "/feed/missing", nil)
+	req := httptest.NewRequest(http.MethodGet, APIPrefix+"/feed/missing", nil)
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 	if rr.Code != http.StatusNotFound {
@@ -102,7 +102,7 @@ func TestFeed_InternalError(t *testing.T) {
 		return nil, errors.New("db down")
 	}
 
-	req := httptest.NewRequest(http.MethodGet, "/feed/tok", nil)
+	req := httptest.NewRequest(http.MethodGet, APIPrefix+"/feed/tok", nil)
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 	if rr.Code != http.StatusInternalServerError {

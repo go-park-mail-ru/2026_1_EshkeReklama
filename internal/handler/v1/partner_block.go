@@ -82,7 +82,7 @@ func supportedPlatformsForBlockType(blockType models.PartnerBlockType) []string 
 // @Failure      401      {object}  httpx.Error
 // @Failure      404      {object}  httpx.Error
 // @Failure      500      {object}  httpx.Error
-// @Router       /partners/sites/{site_id}/blocks [get]
+// @Router       /api/partners/sites/{site_id}/blocks [get]
 // @Security     CookieAuth
 func (a *API) ListPartnerBlocks(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
@@ -119,7 +119,7 @@ func (a *API) ListPartnerBlocks(w http.ResponseWriter, r *http.Request) {
 // @Failure      401      {object}  httpx.Error
 // @Failure      404      {object}  httpx.Error
 // @Failure      500      {object}  httpx.Error
-// @Router       /partners/sites/{site_id}/blocks [post]
+// @Router       /api/partners/sites/{site_id}/blocks [post]
 // @Security     CookieAuth
 func (a *API) CreatePartnerBlock(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
@@ -162,7 +162,7 @@ func (a *API) CreatePartnerBlock(w http.ResponseWriter, r *http.Request) {
 // @Failure      401       {object}  httpx.Error
 // @Failure      404       {object}  httpx.Error
 // @Failure      500       {object}  httpx.Error
-// @Router       /partners/sites/{site_id}/blocks/{block_id} [get]
+// @Router       /api/partners/sites/{site_id}/blocks/{block_id} [get]
 // @Security     CookieAuth
 func (a *API) GetPartnerBlock(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
@@ -197,7 +197,7 @@ func (a *API) GetPartnerBlock(w http.ResponseWriter, r *http.Request) {
 // @Failure      401       {object}  httpx.Error
 // @Failure      404       {object}  httpx.Error
 // @Failure      500       {object}  httpx.Error
-// @Router       /partners/sites/{site_id}/blocks/{block_id}/meta [put]
+// @Router       /api/partners/sites/{site_id}/blocks/{block_id}/meta [put]
 // @Security     CookieAuth
 func (a *API) UpdatePartnerBlockMeta(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
@@ -242,7 +242,7 @@ func (a *API) UpdatePartnerBlockMeta(w http.ResponseWriter, r *http.Request) {
 // @Failure      404       {object}  httpx.Error
 // @Failure      422       {object}  httpx.Error
 // @Failure      500       {object}  httpx.Error
-// @Router       /partners/sites/{site_id}/blocks/{block_id}/general [put]
+// @Router       /api/partners/sites/{site_id}/blocks/{block_id}/general [put]
 // @Security     CookieAuth
 func (a *API) UpdatePartnerBlockGeneral(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
@@ -299,7 +299,7 @@ func (a *API) UpdatePartnerBlockGeneral(w http.ResponseWriter, r *http.Request) 
 // @Failure      401       {object}  httpx.Error
 // @Failure      404       {object}  httpx.Error
 // @Failure      500       {object}  httpx.Error
-// @Router       /partners/sites/{site_id}/blocks/{block_id}/geography [put]
+// @Router       /api/partners/sites/{site_id}/blocks/{block_id}/geography [put]
 // @Security     CookieAuth
 func (a *API) UpdatePartnerBlockGeography(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
@@ -355,7 +355,7 @@ func (a *API) UpdatePartnerBlockGeography(w http.ResponseWriter, r *http.Request
 // @Failure      401       {object}  httpx.Error
 // @Failure      404       {object}  httpx.Error
 // @Failure      500       {object}  httpx.Error
-// @Router       /partners/sites/{site_id}/blocks/{block_id}/self-ad [put]
+// @Router       /api/partners/sites/{site_id}/blocks/{block_id}/self-ad [put]
 // @Security     CookieAuth
 func (a *API) UpdatePartnerBlockSelfAd(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
@@ -392,7 +392,7 @@ func (a *API) UpdatePartnerBlockSelfAd(w http.ResponseWriter, r *http.Request) {
 // @Failure      401       {object}  httpx.Error
 // @Failure      404       {object}  httpx.Error
 // @Failure      500       {object}  httpx.Error
-// @Router       /partners/sites/{site_id}/blocks/{block_id} [delete]
+// @Router       /api/partners/sites/{site_id}/blocks/{block_id} [delete]
 // @Security     CookieAuth
 func (a *API) DeletePartnerBlock(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
@@ -423,7 +423,7 @@ func (a *API) DeletePartnerBlock(w http.ResponseWriter, r *http.Request) {
 // @Failure      401       {object}  httpx.Error
 // @Failure      404       {object}  httpx.Error
 // @Failure      500       {object}  httpx.Error
-// @Router       /partners/sites/{site_id}/blocks/{block_id}/embed [get]
+// @Router       /api/partners/sites/{site_id}/blocks/{block_id}/embed [get]
 // @Security     CookieAuth
 func (a *API) GetPartnerBlockEmbed(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
@@ -703,7 +703,7 @@ var partnerBlockFrameTemplate = template.Must(template.New("partner-block-frame"
         root.appendChild(link);
       }
 
-      fetch("/ad/request", {
+      fetch("/api/ad/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ embed_token: embedToken, visitor_id: visitorId() })

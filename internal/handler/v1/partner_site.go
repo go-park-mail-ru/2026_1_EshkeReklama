@@ -30,7 +30,7 @@ func (a *API) RegisterPartnerSiteHandlers(r *mux.Router) {
 // @Success      200  {object}  dto.ListPartnerSitesResponse
 // @Failure      401  {object}  httpx.Error
 // @Failure      500  {object}  httpx.Error
-// @Router       /partners/sites [get]
+// @Router       /api/partners/sites [get]
 // @Security     CookieAuth
 func (a *API) ListPartnerSites(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
@@ -60,7 +60,7 @@ func (a *API) ListPartnerSites(w http.ResponseWriter, r *http.Request) {
 // @Failure      401    {object}  httpx.Error
 // @Failure      409    {object}  httpx.Error
 // @Failure      500    {object}  httpx.Error
-// @Router       /partners/sites [post]
+// @Router       /api/partners/sites [post]
 // @Security     CookieAuth
 func (a *API) CreatePartnerSite(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
@@ -91,7 +91,7 @@ func (a *API) CreatePartnerSite(w http.ResponseWriter, r *http.Request) {
 // @Failure      401      {object}  httpx.Error
 // @Failure      404      {object}  httpx.Error
 // @Failure      500      {object}  httpx.Error
-// @Router       /partners/sites/{site_id} [get]
+// @Router       /api/partners/sites/{site_id} [get]
 // @Security     CookieAuth
 func (a *API) GetPartnerSite(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
@@ -129,7 +129,7 @@ func (a *API) GetPartnerSite(w http.ResponseWriter, r *http.Request) {
 // @Failure      404      {object}  httpx.Error
 // @Failure      409      {object}  httpx.Error
 // @Failure      500      {object}  httpx.Error
-// @Router       /partners/sites/{site_id} [put]
+// @Router       /api/partners/sites/{site_id} [put]
 // @Security     CookieAuth
 func (a *API) UpdatePartnerSite(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())
@@ -165,7 +165,7 @@ func (a *API) UpdatePartnerSite(w http.ResponseWriter, r *http.Request) {
 // @Failure      401      {object}  httpx.Error
 // @Failure      404      {object}  httpx.Error
 // @Failure      500      {object}  httpx.Error
-// @Router       /partners/sites/{site_id} [delete]
+// @Router       /api/partners/sites/{site_id} [delete]
 // @Security     CookieAuth
 func (a *API) DeletePartnerSite(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())

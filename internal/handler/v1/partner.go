@@ -33,7 +33,7 @@ func (a *API) RegisterPartnerHandlers(r *mux.Router) {
 // @Failure      400    {object}  httpx.Error
 // @Failure      409    {object}  httpx.Error
 // @Failure      500    {object}  httpx.Error
-// @Router       /partners/register [post]
+// @Router       /api/partners/register [post]
 func (a *API) RegisterPartner(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	req, err := newJSONRequest[dto.PartnerRegisterRequest](r)
@@ -68,7 +68,7 @@ func (a *API) RegisterPartner(w http.ResponseWriter, r *http.Request) {
 // @Failure      400    {object}  httpx.Error
 // @Failure      401    {object}  httpx.Error
 // @Failure      500    {object}  httpx.Error
-// @Router       /partners/login [post]
+// @Router       /api/partners/login [post]
 func (a *API) LoginPartner(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	req, err := newJSONRequest[dto.PartnerLoginRequest](r)
@@ -100,7 +100,7 @@ func (a *API) LoginPartner(w http.ResponseWriter, r *http.Request) {
 // @Failure      401  {object}  httpx.Error
 // @Failure      404  {object}  httpx.Error
 // @Failure      500  {object}  httpx.Error
-// @Router       /partners/me [get]
+// @Router       /api/partners/me [get]
 // @Security     CookieAuth
 func (a *API) MePartner(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -133,7 +133,7 @@ func (a *API) MePartner(w http.ResponseWriter, r *http.Request) {
 // @Failure      401    {object}  httpx.Error
 // @Failure      409    {object}  httpx.Error
 // @Failure      500    {object}  httpx.Error
-// @Router       /partners/me [put]
+// @Router       /api/partners/me [put]
 // @Security     CookieAuth
 func (a *API) UpdatePartner(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -185,7 +185,7 @@ func (a *API) resolveUpdatedPartnerContacts(ctx context.Context, partnerID int64
 // @Produce      json
 // @Success      200  {object}  map[string]string
 // @Failure      500  {object}  httpx.Error
-// @Router       /partners/logout [post]
+// @Router       /api/partners/logout [post]
 func (a *API) LogoutPartner(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie(a.cookieConfig.Name)
 	if err == nil {

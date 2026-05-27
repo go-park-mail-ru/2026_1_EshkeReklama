@@ -224,10 +224,11 @@ func (a *App) Run() error {
 		CookieName: "csrf_token",
 		HeaderName: "X-CSRF-Token",
 		Secure:     a.cfg.Session.CookieSecure,
-		SkipPaths:  []string{"/ad/request", "/api/webhook/yookassa"},
+		SkipPaths:  []string{"/api/ad/request", "/api/webhook/yookassa"},
 	}))
 
-	handler.Register(router, v1.NewAPI(v1.APIConfig{
+	apiRouter := router.PathPrefix(v1.APIPrefix).Subrouter()
+	handler.Register(apiRouter, v1.NewAPI(v1.APIConfig{
 		Service:    a.service,
 		AuthClient: a.authClient,
 		CookieConfig: v1.CookieConfig{

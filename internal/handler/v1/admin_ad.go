@@ -36,7 +36,7 @@ func (a *API) RegisterAdminHandlers(r *mux.Router) {
 // @Failure      403    {object}  httpx.Error
 // @Failure      404    {object}  httpx.Error
 // @Failure      500    {object}  httpx.Error
-// @Router       /admin/ads/{ad_id} [get]
+// @Router       /api/admin/ads/{ad_id} [get]
 // @Security     CookieAuth
 func (a *API) GetAdminAdByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -70,7 +70,7 @@ func (a *API) GetAdminAdByID(w http.ResponseWriter, r *http.Request) {
 // @Failure      403    {object}  httpx.Error
 // @Failure      404    {object}  httpx.Error
 // @Failure      500    {object}  httpx.Error
-// @Router       /admin/ads/{ad_id}/status [patch]
+// @Router       /api/admin/ads/{ad_id}/status [patch]
 // @Security     CookieAuth
 func (a *API) UpdateAdStatus(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -104,7 +104,7 @@ func (a *API) UpdateAdStatus(w http.ResponseWriter, r *http.Request) {
 // @Failure      401  {object}  httpx.Error
 // @Failure      403  {object}  httpx.Error
 // @Failure      500  {object}  httpx.Error
-// @Router       /admin/ads [get]
+// @Router       /api/admin/ads [get]
 // @Security     CookieAuth
 func (a *API) ListAdminAds(w http.ResponseWriter, r *http.Request) {
 	ads, err := a.service.ListModerationAds(r.Context())

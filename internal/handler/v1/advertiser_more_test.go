@@ -42,7 +42,7 @@ func TestAdvertiser_UpdateProfile_WithoutAvatar(t *testing.T) {
 	}
 	ac.setCredentials(1, "NEW@MAIL.TEST", "+7 900 123-45-67")
 
-	req := httptest.NewRequest(http.MethodPut, "/advertisers/me", bytes.NewReader(body))
+	req := httptest.NewRequest(http.MethodPut, APIPrefix+"/advertisers/me", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.AddCookie(sess)
 	req.AddCookie(csrf)
@@ -70,7 +70,7 @@ func TestAdvertiser_GenerateFeedLink_OK(t *testing.T) {
 		return "tok", nil
 	}
 
-	req := httptest.NewRequest(http.MethodPost, "/ad_campaigns/1/feed", nil)
+	req := httptest.NewRequest(http.MethodPost, APIPrefix+"/ad_campaigns/1/feed", nil)
 	req.AddCookie(sess)
 	req.AddCookie(csrf)
 	req.Header.Set("X-CSRF-Token", csrf.Value)

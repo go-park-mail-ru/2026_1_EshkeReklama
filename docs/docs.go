@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/ad/request": {
+        "/api/ad/request": {
             "post": {
                 "description": "Возвращает объявление для вставленного на сайт партнёра рекламного блока по embed_token",
                 "consumes": [
@@ -67,7 +67,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ad_campaigns": {
+        "/api/ad_campaigns": {
             "get": {
                 "security": [
                     {
@@ -159,7 +159,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ad_campaigns/{ad_campaign_id}": {
+        "/api/ad_campaigns/{ad_campaign_id}": {
             "put": {
                 "security": [
                     {
@@ -284,7 +284,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ad_campaigns/{ad_campaign_id}/ad_groups": {
+        "/api/ad_campaigns/{ad_campaign_id}/ad_groups": {
             "get": {
                 "security": [
                     {
@@ -408,7 +408,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}": {
+        "/api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}": {
             "put": {
                 "security": [
                     {
@@ -546,7 +546,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads": {
+        "/api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads": {
             "get": {
                 "security": [
                     {
@@ -702,7 +702,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}": {
+        "/api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}": {
             "put": {
                 "security": [
                     {
@@ -886,7 +886,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}/stats": {
+        "/api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}/stats": {
             "get": {
                 "security": [
                     {
@@ -976,7 +976,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/stats": {
+        "/api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/stats": {
             "get": {
                 "security": [
                     {
@@ -1059,7 +1059,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ad_campaigns/{ad_campaign_id}/feed": {
+        "/api/ad_campaigns/{ad_campaign_id}/feed": {
             "post": {
                 "description": "Генерирует уникальную feed-ссылку для рекламной кампании",
                 "consumes": [
@@ -1104,7 +1104,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ad_campaigns/{ad_campaign_id}/stats": {
+        "/api/ad_campaigns/{ad_campaign_id}/stats": {
             "get": {
                 "security": [
                     {
@@ -1180,7 +1180,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ad_campaigns/{ad_campaign_id}/status": {
+        "/api/ad_campaigns/{ad_campaign_id}/status": {
             "patch": {
                 "security": [
                     {
@@ -1250,7 +1250,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/ads": {
+        "/api/admin/ads": {
             "get": {
                 "security": [
                     {
@@ -1293,7 +1293,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/ads/{ad_id}": {
+        "/api/admin/ads/{ad_id}": {
             "get": {
                 "security": [
                     {
@@ -1357,7 +1357,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/ads/{ad_id}/status": {
+        "/api/admin/ads/{ad_id}/status": {
             "patch": {
                 "security": [
                     {
@@ -1433,7 +1433,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertisers/balance": {
+        "/api/advertisers/balance": {
             "get": {
                 "security": [
                     {
@@ -1476,7 +1476,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertisers/balance/topup": {
+        "/api/advertisers/balance/topup": {
             "post": {
                 "security": [
                     {
@@ -1533,7 +1533,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertisers/login": {
+        "/api/advertisers/login": {
             "post": {
                 "description": "Аутентифицирует рекламодателя по email или телефону и паролю",
                 "consumes": [
@@ -1585,7 +1585,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertisers/login/vk": {
+        "/api/advertisers/login/vk": {
             "post": {
                 "description": "Аутентифицирует рекламодателя по frontend-driven VK ID SDK payload и открывает сессию",
                 "consumes": [
@@ -1643,7 +1643,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertisers/logout": {
+        "/api/advertisers/logout": {
             "post": {
                 "description": "Завершает сессию текущего рекламодателя",
                 "produces": [
@@ -1672,7 +1672,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertisers/me": {
+        "/api/advertisers/me": {
             "get": {
                 "security": [
                     {
@@ -1770,7 +1770,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertisers/me/avatar": {
+        "/api/advertisers/me/avatar": {
             "put": {
                 "security": [
                     {
@@ -1825,7 +1825,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/advertisers/register": {
+        "/api/advertisers/register": {
             "post": {
                 "description": "Создает новый аккаунт и открывает сессию",
                 "consumes": [
@@ -1871,7 +1871,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/appeals": {
+        "/api/appeals": {
             "get": {
                 "security": [
                     {
@@ -1990,7 +1990,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/appeals/{appeal_id}": {
+        "/api/appeals/{appeal_id}": {
             "get": {
                 "security": [
                     {
@@ -2042,7 +2042,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/feed/{token}": {
+        "/api/feed/{token}": {
             "get": {
                 "description": "Возвращает объявления по публичному feed-токену; при отсутствии объявлений возвращает пустой список",
                 "produces": [
@@ -2084,7 +2084,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/dictionaries/block-types": {
+        "/api/partners/dictionaries/block-types": {
             "get": {
                 "description": "Справочник доступных типов блоков",
                 "produces": [
@@ -2105,7 +2105,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/dictionaries/cooperation-forms": {
+        "/api/partners/dictionaries/cooperation-forms": {
             "get": {
                 "description": "Справочник форм сотрудничества",
                 "produces": [
@@ -2126,7 +2126,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/dictionaries/countries": {
+        "/api/partners/dictionaries/countries": {
             "get": {
                 "description": "Справочник стран для анкеты партнера",
                 "produces": [
@@ -2147,7 +2147,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/dictionaries/geo-tree": {
+        "/api/partners/dictionaries/geo-tree": {
             "get": {
                 "description": "Возвращает географическое дерево для настроек блока",
                 "produces": [
@@ -2168,7 +2168,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/dictionaries/payout-currencies": {
+        "/api/partners/dictionaries/payout-currencies": {
             "get": {
                 "description": "Справочник валют выплат",
                 "produces": [
@@ -2189,7 +2189,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/dictionaries/registration-regions": {
+        "/api/partners/dictionaries/registration-regions": {
             "get": {
                 "description": "Справочник регионов регистрации по стране",
                 "produces": [
@@ -2219,7 +2219,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/income/stats": {
+        "/api/partners/income/stats": {
             "get": {
                 "security": [
                     {
@@ -2276,7 +2276,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/login": {
+        "/api/partners/login": {
             "post": {
                 "description": "Логин по email или телефону и паролю",
                 "consumes": [
@@ -2328,7 +2328,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/logout": {
+        "/api/partners/logout": {
             "post": {
                 "description": "Завершает текущую партнерскую сессию",
                 "produces": [
@@ -2357,7 +2357,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/me": {
+        "/api/partners/me": {
             "get": {
                 "security": [
                     {
@@ -2461,7 +2461,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/register": {
+        "/api/partners/register": {
             "post": {
                 "description": "Создает профиль партнера и открывает сессию",
                 "consumes": [
@@ -2513,7 +2513,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/sites": {
+        "/api/partners/sites": {
             "get": {
                 "security": [
                     {
@@ -2614,7 +2614,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/sites/{site_id}": {
+        "/api/partners/sites/{site_id}": {
             "get": {
                 "security": [
                     {
@@ -2805,7 +2805,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/sites/{site_id}/blocks": {
+        "/api/partners/sites/{site_id}/blocks": {
             "get": {
                 "security": [
                     {
@@ -2932,7 +2932,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/sites/{site_id}/blocks/{block_id}": {
+        "/api/partners/sites/{site_id}/blocks/{block_id}": {
             "get": {
                 "security": [
                     {
@@ -3063,7 +3063,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/sites/{site_id}/blocks/{block_id}/embed": {
+        "/api/partners/sites/{site_id}/blocks/{block_id}/embed": {
             "get": {
                 "security": [
                     {
@@ -3128,7 +3128,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/sites/{site_id}/blocks/{block_id}/general": {
+        "/api/partners/sites/{site_id}/blocks/{block_id}/general": {
             "put": {
                 "security": [
                     {
@@ -3212,7 +3212,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/sites/{site_id}/blocks/{block_id}/geography": {
+        "/api/partners/sites/{site_id}/blocks/{block_id}/geography": {
             "put": {
                 "security": [
                     {
@@ -3290,7 +3290,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/sites/{site_id}/blocks/{block_id}/meta": {
+        "/api/partners/sites/{site_id}/blocks/{block_id}/meta": {
             "put": {
                 "security": [
                     {
@@ -3368,7 +3368,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/partners/sites/{site_id}/blocks/{block_id}/self-ad": {
+        "/api/partners/sites/{site_id}/blocks/{block_id}/self-ad": {
             "put": {
                 "security": [
                     {

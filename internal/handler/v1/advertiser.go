@@ -60,7 +60,7 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 // @Success      200   {object}  dto.RegisterResponse
 // @Failure      400   {object}  httpx.Error "Invalid request или User already exists"
 // @Failure      500   {object}  httpx.Error
-// @Router       /advertisers/register [post]
+// @Router       /api/advertisers/register [post]
 func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -170,7 +170,7 @@ func (a *API) VerifyRegistration(w http.ResponseWriter, r *http.Request) {
 // @Failure      400   {object}  httpx.Error "Invalid identifier или password"
 // @Failure      401   {object}  httpx.Error "Неверные учётные данные"
 // @Failure      500   {object}  httpx.Error
-// @Router       /advertisers/login [post]
+// @Router       /api/advertisers/login [post]
 func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -393,7 +393,7 @@ func normalizeVerificationEmail(email string) string {
 // @Failure      401   {object}  httpx.Error
 // @Failure      409   {object}  httpx.Error
 // @Failure      500   {object}  httpx.Error
-// @Router       /advertisers/login/vk [post]
+// @Router       /api/advertisers/login/vk [post]
 func (a *API) LoginVKID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -438,7 +438,7 @@ func (a *API) LoginVKID(w http.ResponseWriter, r *http.Request) {
 // @Failure      401   {object}  httpx.Error
 // @Failure      404   {object}  httpx.Error
 // @Failure      500   {object}  httpx.Error
-// @Router       /advertisers/me [get]
+// @Router       /api/advertisers/me [get]
 // @Security     CookieAuth
 func (a *API) Me(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -509,7 +509,7 @@ func (a *API) ChangePassword(w http.ResponseWriter, r *http.Request) {
 // @Failure      400    {object}  httpx.Error
 // @Failure      401    {object}  httpx.Error
 // @Failure      500    {object}  httpx.Error
-// @Router       /advertisers/me [put]
+// @Router       /api/advertisers/me [put]
 // @Security     CookieAuth
 func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -611,7 +611,7 @@ func (a *API) ensureAdvertiserProfile(ctx context.Context, advertiserID int64, p
 // @Produce      json
 // @Success      200   {object}  map[string]string
 // @Failure      500   {object}  httpx.Error
-// @Router       /advertisers/logout [post]
+// @Router       /api/advertisers/logout [post]
 func (a *API) Logout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie(a.cookieConfig.Name)
 	if err != nil {
@@ -639,7 +639,7 @@ func (a *API) Logout(w http.ResponseWriter, r *http.Request) {
 // @Failure      401  {object}  httpx.Error
 // @Failure      404  {object}  httpx.Error
 // @Failure      500  {object}  httpx.Error
-// @Router       /advertisers/balance [get]
+// @Router       /api/advertisers/balance [get]
 // @Security     CookieAuth
 func (a *API) GetBalance(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -680,7 +680,7 @@ func (a *API) GetBalance(w http.ResponseWriter, r *http.Request) {
 // @Failure      400   {object}  httpx.Error
 // @Failure      401   {object}  httpx.Error
 // @Failure      500   {object}  httpx.Error
-// @Router       /advertisers/balance/topup [post]
+// @Router       /api/advertisers/balance/topup [post]
 // @Security     CookieAuth
 func (a *API) TopUpBalance(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -754,7 +754,7 @@ func deliveryAlertResponse(alert *svc.AdvertiserDeliveryAlert) *dto.DeliveryAler
 // @Failure      400     {object}  httpx.Error
 // @Failure      401     {object}  httpx.Error
 // @Failure      500     {object}  httpx.Error
-// @Router       /advertisers/me/avatar [put]
+// @Router       /api/advertisers/me/avatar [put]
 // @Security     CookieAuth
 func (a *API) UpdateAvatar(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

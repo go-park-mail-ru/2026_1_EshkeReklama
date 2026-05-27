@@ -24,7 +24,7 @@ func (a *API) RegisterPartnerDictionaryHandlers(r *mux.Router) {
 // @Tags         partner_dictionaries
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}
-// @Router       /partners/dictionaries/countries [get]
+// @Router       /api/partners/dictionaries/countries [get]
 func (a *API) ListPartnerCountries(w http.ResponseWriter, r *http.Request) {
 	items := dto.ToDictionaryItemResponses(a.service.ListPartnerCountries(r.Context()))
 	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
@@ -36,7 +36,7 @@ func (a *API) ListPartnerCountries(w http.ResponseWriter, r *http.Request) {
 // @Produce      json
 // @Param        country_code  query     string  true  "Код страны"
 // @Success      200           {object}  map[string]interface{}
-// @Router       /partners/dictionaries/registration-regions [get]
+// @Router       /api/partners/dictionaries/registration-regions [get]
 func (a *API) ListPartnerRegistrationRegions(w http.ResponseWriter, r *http.Request) {
 	countryCode := r.URL.Query().Get("country_code")
 	items := dto.ToDictionaryItemResponses(a.service.ListPartnerRegistrationRegions(r.Context(), countryCode))
@@ -51,7 +51,7 @@ func (a *API) ListPartnerRegistrationRegions(w http.ResponseWriter, r *http.Requ
 // @Tags         partner_dictionaries
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}
-// @Router       /partners/dictionaries/cooperation-forms [get]
+// @Router       /api/partners/dictionaries/cooperation-forms [get]
 func (a *API) ListPartnerCooperationForms(w http.ResponseWriter, r *http.Request) {
 	items := dto.ToDictionaryItemResponses(a.service.ListPartnerCooperationForms(r.Context()))
 	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
@@ -62,7 +62,7 @@ func (a *API) ListPartnerCooperationForms(w http.ResponseWriter, r *http.Request
 // @Tags         partner_dictionaries
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}
-// @Router       /partners/dictionaries/payout-currencies [get]
+// @Router       /api/partners/dictionaries/payout-currencies [get]
 func (a *API) ListPartnerPayoutCurrencies(w http.ResponseWriter, r *http.Request) {
 	items := dto.ToDictionaryItemResponses(a.service.ListPartnerPayoutCurrencies(r.Context()))
 	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
@@ -73,7 +73,7 @@ func (a *API) ListPartnerPayoutCurrencies(w http.ResponseWriter, r *http.Request
 // @Tags         partner_dictionaries
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}
-// @Router       /partners/dictionaries/block-types [get]
+// @Router       /api/partners/dictionaries/block-types [get]
 func (a *API) ListPartnerBlockTypes(w http.ResponseWriter, r *http.Request) {
 	items := dto.ToBlockTypeDictionaryItemResponses(a.service.ListPartnerBlockTypes(r.Context()))
 	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
@@ -84,7 +84,7 @@ func (a *API) ListPartnerBlockTypes(w http.ResponseWriter, r *http.Request) {
 // @Tags         partner_dictionaries
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}
-// @Router       /partners/dictionaries/geo-tree [get]
+// @Router       /api/partners/dictionaries/geo-tree [get]
 func (a *API) ListPartnerGeoTree(w http.ResponseWriter, r *http.Request) {
 	items := dto.ToGeoTreeNodeResponses(a.service.GetPartnerGeoTree(r.Context()))
 	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})

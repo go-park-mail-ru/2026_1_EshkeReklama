@@ -29,7 +29,7 @@ func (a *API) RegisterPartnerStatsHandlers(r *mux.Router) {
 // @Failure      400   {object}  httpx.Error
 // @Failure      401   {object}  httpx.Error
 // @Failure      500   {object}  httpx.Error
-// @Router       /partners/income/stats [get]
+// @Router       /api/partners/income/stats [get]
 // @Security     CookieAuth
 func (a *API) GetPartnerIncomeStats(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := ctxutils.PartnerIDFromContext(r.Context())

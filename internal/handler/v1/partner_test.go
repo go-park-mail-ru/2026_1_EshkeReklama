@@ -33,7 +33,7 @@ func TestPartner_CreateSite_And_Block(t *testing.T) {
 		return &models.PartnerBlock{ID: 9001, PartnerSiteID: 101, Name: in.Name, BlockType: in.BlockType, Status: models.PartnerBlockStatusInactive}, nil
 	}
 
-	siteReq := httptest.NewRequest(http.MethodPost, "/partners/sites", bytes.NewBufferString(`{"domain":"example.com","site_name":"Example"}`))
+	siteReq := httptest.NewRequest(http.MethodPost, APIPrefix+"/partners/sites", bytes.NewBufferString(`{"domain":"example.com","site_name":"Example"}`))
 	siteReq.AddCookie(sess)
 	siteReq.AddCookie(csrf)
 	siteReq.Header.Set("X-CSRF-Token", csrf.Value)
@@ -43,7 +43,7 @@ func TestPartner_CreateSite_And_Block(t *testing.T) {
 		t.Fatalf("expected 201 got %d body=%s", siteRR.Code, siteRR.Body.String())
 	}
 
-	blockReq := httptest.NewRequest(http.MethodPost, "/partners/sites/101/blocks", bytes.NewBufferString(`{"block_type":"banner","name":"Баннер (03.05.2026)"}`))
+	blockReq := httptest.NewRequest(http.MethodPost, APIPrefix+"/partners/sites/101/blocks", bytes.NewBufferString(`{"block_type":"banner","name":"Баннер (03.05.2026)"}`))
 	blockReq.AddCookie(sess)
 	blockReq.AddCookie(csrf)
 	blockReq.Header.Set("X-CSRF-Token", csrf.Value)

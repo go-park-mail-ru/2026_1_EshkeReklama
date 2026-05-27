@@ -928,7 +928,7 @@ info:
   title: Eshke Reklama API
   version: "1.0"
 paths:
-  /ad/request:
+  /api/ad/request:
     post:
       consumes:
       - application/json
@@ -963,7 +963,7 @@ paths:
       summary: Запрос рекламы для публичного блока
       tags:
       - public_ads
-  /ad_campaigns:
+  /api/ad_campaigns:
     get:
       description: Кампании рекламодателя из сессии
       produces:
@@ -1021,7 +1021,7 @@ paths:
       summary: Создание рекламной кампании
       tags:
       - ad_campaigns
-  /ad_campaigns/{ad_campaign_id}:
+  /api/ad_campaigns/{ad_campaign_id}:
     delete:
       parameters:
       - description: ID кампании
@@ -1101,7 +1101,7 @@ paths:
       summary: Обновление рекламной кампании
       tags:
       - ad_campaigns
-  /ad_campaigns/{ad_campaign_id}/ad_groups:
+  /api/ad_campaigns/{ad_campaign_id}/ad_groups:
     get:
       parameters:
       - description: ID рекламной кампании
@@ -1180,7 +1180,7 @@ paths:
       summary: Создание группы объявлений
       tags:
       - ad_groups
-  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}:
+  /api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}:
     delete:
       parameters:
       - description: ID рекламной кампании
@@ -1269,7 +1269,7 @@ paths:
       summary: Обновление группы объявлений
       tags:
       - ad_groups
-  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads:
+  /api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads:
     get:
       parameters:
       - description: ID рекламной кампании
@@ -1371,7 +1371,7 @@ paths:
       summary: Создание объявления
       tags:
       - ads
-  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}:
+  /api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}:
     delete:
       parameters:
       - description: ID рекламной кампании
@@ -1493,7 +1493,7 @@ paths:
       summary: Обновление объявления
       tags:
       - ads
-  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}/stats:
+  /api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}/stats:
     get:
       description: Возвращает показатели объявления, динамику по дням и разбивку по
         площадкам
@@ -1553,7 +1553,7 @@ paths:
       summary: Статистика объявления
       tags:
       - stats
-  /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/stats:
+  /api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id}/stats:
     get:
       description: Возвращает показатели группы, динамику по дням и разбивки по объявлениям/площадкам
       parameters:
@@ -1607,7 +1607,7 @@ paths:
       summary: Статистика группы объявлений
       tags:
       - stats
-  /ad_campaigns/{ad_campaign_id}/feed:
+  /api/ad_campaigns/{ad_campaign_id}/feed:
     post:
       consumes:
       - application/json
@@ -1637,7 +1637,7 @@ paths:
       summary: Создать feed-ссылку для кампании
       tags:
       - feed
-  /ad_campaigns/{ad_campaign_id}/stats:
+  /api/ad_campaigns/{ad_campaign_id}/stats:
     get:
       description: Возвращает показы, клики, CTR, расходы, CPC, вознаграждение партнерам,
         выручку платформы, динамику по дням и разбивки по группам/площадкам
@@ -1687,7 +1687,7 @@ paths:
       summary: Статистика кампании
       tags:
       - stats
-  /ad_campaigns/{ad_campaign_id}/status:
+  /api/ad_campaigns/{ad_campaign_id}/status:
     patch:
       consumes:
       - application/json
@@ -1732,7 +1732,7 @@ paths:
       summary: Выключение рекламной кампании
       tags:
       - ad_campaigns
-  /admin/ads:
+  /api/admin/ads:
     get:
       description: Возвращает все объявления со статусом moderation
       produces:
@@ -1759,7 +1759,7 @@ paths:
       summary: Очередь объявлений на модерации
       tags:
       - admin
-  /admin/ads/{ad_id}:
+  /api/admin/ads/{ad_id}:
     get:
       description: Возвращает объявление по ID для модерации
       parameters:
@@ -1800,7 +1800,7 @@ paths:
       summary: Просмотр объявления администратором
       tags:
       - admin
-  /admin/ads/{ad_id}/status:
+  /api/admin/ads/{ad_id}/status:
     patch:
       consumes:
       - application/json
@@ -1850,7 +1850,7 @@ paths:
       summary: Решение модерации объявления
       tags:
       - admin
-  /advertisers/balance:
+  /api/advertisers/balance:
     get:
       description: Возвращает текущий баланс рекламодателя по сессии
       produces:
@@ -1877,7 +1877,7 @@ paths:
       summary: Баланс рекламодателя
       tags:
       - advertiser
-  /advertisers/balance/topup:
+  /api/advertisers/balance/topup:
     post:
       consumes:
       - application/json
@@ -1913,7 +1913,7 @@ paths:
       summary: Пополнение баланса
       tags:
       - advertiser
-  /advertisers/login:
+  /api/advertisers/login:
     post:
       consumes:
       - application/json
@@ -1947,7 +1947,7 @@ paths:
       summary: Вход рекламодателя
       tags:
       - advertiser
-  /advertisers/login/vk:
+  /api/advertisers/login/vk:
     post:
       consumes:
       - application/json
@@ -1986,7 +1986,7 @@ paths:
       summary: Вход рекламодателя через VK ID
       tags:
       - advertiser
-  /advertisers/logout:
+  /api/advertisers/logout:
     post:
       description: Завершает сессию текущего рекламодателя
       produces:
@@ -2005,7 +2005,7 @@ paths:
       summary: Выход рекламодателя
       tags:
       - advertiser
-  /advertisers/me:
+  /api/advertisers/me:
     get:
       description: Возвращает данные текущего пользователя по сессии
       produces:
@@ -2067,7 +2067,7 @@ paths:
       summary: Обновление профиля рекламодателя
       tags:
       - advertiser
-  /advertisers/me/avatar:
+  /api/advertisers/me/avatar:
     put:
       consumes:
       - multipart/form-data
@@ -2102,7 +2102,7 @@ paths:
       summary: Обновление аватара рекламодателя
       tags:
       - advertiser
-  /advertisers/register:
+  /api/advertisers/register:
     post:
       consumes:
       - application/json
@@ -2132,7 +2132,7 @@ paths:
       summary: Регистрация рекламодателя
       tags:
       - advertiser
-  /appeals:
+  /api/appeals:
     get:
       description: Возвращает список обращений текущего рекламодателя
       produces:
@@ -2212,7 +2212,7 @@ paths:
       summary: Создание обращения
       tags:
       - appeal
-  /appeals/{appeal_id}:
+  /api/appeals/{appeal_id}:
     get:
       description: Возвращает одно обращение текущего рекламодателя по id
       parameters:
@@ -2245,7 +2245,7 @@ paths:
       summary: Получить обращение
       tags:
       - appeal
-  /feed/{token}:
+  /api/feed/{token}:
     get:
       description: Возвращает объявления по публичному feed-токену; при отсутствии
         объявлений возвращает пустой список
@@ -2274,7 +2274,7 @@ paths:
       summary: Публичный feed объявлений
       tags:
       - feed
-  /partners/dictionaries/block-types:
+  /api/partners/dictionaries/block-types:
     get:
       description: Справочник доступных типов блоков
       produces:
@@ -2288,7 +2288,7 @@ paths:
       summary: Типы рекламных блоков
       tags:
       - partner_dictionaries
-  /partners/dictionaries/cooperation-forms:
+  /api/partners/dictionaries/cooperation-forms:
     get:
       description: Справочник форм сотрудничества
       produces:
@@ -2302,7 +2302,7 @@ paths:
       summary: Формы сотрудничества
       tags:
       - partner_dictionaries
-  /partners/dictionaries/countries:
+  /api/partners/dictionaries/countries:
     get:
       description: Справочник стран для анкеты партнера
       produces:
@@ -2316,7 +2316,7 @@ paths:
       summary: Страны партнера
       tags:
       - partner_dictionaries
-  /partners/dictionaries/geo-tree:
+  /api/partners/dictionaries/geo-tree:
     get:
       description: Возвращает географическое дерево для настроек блока
       produces:
@@ -2330,7 +2330,7 @@ paths:
       summary: Дерево географии
       tags:
       - partner_dictionaries
-  /partners/dictionaries/payout-currencies:
+  /api/partners/dictionaries/payout-currencies:
     get:
       description: Справочник валют выплат
       produces:
@@ -2344,7 +2344,7 @@ paths:
       summary: Валюты выплат
       tags:
       - partner_dictionaries
-  /partners/dictionaries/registration-regions:
+  /api/partners/dictionaries/registration-regions:
     get:
       description: Справочник регионов регистрации по стране
       parameters:
@@ -2364,7 +2364,7 @@ paths:
       summary: Регионы регистрации
       tags:
       - partner_dictionaries
-  /partners/income/stats:
+  /api/partners/income/stats:
     get:
       description: Возвращает показы, начисленное вознаграждение, eCPM и детализацию
         по дням, сайтам и рекламным блокам
@@ -2401,7 +2401,7 @@ paths:
       summary: Статистика дохода партнера
       tags:
       - partner_income
-  /partners/login:
+  /api/partners/login:
     post:
       consumes:
       - application/json
@@ -2435,7 +2435,7 @@ paths:
       summary: Вход партнера
       tags:
       - partner
-  /partners/logout:
+  /api/partners/logout:
     post:
       description: Завершает текущую партнерскую сессию
       produces:
@@ -2454,7 +2454,7 @@ paths:
       summary: Выход партнера
       tags:
       - partner
-  /partners/me:
+  /api/partners/me:
     get:
       description: Возвращает профиль текущего партнера по сессии
       produces:
@@ -2520,7 +2520,7 @@ paths:
       summary: Обновление профиля партнера
       tags:
       - partner
-  /partners/register:
+  /api/partners/register:
     post:
       consumes:
       - application/json
@@ -2554,7 +2554,7 @@ paths:
       summary: Регистрация партнера
       tags:
       - partner
-  /partners/sites:
+  /api/partners/sites:
     get:
       description: Возвращает все сайты текущего партнера
       produces:
@@ -2618,7 +2618,7 @@ paths:
       summary: Создание сайта партнера
       tags:
       - partner_sites
-  /partners/sites/{site_id}:
+  /api/partners/sites/{site_id}:
     delete:
       description: Удаляет сайт текущего партнера
       parameters:
@@ -2741,7 +2741,7 @@ paths:
       summary: Обновление сайта партнера
       tags:
       - partner_sites
-  /partners/sites/{site_id}/blocks:
+  /api/partners/sites/{site_id}/blocks:
     get:
       description: Возвращает все рекламные блоки сайта текущего партнера
       parameters:
@@ -2823,7 +2823,7 @@ paths:
       summary: Создание рекламного блока
       tags:
       - partner_blocks
-  /partners/sites/{site_id}/blocks/{block_id}:
+  /api/partners/sites/{site_id}/blocks/{block_id}:
     delete:
       description: Удаляет рекламный блок сайта
       parameters:
@@ -2908,7 +2908,7 @@ paths:
       summary: Детали рекламного блока
       tags:
       - partner_blocks
-  /partners/sites/{site_id}/blocks/{block_id}/embed:
+  /api/partners/sites/{site_id}/blocks/{block_id}/embed:
     get:
       description: Возвращает embed_token, iframe URL и HTML snippet iframe для вставки
         рекламного блока
@@ -2951,7 +2951,7 @@ paths:
       summary: Embed-код блока
       tags:
       - partner_blocks
-  /partners/sites/{site_id}/blocks/{block_id}/general:
+  /api/partners/sites/{site_id}/blocks/{block_id}/general:
     put:
       consumes:
       - application/json
@@ -3006,7 +3006,7 @@ paths:
       summary: Общие настройки блока
       tags:
       - partner_blocks
-  /partners/sites/{site_id}/blocks/{block_id}/geography:
+  /api/partners/sites/{site_id}/blocks/{block_id}/geography:
     put:
       consumes:
       - application/json
@@ -3057,7 +3057,7 @@ paths:
       summary: География блока
       tags:
       - partner_blocks
-  /partners/sites/{site_id}/blocks/{block_id}/meta:
+  /api/partners/sites/{site_id}/blocks/{block_id}/meta:
     put:
       consumes:
       - application/json
@@ -3108,7 +3108,7 @@ paths:
       summary: Обновление названия блока
       tags:
       - partner_blocks
-  /partners/sites/{site_id}/blocks/{block_id}/self-ad:
+  /api/partners/sites/{site_id}/blocks/{block_id}/self-ad:
     put:
       consumes:
       - application/json

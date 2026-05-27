@@ -148,6 +148,8 @@ type API struct {
 	credentialsManager      CredentialsManager
 }
 
+const APIPrefix = "/api"
+
 func NewAPI(config APIConfig) *API {
 	return &API{
 		authClient:              config.AuthClient,

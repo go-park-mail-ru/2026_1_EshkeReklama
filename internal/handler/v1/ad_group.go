@@ -37,7 +37,7 @@ func (a *API) RegisterAdGroupHandlers(r *mux.Router) {
 // @Failure      401             {object}  httpx.Error
 // @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id}/ad_groups [post]
+// @Router       /api/ad_campaigns/{ad_campaign_id}/ad_groups [post]
 // @Security     CookieAuth
 func (a *API) CreateAdGroup(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -103,7 +103,7 @@ func (a *API) rollbackCampaignOnGroupCreateError(w http.ResponseWriter, r *http.
 // @Failure      401             {object}  httpx.Error
 // @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id} [put]
+// @Router       /api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id} [put]
 // @Security     CookieAuth
 func (a *API) UpdateAdGroup(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -144,7 +144,7 @@ func (a *API) UpdateAdGroup(w http.ResponseWriter, r *http.Request) {
 // @Failure      401             {object}  httpx.Error
 // @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id}/ad_groups [get]
+// @Router       /api/ad_campaigns/{ad_campaign_id}/ad_groups [get]
 // @Security     CookieAuth
 func (a *API) ListAdGroups(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -181,7 +181,7 @@ func (a *API) ListAdGroups(w http.ResponseWriter, r *http.Request) {
 // @Failure      401             {object}  httpx.Error
 // @Failure      404             {object}  httpx.Error
 // @Failure      500             {object}  httpx.Error
-// @Router       /ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id} [delete]
+// @Router       /api/ad_campaigns/{ad_campaign_id}/ad_groups/{ad_group_id} [delete]
 // @Security     CookieAuth
 func (a *API) DeleteAdGroup(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

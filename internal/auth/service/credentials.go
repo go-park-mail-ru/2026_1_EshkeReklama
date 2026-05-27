@@ -202,14 +202,18 @@ func (s *CredentialsService) Update(ctx context.Context, id int64, email, phone 
 	}
 
 	email = strings.ToLower(strings.TrimSpace(email))
-	if email == "" || !strings.Contains(email, "@") {
+	if email != "" && !strings.Contains(email, "@") {
 		return nil, fmt.Errorf("%w: invalid email", ErrInvalidArg)
 	}
 
 	var err error
-	phone, err = normalizePhone(phone)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrInvalidArg, err)
+	if strings.TrimSpace(phone) != "" {
+		phone, err = normalizePhone(phone)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %v", ErrInvalidArg, err)
+		}
+	} else {
+		phone = ""
 	}
 
 	current, err := s.repo.GetByID(ctx, id)
@@ -217,7 +221,7 @@ func (s *CredentialsService) Update(ctx context.Context, id int64, email, phone 
 		return nil, err
 	}
 
-	if current.Email != email {
+	if current.Email != email && email != "" {
 		if existing, getErr := s.repo.GetByEmail(ctx, email); getErr == nil && existing.ID != id {
 			return nil, ErrEmailTaken
 		} else if getErr != nil && !errors.Is(getErr, sql.ErrNoRows) {
@@ -225,7 +229,7 @@ func (s *CredentialsService) Update(ctx context.Context, id int64, email, phone 
 		}
 	}
 
-	if current.Phone != phone {
+	if current.Phone != phone && phone != "" {
 		if existing, getErr := s.repo.GetByPhone(ctx, phone); getErr == nil && existing.ID != id {
 			return nil, ErrPhoneTaken
 		} else if getErr != nil && !errors.Is(getErr, sql.ErrNoRows) {

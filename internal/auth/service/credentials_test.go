@@ -278,6 +278,51 @@ func TestAuthenticateVKIDAndUpdateAndHelpers(t *testing.T) {
 	}
 }
 
+func TestAuthenticateVKIDSyncsMissingContactsForExistingVKUser(t *testing.T) {
+	var updatedID int64
+	var updatedEmail, updatedPhone string
+
+	repo := &stubCredentialsRepo{
+		createFunc:     func(context.Context, string, string, string) (int64, error) { return 0, nil },
+		createVKFunc:   func(context.Context, string, string, int64) (int64, error) { return 0, nil },
+		getByEmailFunc: func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		getByPhoneFunc: func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		getByVKFunc: func(context.Context, int64) (*authrepo.Credential, error) {
+			return &authrepo.Credential{ID: 15, Email: "", Phone: "", VKUserID: sql.NullInt64{Int64: 123, Valid: true}}, nil
+		},
+		getByIDFunc: func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		linkVKFunc:  func(context.Context, int64, int64) error { return nil },
+		updateFunc: func(_ context.Context, id int64, email, phone string) error {
+			updatedID = id
+			updatedEmail = email
+			updatedPhone = phone
+			return nil
+		},
+		deleteFunc: func(context.Context, int64) error { return nil },
+	}
+
+	vk := &stubVKIDAuth{
+		resolveFunc: func(context.Context, string) (*vkid.Identity, error) {
+			return &vkid.Identity{UserID: 123, Email: "vk@example.com", Phone: "+7 900 000 00 00"}, nil
+		},
+	}
+
+	svc := NewCredentialsService(repo, vk)
+	id, identity, err := svc.AuthenticateVKID(context.Background(), "vk-token", 123)
+	if err != nil {
+		t.Fatalf("authenticate vkid existing user: %v", err)
+	}
+	if id != 15 {
+		t.Fatalf("unexpected auth id: %d", id)
+	}
+	if identity == nil || identity.Email != "vk@example.com" {
+		t.Fatalf("unexpected vk identity: %#v", identity)
+	}
+	if updatedID != 15 || updatedEmail != "vk@example.com" || updatedPhone != "9000000000" {
+		t.Fatalf("unexpected synced contacts: id=%d email=%q phone=%q", updatedID, updatedEmail, updatedPhone)
+	}
+}
+
 func TestAuthenticateVKIDConflictAndHelpers(t *testing.T) {
 	if phone, err := normalizePhone("+7 (900) 123-45-67"); err != nil || phone != "9001234567" {
 		t.Fatalf("unexpected normalized phone: %q %v", phone, err)

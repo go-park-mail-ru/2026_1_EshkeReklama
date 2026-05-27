@@ -75,6 +75,20 @@ type ChangePasswordRequest struct {
 	NewPassword     string `json:"new_password" validate:"required,min=6"`
 }
 
+type PasswordResetRequest struct {
+	Identifier string `json:"identifier" validate:"required"`
+}
+
+type PasswordResetResponse struct {
+	Message string `json:"message"`
+}
+
+type ConfirmPasswordResetRequest struct {
+	Identifier  string `json:"identifier" validate:"required"`
+	Code        string `json:"code" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required,min=6"`
+}
+
 // AdvertiserProfileResponse — публичные поля рекламодателя (без пароля).
 type AdvertiserProfileResponse struct {
 	ID                int    `json:"id"`

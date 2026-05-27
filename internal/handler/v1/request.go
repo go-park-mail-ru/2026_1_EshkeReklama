@@ -22,7 +22,7 @@ type GenericSettingsRequest interface {
 		dto.CreateAdGroupRequest | dto.UpdateAdGroupRequest |
 		dto.RegisterRequest | dto.LoginRequest | dto.VKIDLoginRequest | dto.TopUpBalanceRequest |
 		dto.VerifyRegistrationRequest |
-		dto.ChangePasswordRequest |
+		dto.ChangePasswordRequest | dto.PasswordResetRequest | dto.ConfirmPasswordResetRequest |
 		dto.CreatePaymentRequest | dto.AutopaySettingsRequest | dto.NotificationSettingsRequest |
 		dto.UpdateAdRequest | dto.CreateAppealRequest |
 		dto.PartnerRegisterRequest | dto.PartnerLoginRequest | dto.UpdatePartnerProfileRequest |

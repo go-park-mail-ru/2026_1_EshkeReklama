@@ -376,11 +376,21 @@ func TestChangePassword(t *testing.T) {
 	var updatedID int64
 	var updatedHash string
 	repo := &stubCredentialsRepo{
-		createFunc:     func(context.Context, string, string, string) (int64, error) { return 0, nil },
-		createVKFunc:   func(context.Context, string, string, int64) (int64, error) { return 0, nil },
-		getByEmailFunc: func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
-		getByPhoneFunc: func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
-		getByVKFunc:    func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		createFunc:   func(context.Context, string, string, string) (int64, error) { return 0, nil },
+		createVKFunc: func(context.Context, string, string, int64) (int64, error) { return 0, nil },
+		getByEmailFunc: func(_ context.Context, email string) (*authrepo.Credential, error) {
+			if email == "user@example.com" {
+				return &authrepo.Credential{ID: 7, Email: email, PasswordHash: oldHash}, nil
+			}
+			return nil, sql.ErrNoRows
+		},
+		getByPhoneFunc: func(_ context.Context, phone string) (*authrepo.Credential, error) {
+			if phone == "9001234567" {
+				return &authrepo.Credential{ID: 7, Phone: phone, PasswordHash: oldHash}, nil
+			}
+			return nil, sql.ErrNoRows
+		},
+		getByVKFunc: func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
 		getByIDFunc: func(_ context.Context, id int64) (*authrepo.Credential, error) {
 			switch id {
 			case 7:
@@ -420,6 +430,29 @@ func TestChangePassword(t *testing.T) {
 	}
 	if err := svc.ChangePassword(context.Background(), 7, "", "short"); !errors.Is(err, ErrInvalidArg) {
 		t.Fatalf("expected invalid arg, got %v", err)
+	}
+
+	cred, err := svc.FindByIdentifier(context.Background(), "user@example.com")
+	if err != nil || cred.ID != 7 {
+		t.Fatalf("find by email: %#v %v", cred, err)
+	}
+
+	cred, err = svc.FindByIdentifier(context.Background(), "+7 (900) 123-45-67")
+	if err != nil || cred.ID != 7 {
+		t.Fatalf("find by phone: %#v %v", cred, err)
+	}
+
+	if err := svc.SetPassword(context.Background(), 7, "secret789"); err != nil {
+		t.Fatalf("set password: %v", err)
+	}
+	if updatedID != 7 || updatedHash == "" {
+		t.Fatalf("expected password reset hash update, got id=%d hash=%q", updatedID, updatedHash)
+	}
+	if bcrypt.CompareHashAndPassword([]byte(updatedHash), []byte("secret789")) != nil {
+		t.Fatal("expected reset password hash to match")
+	}
+	if err := svc.SetPassword(context.Background(), 7, "123"); !errors.Is(err, ErrInvalidArg) {
+		t.Fatalf("expected invalid arg for short password, got %v", err)
 	}
 }
 

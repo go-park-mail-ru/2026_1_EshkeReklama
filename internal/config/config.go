@@ -118,6 +118,10 @@ type RegistrationVerificationConfig struct {
 	TTL time.Duration `yaml:"ttl"`
 }
 
+type PasswordResetConfig struct {
+	TTL time.Duration `yaml:"ttl"`
+}
+
 type Config struct {
 	HTTPServer               HTTPServerConfig               `yaml:"http_server"`
 	Postgres                 PostgresConfig                 `yaml:"postgres"`
@@ -134,6 +138,7 @@ type Config struct {
 	SMTP                     SMTPConfig                     `yaml:"smtp"`
 	BalanceAutomation        BalanceAutomationConfig        `yaml:"balance_automation"`
 	RegistrationVerification RegistrationVerificationConfig `yaml:"registration_verification"`
+	PasswordReset            PasswordResetConfig            `yaml:"password_reset"`
 	GracefulTimeout          time.Duration                  `yaml:"graceful_timeout"`
 }
 

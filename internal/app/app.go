@@ -11,6 +11,8 @@ import (
 
 	analyticsch "eshkere/internal/analytics/clickhouse"
 	analyticskafka "eshkere/internal/analytics/kafka"
+	authrepo "eshkere/internal/auth/repository/postgres"
+	authsvc "eshkere/internal/auth/service"
 	authclient "eshkere/internal/client/auth"
 	profileclient "eshkere/internal/client/profile"
 	"eshkere/internal/config"
@@ -39,6 +41,8 @@ type App struct {
 	metrics                *observability.Metrics
 	emailSender            *service.SMTPNotificationSender
 	emailVerificationStore *redisrepo.EmailVerificationStore
+	passwordResetStore     *redisrepo.PasswordResetStore
+	credentialsManager     *authsvc.CredentialsService
 	notificationDedupe     *redisrepo.NotificationDedupeStore
 }
 
@@ -74,6 +78,7 @@ func New(configPath string) *App {
 	closers = append(closers, redisPool)
 
 	advertiserRepo := postgres.NewAdvertiserRepository(db)
+	credentialsRepo := authrepo.NewCredentialsRepository(db)
 	paymentTransactionRepo := postgres.NewPaymentTransactionRepository(db)
 	autopaySettingsRepo := postgres.NewAdvertiserAutopaySettingsRepository(db)
 	notificationSettingsRepo := postgres.NewAdvertiserNotificationSettingsRepository(db)
@@ -139,6 +144,8 @@ func New(configPath string) *App {
 	})
 	emailSender := service.NewSMTPNotificationSender(cfg.SMTP)
 	emailVerificationStore := redisrepo.NewEmailVerificationStore(redisPool)
+	passwordResetStore := redisrepo.NewPasswordResetStore(redisPool)
+	credentialsManager := authsvc.NewCredentialsService(credentialsRepo, nil)
 
 	svc, err := service.NewService(&service.Config{
 		AdvertiserRepo:           advertiserRepo,
@@ -196,6 +203,8 @@ func New(configPath string) *App {
 		metrics:                metrics,
 		emailSender:            emailSender,
 		emailVerificationStore: emailVerificationStore,
+		passwordResetStore:     passwordResetStore,
+		credentialsManager:     credentialsManager,
 		notificationDedupe:     notificationDedupe,
 	}
 }
@@ -230,6 +239,9 @@ func (a *App) Run() error {
 		VerificationStore:       a.emailVerificationStore,
 		VerificationEmailSender: a.emailSender,
 		RegistrationVerifyTTL:   a.cfg.RegistrationVerification.TTL,
+		PasswordResetStore:      a.passwordResetStore,
+		PasswordResetTTL:        a.cfg.PasswordReset.TTL,
+		CredentialsManager:      a.credentialsManager,
 	}))
 
 	apiServer := &http.Server{

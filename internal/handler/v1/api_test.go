@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	authrepo "eshkere/internal/auth/repository/postgres"
 	errs "eshkere/internal/errors"
 	handlers "eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
@@ -51,14 +52,61 @@ func (s *stubVerificationStore) Delete(_ context.Context, email string) error {
 }
 
 type stubVerificationEmailSender struct {
-	sentTo   string
-	sentCode string
+	sentTo        string
+	sentCode      string
+	resetSentTo   string
+	resetSentCode string
 }
 
 func (s *stubVerificationEmailSender) SendEmailVerificationCode(_ context.Context, to string, code string) error {
 	s.sentTo = to
 	s.sentCode = code
 	return nil
+}
+
+func (s *stubVerificationEmailSender) SendPasswordResetCode(_ context.Context, to string, code string) error {
+	s.resetSentTo = to
+	s.resetSentCode = code
+	return nil
+}
+
+type stubPasswordResetStore struct {
+	records map[int64]redisrepo.PasswordResetRecord
+}
+
+func newStubPasswordResetStore() *stubPasswordResetStore {
+	return &stubPasswordResetStore{records: make(map[int64]redisrepo.PasswordResetRecord)}
+}
+
+func (s *stubPasswordResetStore) Save(_ context.Context, record redisrepo.PasswordResetRecord, _ time.Duration) error {
+	s.records[record.AdvertiserID] = record
+	return nil
+}
+
+func (s *stubPasswordResetStore) Get(_ context.Context, advertiserID int64) (*redisrepo.PasswordResetRecord, error) {
+	record, ok := s.records[advertiserID]
+	if !ok {
+		return nil, sql.ErrNoRows
+	}
+	return &record, nil
+}
+
+func (s *stubPasswordResetStore) Delete(_ context.Context, advertiserID int64) error {
+	delete(s.records, advertiserID)
+	return nil
+}
+
+type stubCredentialsManager struct {
+	findByIdentifierFn func(ctx context.Context, identifier string) (*authrepo.Credential, error)
+	setPasswordFn      func(ctx context.Context, id int64, newPassword string) error
+}
+
+func (s *stubCredentialsManager) FindByIdentifier(ctx context.Context, identifier string) (*authrepo.Credential, error) {
+	return s.findByIdentifierFn(ctx, identifier)
+}
+
+func (s *stubCredentialsManager) SetPassword(ctx context.Context, id int64, newPassword string) error {
+	return s.setPasswordFn(ctx, id, newPassword)
 }
 
 // stubAuthClient simulates the auth service for handler tests.
@@ -668,9 +716,18 @@ func (s *stubService) GetPartnerIncomeStats(ctx context.Context, partnerID int, 
 	return &service.PartnerIncomeStats{}, nil
 }
 
-func newTestEnv(ac *stubAuthClient, svc Service) (*mux.Router, *stubVerificationStore, *stubVerificationEmailSender) {
+func newTestEnv(ac *stubAuthClient, svc Service) (*mux.Router, *stubVerificationStore, *stubPasswordResetStore, *stubVerificationEmailSender, *stubCredentialsManager) {
 	verificationStore := newStubVerificationStore()
+	passwordResetStore := newStubPasswordResetStore()
 	emailSender := &stubVerificationEmailSender{}
+	credentialsManager := &stubCredentialsManager{
+		findByIdentifierFn: func(_ context.Context, identifier string) (*authrepo.Credential, error) {
+			return nil, sql.ErrNoRows
+		},
+		setPasswordFn: func(_ context.Context, _ int64, _ string) error {
+			return nil
+		},
+	}
 	r := mux.NewRouter().StrictSlash(true)
 	r.Use(middleware.CSRF(middleware.CSRFConfig{
 		CookieName: "csrf_token",
@@ -686,17 +743,20 @@ func newTestEnv(ac *stubAuthClient, svc Service) (*mux.Router, *stubVerification
 		VerificationStore:       verificationStore,
 		VerificationEmailSender: emailSender,
 		RegistrationVerifyTTL:   15 * time.Minute,
+		PasswordResetStore:      passwordResetStore,
+		PasswordResetTTL:        15 * time.Minute,
+		CredentialsManager:      credentialsManager,
 		CookieConfig: CookieConfig{
 			Name:     testCookieName,
 			Path:     "/",
 			HTTPOnly: true,
 		},
 	}))
-	return r, verificationStore, emailSender
+	return r, verificationStore, passwordResetStore, emailSender, credentialsManager
 }
 
 func newTestRouter(ac *stubAuthClient, svc Service) *mux.Router {
-	r, _, _ := newTestEnv(ac, svc)
+	r, _, _, _, _ := newTestEnv(ac, svc)
 	return r
 }
 
@@ -755,7 +815,7 @@ func TestRegister_OK(t *testing.T) {
 func TestVerifyRegistration_OK(t *testing.T) {
 	ac := newStubAuthClient()
 	svc := &stubService{}
-	r, verificationStore, _ := newTestEnv(ac, svc)
+	r, verificationStore, _, _, _ := newTestEnv(ac, svc)
 
 	csrf := getCSRF(t, r)
 
@@ -819,6 +879,60 @@ func TestLogin_RequiresVerifiedEmail(t *testing.T) {
 	r.ServeHTTP(loginRR, loginReq)
 	if loginRR.Code != http.StatusUnauthorized {
 		t.Fatalf("expected 401 got %d body=%s", loginRR.Code, loginRR.Body.String())
+	}
+}
+
+func TestPasswordReset_RequestAndConfirm(t *testing.T) {
+	ac := newStubAuthClient()
+	svc := &stubService{}
+	r, _, passwordResetStore, emailSender, credentialsManager := newTestEnv(ac, svc)
+
+	csrf := getCSRF(t, r)
+
+	var updatedID int64
+	var updatedPassword string
+	credentialsManager.findByIdentifierFn = func(_ context.Context, identifier string) (*authrepo.Credential, error) {
+		if identifier != "user@example.com" {
+			t.Fatalf("unexpected identifier: %s", identifier)
+		}
+		return &authrepo.Credential{ID: 55, Email: "user@example.com"}, nil
+	}
+	credentialsManager.setPasswordFn = func(_ context.Context, id int64, newPassword string) error {
+		updatedID = id
+		updatedPassword = newPassword
+		return nil
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/advertisers/password/reset", bytes.NewBufferString(`{"identifier":"user@example.com"}`))
+	req.AddCookie(csrf)
+	req.Header.Set("X-CSRF-Token", csrf.Value)
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected 200 got %d body=%s", rr.Code, rr.Body.String())
+	}
+	if emailSender.resetSentTo != "user@example.com" || emailSender.resetSentCode == "" {
+		t.Fatalf("expected password reset email to be sent, got to=%q code=%q", emailSender.resetSentTo, emailSender.resetSentCode)
+	}
+
+	record, err := passwordResetStore.Get(context.Background(), 55)
+	if err != nil {
+		t.Fatalf("get password reset record: %v", err)
+	}
+
+	confirmReq := httptest.NewRequest(http.MethodPost, "/advertisers/password/reset/confirm", bytes.NewBufferString(`{"identifier":"user@example.com","code":"`+record.Code+`","new_password":"secret456"}`))
+	confirmReq.AddCookie(csrf)
+	confirmReq.Header.Set("X-CSRF-Token", csrf.Value)
+	confirmRR := httptest.NewRecorder()
+	r.ServeHTTP(confirmRR, confirmReq)
+	if confirmRR.Code != http.StatusOK {
+		t.Fatalf("expected 200 got %d body=%s", confirmRR.Code, confirmRR.Body.String())
+	}
+	if updatedID != 55 || updatedPassword != "secret456" {
+		t.Fatalf("expected password to be updated, got id=%d password=%q", updatedID, updatedPassword)
+	}
+	if _, err := passwordResetStore.Get(context.Background(), 55); err == nil {
+		t.Fatal("expected password reset record to be deleted")
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	authrepo "eshkere/internal/auth/repository/postgres"
 	"eshkere/internal/models"
 	redisrepo "eshkere/internal/repository/redis"
 	"eshkere/internal/service"
@@ -109,6 +110,18 @@ type VerificationStore interface {
 
 type EmailSender interface {
 	SendEmailVerificationCode(ctx context.Context, to string, code string) error
+	SendPasswordResetCode(ctx context.Context, to string, code string) error
+}
+
+type PasswordResetStore interface {
+	Save(ctx context.Context, record redisrepo.PasswordResetRecord, ttl time.Duration) error
+	Get(ctx context.Context, advertiserID int64) (*redisrepo.PasswordResetRecord, error)
+	Delete(ctx context.Context, advertiserID int64) error
+}
+
+type CredentialsManager interface {
+	FindByIdentifier(ctx context.Context, identifier string) (*authrepo.Credential, error)
+	SetPassword(ctx context.Context, id int64, newPassword string) error
 }
 
 type APIConfig struct {
@@ -118,6 +131,9 @@ type APIConfig struct {
 	VerificationStore       VerificationStore
 	VerificationEmailSender EmailSender
 	RegistrationVerifyTTL   time.Duration
+	PasswordResetStore      PasswordResetStore
+	PasswordResetTTL        time.Duration
+	CredentialsManager      CredentialsManager
 }
 
 type API struct {
@@ -127,6 +143,9 @@ type API struct {
 	verificationStore       VerificationStore
 	verificationEmailSender EmailSender
 	registrationVerifyTTL   time.Duration
+	passwordResetStore      PasswordResetStore
+	passwordResetTTL        time.Duration
+	credentialsManager      CredentialsManager
 }
 
 func NewAPI(config APIConfig) *API {
@@ -137,6 +156,9 @@ func NewAPI(config APIConfig) *API {
 		verificationStore:       config.VerificationStore,
 		verificationEmailSender: config.VerificationEmailSender,
 		registrationVerifyTTL:   config.RegistrationVerifyTTL,
+		passwordResetStore:      config.PasswordResetStore,
+		passwordResetTTL:        config.PasswordResetTTL,
+		credentialsManager:      config.CredentialsManager,
 	}
 }
 

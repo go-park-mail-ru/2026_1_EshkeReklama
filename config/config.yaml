@@ -86,3 +86,6 @@ balance_automation:
 
 registration_verification:
   ttl: 15m
+
+password_reset:
+  ttl: 15m

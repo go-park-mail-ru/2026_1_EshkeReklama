@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	authsvc "eshkere/internal/auth/service"
 	errs "eshkere/internal/errors"
 	"eshkere/internal/handler"
 	"eshkere/internal/handler/middleware"
@@ -31,6 +32,8 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 
 	advertisers.HandleFunc("/register", a.Register).Methods(http.MethodPost)
 	advertisers.HandleFunc("/register/verify", a.VerifyRegistration).Methods(http.MethodPost)
+	advertisers.HandleFunc("/password/reset", a.RequestPasswordReset).Methods(http.MethodPost)
+	advertisers.HandleFunc("/password/reset/confirm", a.ConfirmPasswordReset).Methods(http.MethodPost)
 	advertisers.HandleFunc("/login", a.Login).Methods(http.MethodPost)
 	advertisers.HandleFunc("/login/vk", a.LoginVKID).Methods(http.MethodPost)
 	advertisers.HandleFunc("/logout", a.Logout).Methods(http.MethodPost)
@@ -219,6 +222,121 @@ func (a *API) ensureEmailVerified(ctx context.Context, email, sessionID string) 
 		return nil
 	}
 	return err
+}
+
+func (a *API) RequestPasswordReset(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	req, err := newJSONRequest[dto.PasswordResetRequest](r)
+	if err != nil {
+		httpx.BadRequest(w, "invalid request")
+		return
+	}
+
+	if a.credentialsManager == nil || a.passwordResetStore == nil || a.verificationEmailSender == nil {
+		handler.HandleError(w, r, "request password reset", fmt.Errorf("password reset is not configured"))
+		return
+	}
+
+	cred, err := a.credentialsManager.FindByIdentifier(ctx, req.Identifier)
+	if err != nil {
+		switch {
+		case errors.Is(err, authsvc.ErrInvalidArg):
+			handler.HandleError(w, r, "request password reset", errs.ErrInvalidAdvertiserArg)
+			return
+		case errors.Is(err, sql.ErrNoRows):
+			httpx.JSON(w, http.StatusOK, dto.PasswordResetResponse{Message: "Если аккаунт существует, код для восстановления отправлен на почту"})
+			return
+		default:
+			handler.HandleError(w, r, "request password reset", err)
+			return
+		}
+	}
+
+	if strings.TrimSpace(cred.Email) == "" {
+		httpx.JSON(w, http.StatusOK, dto.PasswordResetResponse{Message: "Если аккаунт существует, код для восстановления отправлен на почту"})
+		return
+	}
+
+	code, err := generateVerificationCode()
+	if err != nil {
+		handler.HandleError(w, r, "request password reset", err)
+		return
+	}
+
+	if err := a.passwordResetStore.Save(ctx, redisrepo.PasswordResetRecord{
+		AdvertiserID: cred.ID,
+		Email:        cred.Email,
+		Code:         code,
+	}, a.passwordResetTTL); err != nil {
+		handler.HandleError(w, r, "request password reset", err)
+		return
+	}
+	if err := a.verificationEmailSender.SendPasswordResetCode(ctx, cred.Email, code); err != nil {
+		handler.HandleError(w, r, "request password reset", err)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, dto.PasswordResetResponse{Message: "Если аккаунт существует, код для восстановления отправлен на почту"})
+}
+
+func (a *API) ConfirmPasswordReset(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	req, err := newJSONRequest[dto.ConfirmPasswordResetRequest](r)
+	if err != nil {
+		httpx.BadRequest(w, "invalid request")
+		return
+	}
+
+	if a.credentialsManager == nil || a.passwordResetStore == nil {
+		handler.HandleError(w, r, "confirm password reset", fmt.Errorf("password reset is not configured"))
+		return
+	}
+
+	cred, err := a.credentialsManager.FindByIdentifier(ctx, req.Identifier)
+	if err != nil {
+		switch {
+		case errors.Is(err, authsvc.ErrInvalidArg):
+			handler.HandleError(w, r, "confirm password reset", errs.ErrInvalidAdvertiserArg)
+			return
+		case errors.Is(err, sql.ErrNoRows):
+			handler.HandleError(w, r, "confirm password reset", errs.ErrInvalidVerifyCode)
+			return
+		default:
+			handler.HandleError(w, r, "confirm password reset", err)
+			return
+		}
+	}
+
+	record, err := a.passwordResetStore.Get(ctx, cred.ID)
+	if err != nil {
+		if err == goredis.ErrNil || errors.Is(err, goredis.ErrNil) {
+			handler.HandleError(w, r, "confirm password reset", errs.ErrInvalidVerifyCode)
+			return
+		}
+		handler.HandleError(w, r, "confirm password reset", err)
+		return
+	}
+	if record.Code != strings.TrimSpace(req.Code) {
+		handler.HandleError(w, r, "confirm password reset", errs.ErrInvalidVerifyCode)
+		return
+	}
+
+	if err := a.credentialsManager.SetPassword(ctx, cred.ID, req.NewPassword); err != nil {
+		if errors.Is(err, authsvc.ErrInvalidArg) {
+			handler.HandleError(w, r, "confirm password reset", errs.ErrInvalidAdvertiserArg)
+			return
+		}
+		handler.HandleError(w, r, "confirm password reset", err)
+		return
+	}
+	if err := a.passwordResetStore.Delete(ctx, cred.ID); err != nil {
+		handler.HandleError(w, r, "confirm password reset", err)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, dto.PasswordResetResponse{Message: "Пароль успешно обновлен"})
 }
 
 func (a *API) resendRegistrationCode(ctx context.Context, email string) error {

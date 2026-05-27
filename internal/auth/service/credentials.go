@@ -120,6 +120,23 @@ func (s *CredentialsService) Authenticate(ctx context.Context, identifier, passw
 	return cred.ID, nil
 }
 
+func (s *CredentialsService) FindByIdentifier(ctx context.Context, identifier string) (*authrepo.Credential, error) {
+	identifier = strings.TrimSpace(identifier)
+	if identifier == "" {
+		return nil, fmt.Errorf("%w: identifier is required", ErrInvalidArg)
+	}
+
+	if strings.Contains(identifier, "@") {
+		return s.repo.GetByEmail(ctx, strings.ToLower(identifier))
+	}
+
+	phone, err := normalizePhone(identifier)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrInvalidArg, err)
+	}
+	return s.repo.GetByPhone(ctx, phone)
+}
+
 func (s *CredentialsService) AuthenticateVKID(ctx context.Context, accessToken string, expectedUserID int64) (int64, *vkid.Identity, error) {
 	if strings.TrimSpace(accessToken) == "" || expectedUserID <= 0 {
 		return 0, nil, fmt.Errorf("%w: access_token and user_id are required", ErrInvalidArg)
@@ -221,6 +238,27 @@ func (s *CredentialsService) ChangePassword(ctx context.Context, id int64, curre
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(cred.PasswordHash), []byte(currentPassword)); err != nil {
 		return ErrInvalidCredentials
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("hash password: %w", err)
+	}
+
+	return s.repo.UpdatePasswordHash(ctx, id, string(hash))
+}
+
+func (s *CredentialsService) SetPassword(ctx context.Context, id int64, newPassword string) error {
+	if id <= 0 {
+		return fmt.Errorf("%w: invalid advertiser id", ErrInvalidArg)
+	}
+
+	newPassword = strings.TrimSpace(newPassword)
+	if newPassword == "" {
+		return fmt.Errorf("%w: new password is required", ErrInvalidArg)
+	}
+	if len(newPassword) < 6 {
+		return fmt.Errorf("%w: password too short", ErrInvalidArg)
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)

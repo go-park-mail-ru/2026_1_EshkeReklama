@@ -14,6 +14,7 @@ import (
 type NotificationSender interface {
 	SendBalanceAlert(ctx context.Context, to string, subject string, body string) error
 	SendEmailVerificationCode(ctx context.Context, to string, code string) error
+	SendPasswordResetCode(ctx context.Context, to string, code string) error
 }
 
 type SMTPNotificationSender struct {
@@ -42,6 +43,10 @@ func (s *SMTPNotificationSender) SendBalanceAlert(ctx context.Context, to string
 
 func (s *SMTPNotificationSender) SendEmailVerificationCode(ctx context.Context, to string, code string) error {
 	return s.send(ctx, to, "Подтверждение почты", fmt.Sprintf("Ваш код подтверждения: %s\n\nКод действует 15 минут.", code))
+}
+
+func (s *SMTPNotificationSender) SendPasswordResetCode(ctx context.Context, to string, code string) error {
+	return s.send(ctx, to, "Восстановление пароля", fmt.Sprintf("Ваш код для восстановления пароля: %s\n\nКод действует 15 минут.", code))
 }
 
 func (s *SMTPNotificationSender) send(ctx context.Context, to string, subject string, body string) error {

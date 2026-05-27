@@ -3,6 +3,7 @@ package handler_test
 import (
 	"bytes"
 	"context"
+	"errors"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -293,5 +294,70 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 	r.ServeHTTP(delAdRR, delAdReq)
 	if delAdRR.Code != http.StatusOK {
 		t.Fatalf("expected 200 got %d body=%s", delAdRR.Code, delAdRR.Body.String())
+	}
+}
+
+func TestAdGroupCreate_RollsBackCampaignOnFailure(t *testing.T) {
+	ac := newStubAuthClient()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	svc := handlers.NewMockService(ctrl)
+	r := newTestRouter(ac, svc)
+
+	csrf := getCSRF(t, r)
+	sess := createSessionCookie(t, ac, 1)
+
+	svc.EXPECT().
+		CreateAdGroup(gomock.Any(), 1, gomock.Any()).
+		Return(nil, errors.New("boom"))
+	svc.EXPECT().
+		DeleteAdCampaign(gomock.Any(), 1, 10).
+		Return(nil)
+
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/ad_campaigns/10/ad_groups?rollback_campaign_on_error=true",
+		bytes.NewBufferString(`{"topic_id":1,"region_id":2,"name":"g","age_from":18,"age_to":25,"gender":"any"}`),
+	)
+	req.AddCookie(sess)
+	req.AddCookie(csrf)
+	req.Header.Set("X-CSRF-Token", csrf.Value)
+
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected 500 got %d body=%s", rr.Code, rr.Body.String())
+	}
+}
+
+func TestAdGroupCreate_RollsBackCampaignOnInvalidRequest(t *testing.T) {
+	ac := newStubAuthClient()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	svc := handlers.NewMockService(ctrl)
+	r := newTestRouter(ac, svc)
+
+	csrf := getCSRF(t, r)
+	sess := createSessionCookie(t, ac, 1)
+
+	svc.EXPECT().
+		DeleteAdCampaign(gomock.Any(), 1, 10).
+		Return(nil)
+
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/ad_campaigns/10/ad_groups?rollback_campaign_on_error=true",
+		bytes.NewBufferString(`{"topic_id":1,"audience":"all"}`),
+	)
+	req.AddCookie(sess)
+	req.AddCookie(csrf)
+	req.Header.Set("X-CSRF-Token", csrf.Value)
+
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 got %d body=%s", rr.Code, rr.Body.String())
 	}
 }

@@ -83,6 +83,7 @@ services:
       CLICKHOUSE_DB: ${CLICKHOUSE_DB:-eshkere}
       CLICKHOUSE_USER: ${CLICKHOUSE_USER:-default}
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
     ports:
       - "8000:8000"
 

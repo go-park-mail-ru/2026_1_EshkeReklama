@@ -13,6 +13,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const rollbackCampaignOnErrorQueryParam = "rollback_campaign_on_error"
+
 func (a *API) RegisterAdGroupHandlers(r *mux.Router) {
 	groups := r.PathPrefix("/ad_campaigns/{ad_campaign_id}/ad_groups").Subrouter()
 
@@ -54,12 +56,16 @@ func (a *API) CreateAdGroup(w http.ResponseWriter, r *http.Request) {
 
 	req, err := newJSONRequest[dto.CreateAdGroupRequest](r)
 	if err != nil {
+		a.rollbackCampaignOnGroupCreateError(w, r, advertiserID, campaignID)
 		httpx.BadRequest(w, "invalid request")
 		return
 	}
 
 	created, err := a.service.CreateAdGroup(ctx, advertiserID, req.ToInput(campaignID))
 	if err != nil {
+		if rollbackErr := a.rollbackCampaignOnGroupCreateError(w, r, advertiserID, campaignID); rollbackErr != nil {
+			return
+		}
 		handler.HandleError(w, r, "creating group", err)
 		return
 	}
@@ -67,6 +73,19 @@ func (a *API) CreateAdGroup(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusOK, dto.CreateAdGroupResponse{
 		ID: created.ID,
 	})
+}
+
+func (a *API) rollbackCampaignOnGroupCreateError(w http.ResponseWriter, r *http.Request, advertiserID, campaignID int) error {
+	if r.URL.Query().Get(rollbackCampaignOnErrorQueryParam) != "true" {
+		return nil
+	}
+
+	if err := a.service.DeleteAdCampaign(r.Context(), advertiserID, campaignID); err != nil {
+		handler.HandleError(w, r, "rolling back campaign after group create failure", err)
+		return err
+	}
+
+	return nil
 }
 
 // UpdateAdGroup обновляет группу объявлений.

@@ -34,9 +34,11 @@ func (c *stubAuthConn) Invoke(_ context.Context, method string, req, reply inter
 	case *LogoutResponse:
 		*out = LogoutResponse{}
 	case *GetCredentialsResponse:
-		*out = GetCredentialsResponse{AdvertiserId: 4, Email: "a@example.com", Phone: "900"}
+		*out = GetCredentialsResponse{AdvertiserId: 4, Email: "a@example.com", Phone: "900", CanChangePassword: true}
 	case *UpdateCredentialsResponse:
 		*out = UpdateCredentialsResponse{AdvertiserId: 5, Email: "b@example.com", Phone: "901"}
+	case *ChangePasswordResponse:
+		*out = ChangePasswordResponse{}
 	}
 
 	return nil
@@ -92,6 +94,12 @@ func (s *authUnaryServer) UpdateCredentials(_ context.Context, req *UpdateCreden
 	s.lastMethod = "UpdateCredentials"
 	s.lastReq = req
 	return &UpdateCredentialsResponse{AdvertiserId: req.GetAdvertiserId(), Email: req.GetEmail(), Phone: req.GetPhone()}, nil
+}
+
+func (s *authUnaryServer) ChangePassword(_ context.Context, req *ChangePasswordRequest) (*ChangePasswordResponse, error) {
+	s.lastMethod = "ChangePassword"
+	s.lastReq = req
+	return &ChangePasswordResponse{}, nil
 }
 
 type stubRegistrar struct {
@@ -244,8 +252,8 @@ func TestAuthMessagesGeneratedMethods(t *testing.T) {
 		_ = req.ProtoReflect()
 		req.Reset()
 
-		resp := &GetCredentialsResponse{AdvertiserId: 7, Email: "e", Phone: "p"}
-		if resp.GetAdvertiserId() != 7 || resp.GetEmail() != "e" || resp.GetPhone() != "p" {
+		resp := &GetCredentialsResponse{AdvertiserId: 7, Email: "e", Phone: "p", CanChangePassword: true}
+		if resp.GetAdvertiserId() != 7 || resp.GetEmail() != "e" || resp.GetPhone() != "p" || !resp.GetCanChangePassword() {
 			t.Fatalf("unexpected credentials response: %+v", resp)
 		}
 		_, _ = resp.Descriptor()
@@ -271,14 +279,31 @@ func TestAuthMessagesGeneratedMethods(t *testing.T) {
 		_ = updateResp.ProtoReflect()
 		updateResp.Reset()
 
+		changeReq := &ChangePasswordRequest{AdvertiserId: 10, CurrentPassword: "old", NewPassword: "new"}
+		if changeReq.GetAdvertiserId() != 10 || changeReq.GetCurrentPassword() != "old" || changeReq.GetNewPassword() != "new" {
+			t.Fatalf("unexpected change password request: %+v", changeReq)
+		}
+		_, _ = changeReq.Descriptor()
+		_ = changeReq.String()
+		_ = changeReq.ProtoReflect()
+		changeReq.Reset()
+
+		changeResp := &ChangePasswordResponse{}
+		_, _ = changeResp.Descriptor()
+		_ = changeResp.String()
+		_ = changeResp.ProtoReflect()
+		changeResp.Reset()
+
 		var nilReq *GetCredentialsRequest
 		var nilResp *GetCredentialsResponse
 		var nilUpdateReq *UpdateCredentialsRequest
 		var nilUpdateResp *UpdateCredentialsResponse
+		var nilChangeReq *ChangePasswordRequest
+		var nilChangeResp *ChangePasswordResponse
 		if nilReq.GetAdvertiserId() != 0 || nilReq.ProtoReflect() == nil {
 			t.Fatal("nil GetCredentialsRequest accessors failed")
 		}
-		if nilResp.GetAdvertiserId() != 0 || nilResp.GetEmail() != "" || nilResp.GetPhone() != "" || nilResp.ProtoReflect() == nil {
+		if nilResp.GetAdvertiserId() != 0 || nilResp.GetEmail() != "" || nilResp.GetPhone() != "" || nilResp.GetCanChangePassword() || nilResp.ProtoReflect() == nil {
 			t.Fatal("nil GetCredentialsResponse accessors failed")
 		}
 		if nilUpdateReq.GetAdvertiserId() != 0 || nilUpdateReq.GetEmail() != "" || nilUpdateReq.GetPhone() != "" || nilUpdateReq.ProtoReflect() == nil {
@@ -286,6 +311,12 @@ func TestAuthMessagesGeneratedMethods(t *testing.T) {
 		}
 		if nilUpdateResp.GetAdvertiserId() != 0 || nilUpdateResp.GetEmail() != "" || nilUpdateResp.GetPhone() != "" || nilUpdateResp.ProtoReflect() == nil {
 			t.Fatal("nil UpdateCredentialsResponse accessors failed")
+		}
+		if nilChangeReq.GetAdvertiserId() != 0 || nilChangeReq.GetCurrentPassword() != "" || nilChangeReq.GetNewPassword() != "" || nilChangeReq.ProtoReflect() == nil {
+			t.Fatal("nil ChangePasswordRequest accessors failed")
+		}
+		if nilChangeResp.ProtoReflect() == nil {
+			t.Fatal("nil ChangePasswordResponse accessors failed")
 		}
 	})
 }
@@ -316,6 +347,9 @@ func TestAuthServiceClientGeneratedMethods(t *testing.T) {
 	if resp, err := client.UpdateCredentials(ctx, &UpdateCredentialsRequest{AdvertiserId: 5}); err != nil || resp.GetAdvertiserId() != 5 || conn.lastMethod != AuthService_UpdateCredentials_FullMethodName {
 		t.Fatalf("UpdateCredentials failed: resp=%+v err=%v method=%s", resp, err, conn.lastMethod)
 	}
+	if _, err := client.ChangePassword(ctx, &ChangePasswordRequest{AdvertiserId: 6, CurrentPassword: "old", NewPassword: "new"}); err != nil || conn.lastMethod != AuthService_ChangePassword_FullMethodName {
+		t.Fatalf("ChangePassword failed: err=%v method=%s", err, conn.lastMethod)
+	}
 
 	conn.invokeErr = errors.New("boom")
 	if _, err := client.Login(ctx, &LoginRequest{}); !errors.Is(err, conn.invokeErr) {
@@ -331,7 +365,7 @@ func TestAuthServiceServerGeneratedMethods(t *testing.T) {
 	if registrar.desc == nil || registrar.desc.ServiceName != "eshkere.auth.v1.AuthService" || registrar.srv != srv {
 		t.Fatalf("unexpected registration: %+v", registrar.desc)
 	}
-	if len(AuthService_ServiceDesc.Methods) != 7 || AuthService_ServiceDesc.Metadata != "proto/auth/v1/auth.proto" {
+	if len(AuthService_ServiceDesc.Methods) != 8 || AuthService_ServiceDesc.Metadata != "proto/auth/v1/auth.proto" {
 		t.Fatalf("unexpected service desc: %+v", AuthService_ServiceDesc)
 	}
 
@@ -399,6 +433,18 @@ func TestAuthServiceServerGeneratedMethods(t *testing.T) {
 	}, nil); err != nil || resp.(*UpdateCredentialsResponse).GetAdvertiserId() != 77 || srv.lastMethod != "UpdateCredentials" {
 		t.Fatalf("update credentials handler failed: resp=%+v err=%v method=%s", resp, err, srv.lastMethod)
 	}
+
+	if _, err := _AuthService_ChangePassword_Handler(srv, ctx, func(v interface{}) error {
+		*v.(*ChangePasswordRequest) = ChangePasswordRequest{AdvertiserId: 88, CurrentPassword: "old", NewPassword: "new"}
+		return nil
+	}, func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		if info.FullMethod != AuthService_ChangePassword_FullMethodName {
+			t.Fatalf("unexpected method: %s", info.FullMethod)
+		}
+		return handler(ctx, req)
+	}); err != nil || srv.lastMethod != "ChangePassword" {
+		t.Fatalf("change password handler failed: err=%v method=%s", err, srv.lastMethod)
+	}
 }
 
 func TestAuthUnimplementedServer(t *testing.T) {
@@ -416,6 +462,7 @@ func TestAuthUnimplementedServer(t *testing.T) {
 		{"Logout", func() error { _, err := srv.Logout(ctx, &LogoutRequest{}); return err }},
 		{"GetCredentials", func() error { _, err := srv.GetCredentials(ctx, &GetCredentialsRequest{}); return err }},
 		{"UpdateCredentials", func() error { _, err := srv.UpdateCredentials(ctx, &UpdateCredentialsRequest{}); return err }},
+		{"ChangePassword", func() error { _, err := srv.ChangePassword(ctx, &ChangePasswordRequest{}); return err }},
 	}
 
 	for _, tc := range cases {

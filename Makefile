@@ -1,4 +1,4 @@
-.PHONY: up down down-reset proto lint lint-fmt generate coverage
+.PHONY: up down down-reset proto lint lint-fmt generate coverage test
 
 generate:
 	go generate ./...
@@ -35,6 +35,9 @@ coverage:
     grep -v '_generated' \
     > cover.filtered.out && \
     go tool cover -func=cover.filtered.out | tail -n 1
+
+test:
+	env GOCACHE=/private/tmp/eshkere-go-build-cache go test ./...
 
 lint:
 	golangci-lint run

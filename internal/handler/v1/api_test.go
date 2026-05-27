@@ -732,12 +732,12 @@ func newTestEnv(ac *stubAuthClient, svc Service) (*mux.Router, *stubVerification
 	r.Use(middleware.CSRF(middleware.CSRFConfig{
 		CookieName: "csrf_token",
 		HeaderName: "X-CSRF-Token",
-		SkipPaths:  []string{"/ad/request"},
+		SkipPaths:  []string{"/ad/request", APIPrefix + "/ad/request"},
 	}))
 	r.HandleFunc("/__ping", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}).Methods(http.MethodGet)
-	handlers.Register(r, NewAPI(APIConfig{
+	api := NewAPI(APIConfig{
 		AuthClient:              ac,
 		Service:                 svc,
 		VerificationStore:       verificationStore,
@@ -751,7 +751,9 @@ func newTestEnv(ac *stubAuthClient, svc Service) (*mux.Router, *stubVerification
 			Path:     "/",
 			HTTPOnly: true,
 		},
-	}))
+	})
+	handlers.Register(r, api)
+	handlers.Register(r.PathPrefix(APIPrefix).Subrouter(), api)
 	return r, verificationStore, passwordResetStore, emailSender, credentialsManager
 }
 

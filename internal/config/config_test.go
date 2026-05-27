@@ -37,3 +37,11 @@ graceful_timeout: 3s
 		t.Fatalf("expected listen :9999 got %q", cfg.HTTPServer.Listen)
 	}
 }
+
+func TestKafkaConfigBrokerList(t *testing.T) {
+	cfg := KafkaConfig{Brokers: " kafka:9092, localhost:9094 , ,127.0.0.1:9092 "}
+	got := cfg.BrokerList()
+	if len(got) != 3 || got[0] != "kafka:9092" || got[1] != "localhost:9094" || got[2] != "127.0.0.1:9092" {
+		t.Fatalf("unexpected broker list: %#v", got)
+	}
+}

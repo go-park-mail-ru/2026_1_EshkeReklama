@@ -137,12 +137,6 @@ func (s *CredentialsService) AuthenticateVKID(ctx context.Context, accessToken s
 		return 0, nil, ErrInvalidCredentials
 	}
 
-	if cred, getErr := s.repo.GetByVKUserID(ctx, identity.UserID); getErr == nil {
-		return cred.ID, identity, nil
-	} else if !errors.Is(getErr, sql.ErrNoRows) {
-		return 0, nil, getErr
-	}
-
 	email := strings.ToLower(strings.TrimSpace(identity.Email))
 	phone := ""
 	if strings.TrimSpace(identity.Phone) != "" {
@@ -150,6 +144,15 @@ func (s *CredentialsService) AuthenticateVKID(ctx context.Context, accessToken s
 		if err != nil {
 			return 0, nil, fmt.Errorf("%w: %v", ErrInvalidArg, err)
 		}
+	}
+
+	if cred, getErr := s.repo.GetByVKUserID(ctx, identity.UserID); getErr == nil {
+		if err := s.syncVKIdentityContacts(ctx, cred, email, phone); err != nil {
+			return 0, nil, err
+		}
+		return cred.ID, identity, nil
+	} else if !errors.Is(getErr, sql.ErrNoRows) {
+		return 0, nil, getErr
 	}
 
 	emailCred, err := s.lookupByEmail(ctx, email)
@@ -171,6 +174,9 @@ func (s *CredentialsService) AuthenticateVKID(ctx context.Context, accessToken s
 			if err := s.repo.LinkVKUserID(ctx, targetCred.ID, identity.UserID); err != nil {
 				return 0, nil, err
 			}
+		}
+		if err := s.syncVKIdentityContacts(ctx, targetCred, email, phone); err != nil {
+			return 0, nil, err
 		}
 		return targetCred.ID, identity, nil
 	}
@@ -235,6 +241,34 @@ func (s *CredentialsService) Update(ctx context.Context, id int64, email, phone 
 	current.Phone = phone
 
 	return current, nil
+}
+
+func (s *CredentialsService) syncVKIdentityContacts(ctx context.Context, cred *authrepo.Credential, email, phone string) error {
+	if cred == nil {
+		return nil
+	}
+
+	nextEmail := cred.Email
+	if nextEmail == "" && email != "" {
+		nextEmail = email
+	}
+
+	nextPhone := cred.Phone
+	if nextPhone == "" && phone != "" {
+		nextPhone = phone
+	}
+
+	if nextEmail == cred.Email && nextPhone == cred.Phone {
+		return nil
+	}
+
+	if err := s.repo.Update(ctx, cred.ID, nextEmail, nextPhone); err != nil {
+		return err
+	}
+
+	cred.Email = nextEmail
+	cred.Phone = nextPhone
+	return nil
 }
 
 func normalizePhone(raw string) (string, error) {

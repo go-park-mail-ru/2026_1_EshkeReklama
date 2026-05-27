@@ -20,8 +20,8 @@ func TestPartnerHandlersAndPartnerSites(t *testing.T) {
 	ac.loginFn = func(_ context.Context, identifier, password string) (int64, string, int64, error) {
 		return 12, "partner-login", time.Date(2026, 5, 27, 12, 0, 0, 0, time.UTC).Unix(), nil
 	}
-	ac.getCredentialsFn = func(_ context.Context, partnerID int64) (string, string, error) {
-		return "partner@test.dev", "+79990000000", nil
+	ac.getCredentialsFn = func(_ context.Context, partnerID int64) (string, string, bool, error) {
+		return "partner@test.dev", "+79990000000", true, nil
 	}
 	ac.updateCredentialsFn = func(_ context.Context, partnerID int64, email, phone string) (string, string, error) {
 		return email, phone, nil

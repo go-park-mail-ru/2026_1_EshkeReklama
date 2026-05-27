@@ -13,15 +13,16 @@ import (
 )
 
 type stubCredentialsRepo struct {
-	createFunc     func(context.Context, string, string, string) (int64, error)
-	createVKFunc   func(context.Context, string, string, int64) (int64, error)
-	getByEmailFunc func(context.Context, string) (*authrepo.Credential, error)
-	getByPhoneFunc func(context.Context, string) (*authrepo.Credential, error)
-	getByVKFunc    func(context.Context, int64) (*authrepo.Credential, error)
-	getByIDFunc    func(context.Context, int64) (*authrepo.Credential, error)
-	linkVKFunc     func(context.Context, int64, int64) error
-	updateFunc     func(context.Context, int64, string, string) error
-	deleteFunc     func(context.Context, int64) error
+	createFunc             func(context.Context, string, string, string) (int64, error)
+	createVKFunc           func(context.Context, string, string, int64) (int64, error)
+	getByEmailFunc         func(context.Context, string) (*authrepo.Credential, error)
+	getByPhoneFunc         func(context.Context, string) (*authrepo.Credential, error)
+	getByVKFunc            func(context.Context, int64) (*authrepo.Credential, error)
+	getByIDFunc            func(context.Context, int64) (*authrepo.Credential, error)
+	linkVKFunc             func(context.Context, int64, int64) error
+	updateFunc             func(context.Context, int64, string, string) error
+	updatePasswordHashFunc func(context.Context, int64, string) error
+	deleteFunc             func(context.Context, int64) error
 }
 
 func (s *stubCredentialsRepo) Create(ctx context.Context, email, phone, hash string) (int64, error) {
@@ -47,6 +48,9 @@ func (s *stubCredentialsRepo) LinkVKUserID(ctx context.Context, id, vkUserID int
 }
 func (s *stubCredentialsRepo) Update(ctx context.Context, id int64, email, phone string) error {
 	return s.updateFunc(ctx, id, email, phone)
+}
+func (s *stubCredentialsRepo) UpdatePasswordHash(ctx context.Context, id int64, passwordHash string) error {
+	return s.updatePasswordHashFunc(ctx, id, passwordHash)
 }
 func (s *stubCredentialsRepo) Delete(ctx context.Context, id int64) error {
 	return s.deleteFunc(ctx, id)
@@ -86,11 +90,12 @@ func TestRegisterAndAuthenticate(t *testing.T) {
 			}
 			return &authrepo.Credential{ID: 10, Email: "user@example.com", Phone: phone, PasswordHash: storedHash}, nil
 		},
-		getByVKFunc: func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
-		getByIDFunc: func(context.Context, int64) (*authrepo.Credential, error) { return nil, nil },
-		linkVKFunc:  func(context.Context, int64, int64) error { return nil },
-		updateFunc:  func(context.Context, int64, string, string) error { return nil },
-		deleteFunc:  func(context.Context, int64) error { return nil },
+		getByVKFunc:            func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		getByIDFunc:            func(context.Context, int64) (*authrepo.Credential, error) { return nil, nil },
+		linkVKFunc:             func(context.Context, int64, int64) error { return nil },
+		updateFunc:             func(context.Context, int64, string, string) error { return nil },
+		updatePasswordHashFunc: func(context.Context, int64, string) error { return nil },
+		deleteFunc:             func(context.Context, int64) error { return nil },
 	}
 
 	svc := NewCredentialsService(repo, nil)
@@ -124,15 +129,16 @@ func TestRegisterAndAuthenticate(t *testing.T) {
 
 func TestRegisterValidationAndConflictErrors(t *testing.T) {
 	repo := &stubCredentialsRepo{
-		createFunc:     func(context.Context, string, string, string) (int64, error) { return 0, nil },
-		createVKFunc:   func(context.Context, string, string, int64) (int64, error) { return 0, nil },
-		getByEmailFunc: func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
-		getByPhoneFunc: func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
-		getByVKFunc:    func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
-		getByIDFunc:    func(context.Context, int64) (*authrepo.Credential, error) { return nil, nil },
-		linkVKFunc:     func(context.Context, int64, int64) error { return nil },
-		updateFunc:     func(context.Context, int64, string, string) error { return nil },
-		deleteFunc:     func(context.Context, int64) error { return nil },
+		createFunc:             func(context.Context, string, string, string) (int64, error) { return 0, nil },
+		createVKFunc:           func(context.Context, string, string, int64) (int64, error) { return 0, nil },
+		getByEmailFunc:         func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		getByPhoneFunc:         func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		getByVKFunc:            func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		getByIDFunc:            func(context.Context, int64) (*authrepo.Credential, error) { return nil, nil },
+		linkVKFunc:             func(context.Context, int64, int64) error { return nil },
+		updateFunc:             func(context.Context, int64, string, string) error { return nil },
+		updatePasswordHashFunc: func(context.Context, int64, string) error { return nil },
+		deleteFunc:             func(context.Context, int64) error { return nil },
 	}
 	svc := NewCredentialsService(repo, nil)
 
@@ -219,7 +225,8 @@ func TestAuthenticateVKIDAndUpdateAndHelpers(t *testing.T) {
 			updatedEmail, updatedPhone = email, phone
 			return nil
 		},
-		deleteFunc: func(context.Context, int64) error { return nil },
+		updatePasswordHashFunc: func(context.Context, int64, string) error { return nil },
+		deleteFunc:             func(context.Context, int64) error { return nil },
 	}
 	vk := &stubVKIDAuth{
 		resolveFunc: func(context.Context, string) (*vkid.Identity, error) {
@@ -298,7 +305,8 @@ func TestAuthenticateVKIDSyncsMissingContactsForExistingVKUser(t *testing.T) {
 			updatedPhone = phone
 			return nil
 		},
-		deleteFunc: func(context.Context, int64) error { return nil },
+		updatePasswordHashFunc: func(context.Context, int64, string) error { return nil },
+		deleteFunc:             func(context.Context, int64) error { return nil },
 	}
 
 	vk := &stubVKIDAuth{
@@ -341,7 +349,8 @@ func TestUpdateAllowsPartialVKContacts(t *testing.T) {
 			updatedPhone = phone
 			return nil
 		},
-		deleteFunc: func(context.Context, int64) error { return nil },
+		updatePasswordHashFunc: func(context.Context, int64, string) error { return nil },
+		deleteFunc:             func(context.Context, int64) error { return nil },
 	}
 
 	svc := NewCredentialsService(repo, nil)
@@ -354,6 +363,63 @@ func TestUpdateAllowsPartialVKContacts(t *testing.T) {
 	}
 	if updated.Email != "vk@example.com" || updated.Phone != "" {
 		t.Fatalf("unexpected updated credential: %#v", updated)
+	}
+}
+
+func TestChangePassword(t *testing.T) {
+	hashBytes, err := bcrypt.GenerateFromPassword([]byte("secret123"), bcrypt.DefaultCost)
+	if err != nil {
+		t.Fatalf("hash old password: %v", err)
+	}
+	oldHash := string(hashBytes)
+
+	var updatedID int64
+	var updatedHash string
+	repo := &stubCredentialsRepo{
+		createFunc:     func(context.Context, string, string, string) (int64, error) { return 0, nil },
+		createVKFunc:   func(context.Context, string, string, int64) (int64, error) { return 0, nil },
+		getByEmailFunc: func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		getByPhoneFunc: func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		getByVKFunc:    func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		getByIDFunc: func(_ context.Context, id int64) (*authrepo.Credential, error) {
+			switch id {
+			case 7:
+				return &authrepo.Credential{ID: 7, PasswordHash: oldHash}, nil
+			case 8:
+				return &authrepo.Credential{ID: 8, VKUserID: sql.NullInt64{Int64: 123, Valid: true}}, nil
+			default:
+				return nil, sql.ErrNoRows
+			}
+		},
+		linkVKFunc: func(context.Context, int64, int64) error { return nil },
+		updateFunc: func(context.Context, int64, string, string) error { return nil },
+		updatePasswordHashFunc: func(_ context.Context, id int64, passwordHash string) error {
+			updatedID = id
+			updatedHash = passwordHash
+			return nil
+		},
+		deleteFunc: func(context.Context, int64) error { return nil },
+	}
+
+	svc := NewCredentialsService(repo, nil)
+	if err := svc.ChangePassword(context.Background(), 7, "secret123", "secret456"); err != nil {
+		t.Fatalf("change password: %v", err)
+	}
+	if updatedID != 7 || updatedHash == "" {
+		t.Fatalf("password hash was not updated: id=%d hash=%q", updatedID, updatedHash)
+	}
+	if bcrypt.CompareHashAndPassword([]byte(updatedHash), []byte("secret456")) != nil {
+		t.Fatal("expected new password hash to match")
+	}
+
+	if err := svc.ChangePassword(context.Background(), 7, "wrong", "secret456"); !errors.Is(err, ErrInvalidCredentials) {
+		t.Fatalf("expected invalid credentials, got %v", err)
+	}
+	if err := svc.ChangePassword(context.Background(), 8, "secret123", "secret456"); !errors.Is(err, ErrPasswordUnavailable) {
+		t.Fatalf("expected password unavailable, got %v", err)
+	}
+	if err := svc.ChangePassword(context.Background(), 7, "", "short"); !errors.Is(err, ErrInvalidArg) {
+		t.Fatalf("expected invalid arg, got %v", err)
 	}
 }
 

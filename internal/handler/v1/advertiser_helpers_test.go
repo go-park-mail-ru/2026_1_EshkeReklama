@@ -54,8 +54,8 @@ func TestResolveUpdatedContacts(t *testing.T) {
 		t.Fatalf("unexpected updated credentials: email=%q phone=%q", email, phone)
 	}
 
-	ac.getCredentialsFn = func(context.Context, int64) (string, string, error) {
-		return "", "", errors.New("auth unavailable")
+	ac.getCredentialsFn = func(context.Context, int64) (string, string, bool, error) {
+		return "", "", false, errors.New("auth unavailable")
 	}
 	if _, _, err = api.resolveUpdatedContacts(ctx, 7, &dto.UpdateAdvertiserProfileRequest{
 		Email: &newEmail,

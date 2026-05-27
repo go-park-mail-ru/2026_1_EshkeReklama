@@ -542,12 +542,13 @@ func (x *GetCredentialsRequest) GetAdvertiserId() int64 {
 }
 
 type GetCredentialsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdvertiserId  int64                  `protobuf:"varint,1,opt,name=advertiser_id,json=advertiserId,proto3" json:"advertiser_id,omitempty"`
-	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	Phone         string                 `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	AdvertiserId      int64                  `protobuf:"varint,1,opt,name=advertiser_id,json=advertiserId,proto3" json:"advertiser_id,omitempty"`
+	Email             string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	Phone             string                 `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
+	CanChangePassword bool                   `protobuf:"varint,4,opt,name=can_change_password,json=canChangePassword,proto3" json:"can_change_password,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *GetCredentialsResponse) Reset() {
@@ -599,6 +600,13 @@ func (x *GetCredentialsResponse) GetPhone() string {
 		return x.Phone
 	}
 	return ""
+}
+
+func (x *GetCredentialsResponse) GetCanChangePassword() bool {
+	if x != nil {
+		return x.CanChangePassword
+	}
+	return false
 }
 
 type UpdateCredentialsRequest struct {
@@ -721,6 +729,102 @@ func (x *UpdateCredentialsResponse) GetPhone() string {
 	return ""
 }
 
+type ChangePasswordRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	AdvertiserId    int64                  `protobuf:"varint,1,opt,name=advertiser_id,json=advertiserId,proto3" json:"advertiser_id,omitempty"`
+	CurrentPassword string                 `protobuf:"bytes,2,opt,name=current_password,json=currentPassword,proto3" json:"current_password,omitempty"`
+	NewPassword     string                 `protobuf:"bytes,3,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *ChangePasswordRequest) Reset() {
+	*x = ChangePasswordRequest{}
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangePasswordRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangePasswordRequest) ProtoMessage() {}
+
+func (x *ChangePasswordRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangePasswordRequest.ProtoReflect.Descriptor instead.
+func (*ChangePasswordRequest) Descriptor() ([]byte, []int) {
+	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ChangePasswordRequest) GetAdvertiserId() int64 {
+	if x != nil {
+		return x.AdvertiserId
+	}
+	return 0
+}
+
+func (x *ChangePasswordRequest) GetCurrentPassword() string {
+	if x != nil {
+		return x.CurrentPassword
+	}
+	return ""
+}
+
+func (x *ChangePasswordRequest) GetNewPassword() string {
+	if x != nil {
+		return x.NewPassword
+	}
+	return ""
+}
+
+type ChangePasswordResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChangePasswordResponse) Reset() {
+	*x = ChangePasswordResponse{}
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangePasswordResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangePasswordResponse) ProtoMessage() {}
+
+func (x *ChangePasswordResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_auth_v1_auth_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangePasswordResponse.ProtoReflect.Descriptor instead.
+func (*ChangePasswordResponse) Descriptor() ([]byte, []int) {
+	return file_proto_auth_v1_auth_proto_rawDescGZIP(), []int{14}
+}
+
 var File_proto_auth_v1_auth_proto protoreflect.FileDescriptor
 
 const file_proto_auth_v1_auth_proto_rawDesc = "" +
@@ -765,11 +869,12 @@ const file_proto_auth_v1_auth_proto_rawDesc = "" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\"\x10\n" +
 	"\x0eLogoutResponse\"<\n" +
 	"\x15GetCredentialsRequest\x12#\n" +
-	"\radvertiser_id\x18\x01 \x01(\x03R\fadvertiserId\"i\n" +
+	"\radvertiser_id\x18\x01 \x01(\x03R\fadvertiserId\"\x99\x01\n" +
 	"\x16GetCredentialsResponse\x12#\n" +
 	"\radvertiser_id\x18\x01 \x01(\x03R\fadvertiserId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x14\n" +
-	"\x05phone\x18\x03 \x01(\tR\x05phone\"k\n" +
+	"\x05phone\x18\x03 \x01(\tR\x05phone\x12.\n" +
+	"\x13can_change_password\x18\x04 \x01(\bR\x11canChangePassword\"k\n" +
 	"\x18UpdateCredentialsRequest\x12#\n" +
 	"\radvertiser_id\x18\x01 \x01(\x03R\fadvertiserId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x14\n" +
@@ -777,7 +882,12 @@ const file_proto_auth_v1_auth_proto_rawDesc = "" +
 	"\x19UpdateCredentialsResponse\x12#\n" +
 	"\radvertiser_id\x18\x01 \x01(\x03R\fadvertiserId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x14\n" +
-	"\x05phone\x18\x03 \x01(\tR\x05phone2\xf6\x04\n" +
+	"\x05phone\x18\x03 \x01(\tR\x05phone\"\x8a\x01\n" +
+	"\x15ChangePasswordRequest\x12#\n" +
+	"\radvertiser_id\x18\x01 \x01(\x03R\fadvertiserId\x12)\n" +
+	"\x10current_password\x18\x02 \x01(\tR\x0fcurrentPassword\x12!\n" +
+	"\fnew_password\x18\x03 \x01(\tR\vnewPassword\"\x18\n" +
+	"\x16ChangePasswordResponse2\xd9\x05\n" +
 	"\vAuthService\x12O\n" +
 	"\bRegister\x12 .eshkere.auth.v1.RegisterRequest\x1a!.eshkere.auth.v1.RegisterResponse\x12F\n" +
 	"\x05Login\x12\x1d.eshkere.auth.v1.LoginRequest\x1a\x1e.eshkere.auth.v1.LoginResponse\x12N\n" +
@@ -785,7 +895,8 @@ const file_proto_auth_v1_auth_proto_rawDesc = "" +
 	"\x0fValidateSession\x12'.eshkere.auth.v1.ValidateSessionRequest\x1a(.eshkere.auth.v1.ValidateSessionResponse\x12I\n" +
 	"\x06Logout\x12\x1e.eshkere.auth.v1.LogoutRequest\x1a\x1f.eshkere.auth.v1.LogoutResponse\x12a\n" +
 	"\x0eGetCredentials\x12&.eshkere.auth.v1.GetCredentialsRequest\x1a'.eshkere.auth.v1.GetCredentialsResponse\x12j\n" +
-	"\x11UpdateCredentials\x12).eshkere.auth.v1.UpdateCredentialsRequest\x1a*.eshkere.auth.v1.UpdateCredentialsResponseB\x1fZ\x1deshkere/pkg/pb/auth/v1;authv1b\x06proto3"
+	"\x11UpdateCredentials\x12).eshkere.auth.v1.UpdateCredentialsRequest\x1a*.eshkere.auth.v1.UpdateCredentialsResponse\x12a\n" +
+	"\x0eChangePassword\x12&.eshkere.auth.v1.ChangePasswordRequest\x1a'.eshkere.auth.v1.ChangePasswordResponseB\x1fZ\x1deshkere/pkg/pb/auth/v1;authv1b\x06proto3"
 
 var (
 	file_proto_auth_v1_auth_proto_rawDescOnce sync.Once
@@ -799,7 +910,7 @@ func file_proto_auth_v1_auth_proto_rawDescGZIP() []byte {
 	return file_proto_auth_v1_auth_proto_rawDescData
 }
 
-var file_proto_auth_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_proto_auth_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_proto_auth_v1_auth_proto_goTypes = []any{
 	(*RegisterRequest)(nil),           // 0: eshkere.auth.v1.RegisterRequest
 	(*RegisterResponse)(nil),          // 1: eshkere.auth.v1.RegisterResponse
@@ -814,6 +925,8 @@ var file_proto_auth_v1_auth_proto_goTypes = []any{
 	(*GetCredentialsResponse)(nil),    // 10: eshkere.auth.v1.GetCredentialsResponse
 	(*UpdateCredentialsRequest)(nil),  // 11: eshkere.auth.v1.UpdateCredentialsRequest
 	(*UpdateCredentialsResponse)(nil), // 12: eshkere.auth.v1.UpdateCredentialsResponse
+	(*ChangePasswordRequest)(nil),     // 13: eshkere.auth.v1.ChangePasswordRequest
+	(*ChangePasswordResponse)(nil),    // 14: eshkere.auth.v1.ChangePasswordResponse
 }
 var file_proto_auth_v1_auth_proto_depIdxs = []int32{
 	0,  // 0: eshkere.auth.v1.AuthService.Register:input_type -> eshkere.auth.v1.RegisterRequest
@@ -823,15 +936,17 @@ var file_proto_auth_v1_auth_proto_depIdxs = []int32{
 	7,  // 4: eshkere.auth.v1.AuthService.Logout:input_type -> eshkere.auth.v1.LogoutRequest
 	9,  // 5: eshkere.auth.v1.AuthService.GetCredentials:input_type -> eshkere.auth.v1.GetCredentialsRequest
 	11, // 6: eshkere.auth.v1.AuthService.UpdateCredentials:input_type -> eshkere.auth.v1.UpdateCredentialsRequest
-	1,  // 7: eshkere.auth.v1.AuthService.Register:output_type -> eshkere.auth.v1.RegisterResponse
-	4,  // 8: eshkere.auth.v1.AuthService.Login:output_type -> eshkere.auth.v1.LoginResponse
-	4,  // 9: eshkere.auth.v1.AuthService.LoginVKID:output_type -> eshkere.auth.v1.LoginResponse
-	6,  // 10: eshkere.auth.v1.AuthService.ValidateSession:output_type -> eshkere.auth.v1.ValidateSessionResponse
-	8,  // 11: eshkere.auth.v1.AuthService.Logout:output_type -> eshkere.auth.v1.LogoutResponse
-	10, // 12: eshkere.auth.v1.AuthService.GetCredentials:output_type -> eshkere.auth.v1.GetCredentialsResponse
-	12, // 13: eshkere.auth.v1.AuthService.UpdateCredentials:output_type -> eshkere.auth.v1.UpdateCredentialsResponse
-	7,  // [7:14] is the sub-list for method output_type
-	0,  // [0:7] is the sub-list for method input_type
+	13, // 7: eshkere.auth.v1.AuthService.ChangePassword:input_type -> eshkere.auth.v1.ChangePasswordRequest
+	1,  // 8: eshkere.auth.v1.AuthService.Register:output_type -> eshkere.auth.v1.RegisterResponse
+	4,  // 9: eshkere.auth.v1.AuthService.Login:output_type -> eshkere.auth.v1.LoginResponse
+	4,  // 10: eshkere.auth.v1.AuthService.LoginVKID:output_type -> eshkere.auth.v1.LoginResponse
+	6,  // 11: eshkere.auth.v1.AuthService.ValidateSession:output_type -> eshkere.auth.v1.ValidateSessionResponse
+	8,  // 12: eshkere.auth.v1.AuthService.Logout:output_type -> eshkere.auth.v1.LogoutResponse
+	10, // 13: eshkere.auth.v1.AuthService.GetCredentials:output_type -> eshkere.auth.v1.GetCredentialsResponse
+	12, // 14: eshkere.auth.v1.AuthService.UpdateCredentials:output_type -> eshkere.auth.v1.UpdateCredentialsResponse
+	14, // 15: eshkere.auth.v1.AuthService.ChangePassword:output_type -> eshkere.auth.v1.ChangePasswordResponse
+	8,  // [8:16] is the sub-list for method output_type
+	0,  // [0:8] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name
@@ -848,7 +963,7 @@ func file_proto_auth_v1_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_auth_v1_auth_proto_rawDesc), len(file_proto_auth_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

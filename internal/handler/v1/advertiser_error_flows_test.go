@@ -64,11 +64,11 @@ func TestLogin_GetCredentialsFailure(t *testing.T) {
 		}
 		return 5, "sess-login", 9999999999, nil
 	}
-	ac.getCredentialsFn = func(_ context.Context, advertiserID int64) (string, string, error) {
+	ac.getCredentialsFn = func(_ context.Context, advertiserID int64) (string, string, bool, error) {
 		if advertiserID != 5 {
 			t.Fatalf("unexpected advertiser id: %d", advertiserID)
 		}
-		return "", "", errors.New("credentials unavailable")
+		return "", "", false, errors.New("credentials unavailable")
 	}
 
 	req := httptest.NewRequest(http.MethodPost, "/advertisers/login", bytes.NewBufferString(`{"identifier":"test@mail.com","password":"secret"}`))
@@ -123,11 +123,11 @@ func TestLoginVKID_EnsureProfileFailureLogsOut(t *testing.T) {
 		}
 		return 7, "vk-failed-session", 9999999999, "Vasya", "Petrov", nil
 	}
-	ac.getCredentialsFn = func(_ context.Context, advertiserID int64) (string, string, error) {
+	ac.getCredentialsFn = func(_ context.Context, advertiserID int64) (string, string, bool, error) {
 		if advertiserID != 7 {
 			t.Fatalf("unexpected advertiser id: %d", advertiserID)
 		}
-		return "vk@example.com", "+79991112233", nil
+		return "vk@example.com", "+79991112233", false, nil
 	}
 	ac.logoutFn = func(_ context.Context, sessionID string) error {
 		logoutCalled = true

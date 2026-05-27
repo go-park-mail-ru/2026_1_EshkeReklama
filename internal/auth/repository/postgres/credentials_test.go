@@ -99,6 +99,13 @@ func TestCredentialsRepositoryCRUD(t *testing.T) {
 		t.Fatalf("update: %v", err)
 	}
 
+	mock.ExpectExec(regexp.QuoteMeta(`UPDATE auth.credentials SET password_hash = $2, updated_at = NOW() WHERE id = $1`)).
+		WithArgs(int64(6), "new-hash").
+		WillReturnResult(sqlmock.NewResult(0, 1))
+	if err := repo.UpdatePasswordHash(context.Background(), 6, "new-hash"); err != nil {
+		t.Fatalf("update password hash: %v", err)
+	}
+
 	mock.ExpectExec(regexp.QuoteMeta(`DELETE FROM auth.credentials WHERE id = $1`)).
 		WithArgs(int64(6)).
 		WillReturnResult(sqlmock.NewResult(0, 1))

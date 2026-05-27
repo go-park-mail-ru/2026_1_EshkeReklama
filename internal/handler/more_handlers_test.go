@@ -52,11 +52,14 @@ func (c *stubAuthClient) Logout(_ context.Context, sid string) error {
 	delete(c.sessions, sid)
 	return nil
 }
-func (c *stubAuthClient) GetCredentials(_ context.Context, _ int64) (string, string, error) {
-	return "", "", nil
+func (c *stubAuthClient) GetCredentials(_ context.Context, _ int64) (string, string, bool, error) {
+	return "", "", false, nil
 }
 func (c *stubAuthClient) UpdateCredentials(_ context.Context, _ int64, email, phone string) (string, string, error) {
 	return email, phone, nil
+}
+func (c *stubAuthClient) ChangePassword(_ context.Context, _ int64, _, _ string) error {
+	return nil
 }
 
 func newTestRouter(ac *stubAuthClient, svc v1.Service) *mux.Router {

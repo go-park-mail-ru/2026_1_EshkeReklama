@@ -31,13 +31,15 @@ type stubAuthClient struct {
 	loginVKIDFn         func(ctx context.Context, accessToken string, userID int64) (int64, string, int64, string, string, error)
 	validateFn          func(ctx context.Context, sessionID string) (int64, error)
 	logoutFn            func(ctx context.Context, sessionID string) error
-	getCredentialsFn    func(ctx context.Context, advertiserID int64) (string, string, error)
+	getCredentialsFn    func(ctx context.Context, advertiserID int64) (string, string, bool, error)
 	updateCredentialsFn func(ctx context.Context, advertiserID int64, email, phone string) (string, string, error)
+	changePasswordFn    func(ctx context.Context, advertiserID int64, currentPassword, newPassword string) error
 }
 
 type authTestCredentials struct {
-	email string
-	phone string
+	email             string
+	phone             string
+	canChangePassword bool
 }
 
 func newStubAuthClient() *stubAuthClient {
@@ -52,7 +54,7 @@ func (c *stubAuthClient) addSession(sessionID string, advertiserID int64) {
 }
 
 func (c *stubAuthClient) setCredentials(advertiserID int64, email, phone string) {
-	c.credentials[advertiserID] = authTestCredentials{email: email, phone: phone}
+	c.credentials[advertiserID] = authTestCredentials{email: email, phone: phone, canChangePassword: true}
 }
 
 func (c *stubAuthClient) Register(ctx context.Context, email, phone, password string) (int64, string, int64, error) {
@@ -95,20 +97,28 @@ func (c *stubAuthClient) Logout(ctx context.Context, sessionID string) error {
 	return nil
 }
 
-func (c *stubAuthClient) GetCredentials(ctx context.Context, advertiserID int64) (string, string, error) {
+func (c *stubAuthClient) GetCredentials(ctx context.Context, advertiserID int64) (string, string, bool, error) {
 	if c.getCredentialsFn != nil {
 		return c.getCredentialsFn(ctx, advertiserID)
 	}
 	cred := c.credentials[advertiserID]
-	return cred.email, cred.phone, nil
+	return cred.email, cred.phone, cred.canChangePassword, nil
 }
 
 func (c *stubAuthClient) UpdateCredentials(ctx context.Context, advertiserID int64, email, phone string) (string, string, error) {
 	if c.updateCredentialsFn != nil {
 		return c.updateCredentialsFn(ctx, advertiserID, email, phone)
 	}
-	c.setCredentials(advertiserID, email, phone)
+	current := c.credentials[advertiserID]
+	c.credentials[advertiserID] = authTestCredentials{email: email, phone: phone, canChangePassword: current.canChangePassword}
 	return email, phone, nil
+}
+
+func (c *stubAuthClient) ChangePassword(ctx context.Context, advertiserID int64, currentPassword, newPassword string) error {
+	if c.changePasswordFn != nil {
+		return c.changePasswordFn(ctx, advertiserID, currentPassword, newPassword)
+	}
+	return nil
 }
 
 // stubService implements the Service interface for handler tests.
@@ -817,6 +827,48 @@ func TestMe_UnauthorizedAndOK(t *testing.T) {
 	r.ServeHTTP(rr2, req2)
 	if rr2.Code != http.StatusOK {
 		t.Fatalf("expected 200 got %d body=%s", rr2.Code, rr2.Body.String())
+	}
+}
+
+func TestChangePassword_Handler(t *testing.T) {
+	ac := newStubAuthClient()
+	svc := &stubService{}
+	r := newTestRouter(ac, svc)
+
+	csrf := getCSRF(t, r)
+	sess := createSessionCookie(t, ac, 9)
+
+	ac.changePasswordFn = func(_ context.Context, advertiserID int64, currentPassword, newPassword string) error {
+		if advertiserID != 9 || currentPassword != "secret123" || newPassword != "secret456" {
+			t.Fatalf("unexpected change password args: id=%d current=%q new=%q", advertiserID, currentPassword, newPassword)
+		}
+		return nil
+	}
+
+	req := httptest.NewRequest(http.MethodPut, "/advertisers/me/password", bytes.NewBufferString(`{"current_password":"secret123","new_password":"secret456"}`))
+	req.AddCookie(sess)
+	req.AddCookie(csrf)
+	req.Header.Set("X-CSRF-Token", csrf.Value)
+
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+	if rr.Code != http.StatusNoContent {
+		t.Fatalf("expected 204 got %d body=%s", rr.Code, rr.Body.String())
+	}
+
+	ac.changePasswordFn = func(_ context.Context, advertiserID int64, currentPassword, newPassword string) error {
+		return errs.ErrPasswordUnavailable
+	}
+
+	req2 := httptest.NewRequest(http.MethodPut, "/advertisers/me/password", bytes.NewBufferString(`{"current_password":"secret123","new_password":"secret456"}`))
+	req2.AddCookie(sess)
+	req2.AddCookie(csrf)
+	req2.Header.Set("X-CSRF-Token", csrf.Value)
+
+	rr2 := httptest.NewRecorder()
+	r.ServeHTTP(rr2, req2)
+	if rr2.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("expected 422 got %d body=%s", rr2.Code, rr2.Body.String())
 	}
 }
 

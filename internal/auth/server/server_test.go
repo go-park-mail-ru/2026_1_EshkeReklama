@@ -33,15 +33,16 @@ func (s *serverStore) Delete(ctx context.Context, sessionID string) error {
 }
 
 type serverRepo struct {
-	createFunc     func(context.Context, string, string, string) (int64, error)
-	getByEmailFunc func(context.Context, string) (*authrepo.Credential, error)
-	getByPhoneFunc func(context.Context, string) (*authrepo.Credential, error)
-	getByIDFunc    func(context.Context, int64) (*authrepo.Credential, error)
-	updateFunc     func(context.Context, int64, string, string) error
-	getByVKFunc    func(context.Context, int64) (*authrepo.Credential, error)
-	createVKFunc   func(context.Context, string, string, int64) (int64, error)
-	linkVKFunc     func(context.Context, int64, int64) error
-	deleteFunc     func(context.Context, int64) error
+	createFunc             func(context.Context, string, string, string) (int64, error)
+	getByEmailFunc         func(context.Context, string) (*authrepo.Credential, error)
+	getByPhoneFunc         func(context.Context, string) (*authrepo.Credential, error)
+	getByIDFunc            func(context.Context, int64) (*authrepo.Credential, error)
+	updateFunc             func(context.Context, int64, string, string) error
+	updatePasswordHashFunc func(context.Context, int64, string) error
+	getByVKFunc            func(context.Context, int64) (*authrepo.Credential, error)
+	createVKFunc           func(context.Context, string, string, int64) (int64, error)
+	linkVKFunc             func(context.Context, int64, int64) error
+	deleteFunc             func(context.Context, int64) error
 }
 
 func (s *serverRepo) Create(ctx context.Context, email, phone, hash string) (int64, error) {
@@ -67,6 +68,9 @@ func (s *serverRepo) LinkVKUserID(ctx context.Context, id, vkUserID int64) error
 }
 func (s *serverRepo) Update(ctx context.Context, id int64, email, phone string) error {
 	return s.updateFunc(ctx, id, email, phone)
+}
+func (s *serverRepo) UpdatePasswordHash(ctx context.Context, id int64, passwordHash string) error {
+	return s.updatePasswordHashFunc(ctx, id, passwordHash)
 }
 func (s *serverRepo) Delete(ctx context.Context, id int64) error {
 	return s.deleteFunc(ctx, id)
@@ -99,12 +103,13 @@ func TestServerHappyPathAndMapErr(t *testing.T) {
 		},
 		getByPhoneFunc: func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
 		getByIDFunc: func(context.Context, int64) (*authrepo.Credential, error) {
-			return &authrepo.Credential{ID: 7, Email: "user@example.com", Phone: "9001234567"}, nil
+			return &authrepo.Credential{ID: 7, Email: "user@example.com", Phone: "9001234567", PasswordHash: hash}, nil
 		},
-		updateFunc:  func(context.Context, int64, string, string) error { return nil },
-		getByVKFunc: func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
-		linkVKFunc:  func(context.Context, int64, int64) error { return nil },
-		deleteFunc:  func(context.Context, int64) error { return nil },
+		updateFunc:             func(context.Context, int64, string, string) error { return nil },
+		updatePasswordHashFunc: func(context.Context, int64, string) error { return nil },
+		getByVKFunc:            func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		linkVKFunc:             func(context.Context, int64, int64) error { return nil },
+		deleteFunc:             func(context.Context, int64) error { return nil },
 	}
 	var deletedSession string
 	store := &serverStore{
@@ -145,7 +150,7 @@ func TestServerHappyPathAndMapErr(t *testing.T) {
 	}
 
 	credResp, err := srv.GetCredentials(context.Background(), &authv1.GetCredentialsRequest{AdvertiserId: 7})
-	if err != nil || credResp.Email != "user@example.com" {
+	if err != nil || credResp.Email != "user@example.com" || !credResp.CanChangePassword {
 		t.Fatalf("get credentials: resp=%#v err=%v", credResp, err)
 	}
 
@@ -162,6 +167,14 @@ func TestServerHappyPathAndMapErr(t *testing.T) {
 		t.Fatalf("logout err=%v deleted=%q", err, deletedSession)
 	}
 
+	if _, err := srv.ChangePassword(context.Background(), &authv1.ChangePasswordRequest{
+		AdvertiserId:    7,
+		CurrentPassword: "secret123",
+		NewPassword:     "secret456",
+	}); err != nil {
+		t.Fatalf("change password: %v", err)
+	}
+
 	cases := []struct {
 		err  error
 		code codes.Code
@@ -172,6 +185,7 @@ func TestServerHappyPathAndMapErr(t *testing.T) {
 		{authsvc.ErrInvalidCredentials, codes.Unauthenticated},
 		{authsvc.ErrInvalidArg, codes.InvalidArgument},
 		{authsvc.ErrVKIDUnavailable, codes.FailedPrecondition},
+		{authsvc.ErrPasswordUnavailable, codes.FailedPrecondition},
 		{sql.ErrNoRows, codes.NotFound},
 		{errors.New("boom"), codes.Internal},
 	}
@@ -188,13 +202,14 @@ func TestServerErrorPaths(t *testing.T) {
 		createVKFunc: func(context.Context, string, string, int64) (int64, error) {
 			return 0, nil
 		},
-		getByEmailFunc: func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
-		getByPhoneFunc: func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
-		getByIDFunc:    func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
-		updateFunc:     func(context.Context, int64, string, string) error { return nil },
-		getByVKFunc:    func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
-		linkVKFunc:     func(context.Context, int64, int64) error { return nil },
-		deleteFunc:     func(context.Context, int64) error { return nil },
+		getByEmailFunc:         func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		getByPhoneFunc:         func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		getByIDFunc:            func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		updateFunc:             func(context.Context, int64, string, string) error { return nil },
+		updatePasswordHashFunc: func(context.Context, int64, string) error { return authsvc.ErrPasswordUnavailable },
+		getByVKFunc:            func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		linkVKFunc:             func(context.Context, int64, int64) error { return nil },
+		deleteFunc:             func(context.Context, int64) error { return nil },
 	}
 	store := &serverStore{
 		saveFunc: func(context.Context, string, authsession.Session, time.Duration) error {

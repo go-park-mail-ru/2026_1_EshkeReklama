@@ -57,20 +57,26 @@ func (u *UpdateAdvertiserProfileRequest) ToInput(advertiserID int) *serviceinput
 	}
 }
 
+type ChangePasswordRequest struct {
+	CurrentPassword string `json:"current_password" validate:"required"`
+	NewPassword     string `json:"new_password" validate:"required,min=6"`
+}
+
 // AdvertiserProfileResponse — публичные поля рекламодателя (без пароля).
 type AdvertiserProfileResponse struct {
-	ID        int    `json:"id"`
-	Name      string `json:"name"`
-	Surname   string `json:"surname"`
-	Email     string `json:"email"`
-	Phone     string `json:"phone"`
-	AvatarURL string `json:"avatar_url,omitempty"`
-	Balance   int64  `json:"balance"`
-	Company   string `json:"company"`
-	City      string `json:"city"`
-	Tariff    string `json:"tariff"`
-	Role      string `json:"role"`
-	CreatedAt string `json:"created_at"`
+	ID                int    `json:"id"`
+	Name              string `json:"name"`
+	Surname           string `json:"surname"`
+	Email             string `json:"email"`
+	Phone             string `json:"phone"`
+	AvatarURL         string `json:"avatar_url,omitempty"`
+	Balance           int64  `json:"balance"`
+	Company           string `json:"company"`
+	City              string `json:"city"`
+	Tariff            string `json:"tariff"`
+	Role              string `json:"role"`
+	CanChangePassword bool   `json:"can_change_password"`
+	CreatedAt         string `json:"created_at"`
 }
 
 type TopUpBalanceRequest struct {
@@ -125,25 +131,26 @@ type BalanceResponse struct {
 }
 
 func AdvertiserToProfile(adv *models.Advertiser) AdvertiserProfileResponse {
-	return AdvertiserWithContactsToProfile(adv, "", "")
+	return AdvertiserWithContactsToProfile(adv, "", "", false)
 }
 
-func AdvertiserWithContactsToProfile(adv *models.Advertiser, email, phone string) AdvertiserProfileResponse {
+func AdvertiserWithContactsToProfile(adv *models.Advertiser, email, phone string, canChangePassword bool) AdvertiserProfileResponse {
 	if adv == nil {
 		return AdvertiserProfileResponse{}
 	}
 	return AdvertiserProfileResponse{
-		ID:        adv.ID,
-		Name:      adv.Name,
-		Surname:   adv.Surname.String,
-		Email:     email,
-		Phone:     phone,
-		AvatarURL: adv.AvatarURL.String,
-		Balance:   adv.Balance,
-		Company:   adv.Company.String,
-		City:      adv.City.String,
-		Tariff:    string(adv.Tariff),
-		Role:      string(adv.Role),
-		CreatedAt: adv.CreatedAt.Format(time.RFC3339),
+		ID:                adv.ID,
+		Name:              adv.Name,
+		Surname:           adv.Surname.String,
+		Email:             email,
+		Phone:             phone,
+		AvatarURL:         adv.AvatarURL.String,
+		Balance:           adv.Balance,
+		Company:           adv.Company.String,
+		City:              adv.City.String,
+		Tariff:            string(adv.Tariff),
+		Role:              string(adv.Role),
+		CanChangePassword: canChangePassword,
+		CreatedAt:         adv.CreatedAt.Format(time.RFC3339),
 	}
 }

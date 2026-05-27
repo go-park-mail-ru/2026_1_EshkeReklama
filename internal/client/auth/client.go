@@ -21,8 +21,9 @@ var _ interface {
 	LoginVKID(ctx context.Context, accessToken string, userID int64) (int64, string, int64, string, string, error)
 	ValidateSession(ctx context.Context, sessionID string) (int64, error)
 	Logout(ctx context.Context, sessionID string) error
-	GetCredentials(ctx context.Context, advertiserID int64) (string, string, error)
+	GetCredentials(ctx context.Context, advertiserID int64) (string, string, bool, error)
 	UpdateCredentials(ctx context.Context, advertiserID int64, email, phone string) (string, string, error)
+	ChangePassword(ctx context.Context, advertiserID int64, currentPassword, newPassword string) error
 } = (*Client)(nil)
 
 type Client struct {
@@ -106,16 +107,16 @@ func (c *Client) Logout(ctx context.Context, sessionID string) error {
 	return nil
 }
 
-func (c *Client) GetCredentials(ctx context.Context, advertiserID int64) (string, string, error) {
+func (c *Client) GetCredentials(ctx context.Context, advertiserID int64) (string, string, bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
 	resp, err := c.rpc.GetCredentials(ctx, &authv1.GetCredentialsRequest{AdvertiserId: advertiserID})
 	if err != nil {
-		return "", "", mapErr(err)
+		return "", "", false, mapErr(err)
 	}
 
-	return resp.Email, resp.Phone, nil
+	return resp.Email, resp.Phone, resp.CanChangePassword, nil
 }
 
 func (c *Client) UpdateCredentials(ctx context.Context, advertiserID int64, email, phone string) (string, string, error) {
@@ -132,6 +133,21 @@ func (c *Client) UpdateCredentials(ctx context.Context, advertiserID int64, emai
 	}
 
 	return resp.Email, resp.Phone, nil
+}
+
+func (c *Client) ChangePassword(ctx context.Context, advertiserID int64, currentPassword, newPassword string) error {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	_, err := c.rpc.ChangePassword(ctx, &authv1.ChangePasswordRequest{
+		AdvertiserId:    advertiserID,
+		CurrentPassword: currentPassword,
+		NewPassword:     newPassword,
+	})
+	if err != nil {
+		return mapErr(err)
+	}
+	return nil
 }
 
 func mapErr(err error) error {
@@ -151,6 +167,9 @@ func mapErr(err error) error {
 	case codes.Unauthenticated:
 		return errs.ErrInvalidCredentials
 	case codes.FailedPrecondition:
+		if st.Message() == "password change is unavailable for vk id accounts" {
+			return errs.ErrPasswordUnavailable
+		}
 		return errs.NotImplementedError
 	case codes.NotFound:
 		if st.Message() == "credentials not found" {

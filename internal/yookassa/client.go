@@ -105,9 +105,9 @@ func (c *Client) CreateRedirectPayment(ctx context.Context, amountRub int64, des
 			Type:      "redirect",
 			ReturnURL: c.returnURL,
 		},
-		Description:       description,
-		SavePaymentMethod: true,
-		Metadata:          metadata,
+		Description: description,
+		//SavePaymentMethod: true,
+		Metadata: metadata,
 	}
 
 	var payment Payment

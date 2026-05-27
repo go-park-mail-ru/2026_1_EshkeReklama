@@ -44,6 +44,24 @@ func TestPersonalizedWeight(t *testing.T) {
 	}
 }
 
+func TestAdSelectionWeight(t *testing.T) {
+	if got := adSelectionWeight(0, 0); got != 100 {
+		t.Fatalf("score 0 ad weight=%d want 100", got)
+	}
+	if got := adSelectionWeight(5, 0); got != 150 {
+		t.Fatalf("score 5 ad weight=%d want 150", got)
+	}
+	if got := adSelectionWeight(0, 5); got != 150 {
+		t.Fatalf("region score 5 ad weight=%d want 150", got)
+	}
+	if got := adSelectionWeight(5, 5); got != 225 {
+		t.Fatalf("topic and region score 5 ad weight=%d want 225", got)
+	}
+	if got := adSelectionWeight(50, 50); got != 900 {
+		t.Fatalf("capped topic and region score ad weight=%d want 900", got)
+	}
+}
+
 func TestGroupEligibleCandidates(t *testing.T) {
 	candidates := groupEligibleCandidates([]*models.AdCandidate{
 		{
@@ -73,7 +91,7 @@ func TestGroupEligibleCandidates(t *testing.T) {
 			AdvertiserBalance: 1000,
 			Ad:                &models.Ad{ID: 3},
 		},
-	}, nil)
+	}, nil, nil)
 
 	if len(candidates) != 1 {
 		t.Fatalf("expected one eligible campaign, got %d", len(candidates))
@@ -151,6 +169,7 @@ func TestRequestAdSavesClickContext(t *testing.T) {
 				CampaignID:        3,
 				AdvertiserID:      4,
 				TopicID:           12,
+				RegionID:          6,
 				DailyBudget:       1000,
 				CPMPrice:          20000,
 				SpentToday:        0,
@@ -165,7 +184,8 @@ func TestRequestAdSavesClickContext(t *testing.T) {
 		t.Fatalf("RequestAd: %v", err)
 	}
 	if store.record == nil || store.record.RequestID != result.RequestID || store.record.VisitorID != "visitor-1" ||
-		store.record.AdID != 9 || store.record.TopicID != 12 || store.record.TargetURL != "https://target.example" ||
+		store.record.AdID != 9 || store.record.TopicID != 12 || store.record.RegionID != 6 ||
+		store.record.TargetURL != "https://target.example" ||
 		store.ttl != adRequestTTL {
 		t.Fatalf("unexpected saved record: record=%+v ttl=%s", store.record, store.ttl)
 	}
@@ -267,6 +287,7 @@ func TestClickAdTracksProfileAndReturnsTarget(t *testing.T) {
 		RequestID: "req",
 		VisitorID: "visitor-1",
 		TopicID:   12,
+		RegionID:  6,
 		TargetURL: "https://target.example",
 	}, clickOnce: true}
 	profile := &fakeProfileClient{}
@@ -279,7 +300,7 @@ func TestClickAdTracksProfileAndReturnsTarget(t *testing.T) {
 	if targetURL != "https://target.example" {
 		t.Fatalf("unexpected target url: %s", targetURL)
 	}
-	if profile.visitorID != "visitor-1" || profile.topicID != 12 || profile.eventType != EventTypeClick {
+	if profile.visitorID != "visitor-1" || profile.topicID != 12 || profile.regionID != 6 || profile.eventType != EventTypeClick {
 		t.Fatalf("unexpected tracked event: %+v", profile)
 	}
 }
@@ -295,6 +316,7 @@ func TestClickAdPublishesClickOnlyOnce(t *testing.T) {
 		PartnerBlockID:  7,
 		PartnerSiteID:   8,
 		TopicID:         12,
+		RegionID:        6,
 		TargetURL:       "https://target.example",
 		Price:           20,
 		PartnerReward:   14,
@@ -322,7 +344,7 @@ func TestClickAdPublishesClickOnlyOnce(t *testing.T) {
 		event.PlatformRevenue != 0 {
 		t.Fatalf("unexpected click event: %+v", event)
 	}
-	if profile.visitorID != "visitor-1" || profile.topicID != 12 || profile.eventType != EventTypeClick {
+	if profile.visitorID != "visitor-1" || profile.topicID != 12 || profile.regionID != 6 || profile.eventType != EventTypeClick {
 		t.Fatalf("unexpected tracked event: %+v", profile)
 	}
 }
@@ -366,16 +388,18 @@ func (p *fakeAdEventPublisher) PublishAdEvent(_ context.Context, event analytics
 type fakeProfileClient struct {
 	visitorID string
 	topicID   int
+	regionID  int
 	eventType string
 }
 
-func (c *fakeProfileClient) GetProfile(context.Context, string) ([]TopicScore, bool, error) {
+func (c *fakeProfileClient) GetProfile(context.Context, string) (*Profile, bool, error) {
 	return nil, false, nil
 }
 
-func (c *fakeProfileClient) TrackEvent(_ context.Context, visitorID string, topicID int, eventType string) error {
+func (c *fakeProfileClient) TrackEvent(_ context.Context, visitorID string, topicID, regionID int, eventType string) error {
 	c.visitorID = visitorID
 	c.topicID = topicID
+	c.regionID = regionID
 	c.eventType = eventType
 	return nil
 }

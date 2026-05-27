@@ -36,7 +36,15 @@ func TestRepositoryGetTopicsAndTrackTopic(t *testing.T) {
 	if got, err := repo.GetTopics(context.Background(), "", 10); err != nil || got != nil {
 		t.Fatalf("expected nil for empty visitor, got %v %v", got, err)
 	}
-	if profileKey("abc") != "profile:abc" || topicsKey("abc") != "profile:abc:topics" {
+	if err := repo.TrackRegion(context.Background(), "visitor-1", 9, 5, now); err != nil {
+		t.Fatalf("track region: %v", err)
+	}
+	regions, err := repo.GetRegions(context.Background(), "visitor-1", 10)
+	if err != nil || len(regions) != 1 || regions[0].RegionID != 9 || regions[0].Score != 5 {
+		t.Fatalf("get regions: %v %v", regions, err)
+	}
+	if profileKey("abc") != "profile:abc" || topicsKey("abc") != "profile:abc:topics" ||
+		regionsKey("abc") != "profile:abc:regions" {
 		t.Fatal("unexpected redis keys")
 	}
 }

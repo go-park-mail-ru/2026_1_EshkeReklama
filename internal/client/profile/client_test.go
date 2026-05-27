@@ -23,6 +23,9 @@ func (s *profileTestServer) GetProfile(context.Context, *profilev1.GetProfileReq
 		Topics: []*profilev1.TopicScore{
 			{TopicId: 3, Score: 7.5},
 		},
+		Regions: []*profilev1.RegionScore{
+			{RegionId: 4, Score: 5},
+		},
 	}, nil
 }
 
@@ -35,12 +38,13 @@ func TestProfileClient(t *testing.T) {
 	client := &Client{conn: conn, rpc: profilev1.NewProfileServiceClient(conn)}
 	defer client.Close()
 
-	topics, found, err := client.GetProfile(context.Background(), "visitor-1")
-	if err != nil || !found || len(topics) != 1 || topics[0].TopicID != 3 {
-		t.Fatalf("get profile: topics=%v found=%v err=%v", topics, found, err)
+	profile, found, err := client.GetProfile(context.Background(), "visitor-1")
+	if err != nil || !found || len(profile.Topics) != 1 || profile.Topics[0].TopicID != 3 ||
+		len(profile.Regions) != 1 || profile.Regions[0].RegionID != 4 {
+		t.Fatalf("get profile: profile=%v found=%v err=%v", profile, found, err)
 	}
 
-	if err := client.TrackEvent(context.Background(), "visitor-1", 3, EventTypeClick); err != nil {
+	if err := client.TrackEvent(context.Background(), "visitor-1", 3, 4, EventTypeClick); err != nil {
 		t.Fatalf("track event: %v", err)
 	}
 }

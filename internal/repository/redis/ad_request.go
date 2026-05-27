@@ -40,6 +40,7 @@ func (s *AdRequestStore) Save(ctx context.Context, record service.AdRequestRecor
 		"partner_block_id", record.PartnerBlockID,
 		"partner_site_id", record.PartnerSiteID,
 		"topic_id", record.TopicID,
+		"region_id", record.RegionID,
 		"target_url", record.TargetURL,
 		"price", record.Price,
 		"partner_reward", record.PartnerReward,
@@ -79,6 +80,7 @@ func (s *AdRequestStore) Get(ctx context.Context, requestID string) (*service.Ad
 	partnerBlockID, _ := strconv.Atoi(values["partner_block_id"])
 	partnerSiteID, _ := strconv.Atoi(values["partner_site_id"])
 	topicID, _ := strconv.Atoi(values["topic_id"])
+	regionID, _ := strconv.Atoi(values["region_id"])
 	price, _ := strconv.ParseInt(values["price"], 10, 64)
 	partnerReward, _ := strconv.ParseInt(values["partner_reward"], 10, 64)
 	platformRevenue, _ := strconv.ParseInt(values["platform_revenue"], 10, 64)
@@ -92,6 +94,7 @@ func (s *AdRequestStore) Get(ctx context.Context, requestID string) (*service.Ad
 		PartnerBlockID:  partnerBlockID,
 		PartnerSiteID:   partnerSiteID,
 		TopicID:         topicID,
+		RegionID:        regionID,
 		TargetURL:       values["target_url"],
 		Price:           price,
 		PartnerReward:   partnerReward,

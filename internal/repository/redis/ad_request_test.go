@@ -34,6 +34,7 @@ func TestAdRequestStore(t *testing.T) {
 		PartnerBlockID:  6,
 		PartnerSiteID:   8,
 		TopicID:         7,
+		RegionID:        9,
 		TargetURL:       "https://example.com",
 		Price:           10,
 		PartnerReward:   7,
@@ -43,7 +44,7 @@ func TestAdRequestStore(t *testing.T) {
 		t.Fatalf("save: %v", err)
 	}
 	got, err := store.Get(context.Background(), "req-1")
-	if err != nil || got.RequestID != "req-1" || got.AdID != 3 || got.TopicID != 7 ||
+	if err != nil || got.RequestID != "req-1" || got.AdID != 3 || got.TopicID != 7 || got.RegionID != 9 ||
 		got.AdvertiserID != 2 || got.CampaignID != 4 || got.AdGroupID != 5 ||
 		got.PartnerBlockID != 6 || got.PartnerSiteID != 8 || got.Price != 10 ||
 		got.PartnerReward != 7 || got.PlatformRevenue != 3 {

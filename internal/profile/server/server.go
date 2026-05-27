@@ -11,8 +11,8 @@ import (
 )
 
 type Service interface {
-	GetProfile(ctx context.Context, visitorID string) ([]profileservice.TopicScore, bool, error)
-	TrackEvent(ctx context.Context, visitorID string, topicID int, eventType string) error
+	GetProfile(ctx context.Context, visitorID string) (*profileservice.Profile, bool, error)
+	TrackEvent(ctx context.Context, visitorID string, topicID, regionID int, eventType string) error
 }
 
 type Server struct {
@@ -25,26 +25,35 @@ func New(service Service) *Server {
 }
 
 func (s *Server) GetProfile(ctx context.Context, req *profilev1.GetProfileRequest) (*profilev1.GetProfileResponse, error) {
-	topics, found, err := s.service.GetProfile(ctx, req.GetVisitorId())
+	profile, found, err := s.service.GetProfile(ctx, req.GetVisitorId())
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	resp := &profilev1.GetProfileResponse{
-		Found:  found,
-		Topics: make([]*profilev1.TopicScore, 0, len(topics)),
+		Found: found,
 	}
-	for _, topic := range topics {
-		resp.Topics = append(resp.Topics, &profilev1.TopicScore{
-			TopicId: int32(topic.TopicID),
-			Score:   topic.Score,
-		})
+	if profile != nil {
+		resp.Topics = make([]*profilev1.TopicScore, 0, len(profile.Topics))
+		for _, topic := range profile.Topics {
+			resp.Topics = append(resp.Topics, &profilev1.TopicScore{
+				TopicId: int32(topic.TopicID),
+				Score:   topic.Score,
+			})
+		}
+		resp.Regions = make([]*profilev1.RegionScore, 0, len(profile.Regions))
+		for _, region := range profile.Regions {
+			resp.Regions = append(resp.Regions, &profilev1.RegionScore{
+				RegionId: int32(region.RegionID),
+				Score:    region.Score,
+			})
+		}
 	}
 	return resp, nil
 }
 
 func (s *Server) TrackEvent(ctx context.Context, req *profilev1.TrackEventRequest) (*profilev1.TrackEventResponse, error) {
-	if err := s.service.TrackEvent(ctx, req.GetVisitorId(), int(req.GetTopicId()), req.GetEventType()); err != nil {
+	if err := s.service.TrackEvent(ctx, req.GetVisitorId(), int(req.GetTopicId()), int(req.GetRegionId()), req.GetEventType()); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 	return &profilev1.TrackEventResponse{}, nil

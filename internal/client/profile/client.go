@@ -31,7 +31,7 @@ func New(addr string) (*Client, error) {
 
 func (c *Client) Close() error { return c.conn.Close() }
 
-func (c *Client) GetProfile(ctx context.Context, visitorID string) ([]service.TopicScore, bool, error) {
+func (c *Client) GetProfile(ctx context.Context, visitorID string) (*service.Profile, bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, 300*time.Millisecond)
 	defer cancel()
 
@@ -40,24 +40,34 @@ func (c *Client) GetProfile(ctx context.Context, visitorID string) ([]service.To
 		return nil, false, err
 	}
 
-	topics := make([]service.TopicScore, 0, len(resp.GetTopics()))
+	profile := &service.Profile{
+		Topics:  make([]service.TopicScore, 0, len(resp.GetTopics())),
+		Regions: make([]service.RegionScore, 0, len(resp.GetRegions())),
+	}
 	for _, topic := range resp.GetTopics() {
-		topics = append(topics, service.TopicScore{
+		profile.Topics = append(profile.Topics, service.TopicScore{
 			TopicID: int(topic.GetTopicId()),
 			Score:   topic.GetScore(),
 		})
 	}
+	for _, region := range resp.GetRegions() {
+		profile.Regions = append(profile.Regions, service.RegionScore{
+			RegionID: int(region.GetRegionId()),
+			Score:    region.GetScore(),
+		})
+	}
 
-	return topics, resp.GetFound(), nil
+	return profile, resp.GetFound(), nil
 }
 
-func (c *Client) TrackEvent(ctx context.Context, visitorID string, topicID int, eventType string) error {
+func (c *Client) TrackEvent(ctx context.Context, visitorID string, topicID, regionID int, eventType string) error {
 	ctx, cancel := context.WithTimeout(ctx, 500*time.Millisecond)
 	defer cancel()
 
 	_, err := c.rpc.TrackEvent(ctx, &profilev1.TrackEventRequest{
 		VisitorId: visitorID,
 		TopicId:   int32(topicID),
+		RegionId:  int32(regionID),
 		EventType: eventType,
 	})
 	return err

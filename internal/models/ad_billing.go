@@ -6,6 +6,7 @@ type AdCandidate struct {
 	CampaignID        int
 	AdvertiserID      int
 	TopicID           int
+	RegionID          int
 	DailyBudget       int64
 	CPMPrice          int64
 	SpentToday        int64

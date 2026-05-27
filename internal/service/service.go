@@ -152,9 +152,19 @@ type TopicScore struct {
 	Score   float64
 }
 
+type RegionScore struct {
+	RegionID int
+	Score    float64
+}
+
+type Profile struct {
+	Topics  []TopicScore
+	Regions []RegionScore
+}
+
 type ProfileClient interface {
-	GetProfile(ctx context.Context, visitorID string) ([]TopicScore, bool, error)
-	TrackEvent(ctx context.Context, visitorID string, topicID int, eventType string) error
+	GetProfile(ctx context.Context, visitorID string) (*Profile, bool, error)
+	TrackEvent(ctx context.Context, visitorID string, topicID, regionID int, eventType string) error
 }
 
 type AdEventPublisher interface {
@@ -223,6 +233,7 @@ type AdRequestRecord struct {
 	PartnerBlockID  int
 	PartnerSiteID   int
 	TopicID         int
+	RegionID        int
 	TargetURL       string
 	Price           int64
 	PartnerReward   int64

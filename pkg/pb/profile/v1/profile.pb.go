@@ -117,17 +117,70 @@ func (x *TopicScore) GetScore() float64 {
 	return 0
 }
 
+type RegionScore struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RegionId      int32                  `protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	Score         float64                `protobuf:"fixed64,2,opt,name=score,proto3" json:"score,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RegionScore) Reset() {
+	*x = RegionScore{}
+	mi := &file_proto_profile_v1_profile_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RegionScore) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegionScore) ProtoMessage() {}
+
+func (x *RegionScore) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_profile_v1_profile_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegionScore.ProtoReflect.Descriptor instead.
+func (*RegionScore) Descriptor() ([]byte, []int) {
+	return file_proto_profile_v1_profile_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *RegionScore) GetRegionId() int32 {
+	if x != nil {
+		return x.RegionId
+	}
+	return 0
+}
+
+func (x *RegionScore) GetScore() float64 {
+	if x != nil {
+		return x.Score
+	}
+	return 0
+}
+
 type GetProfileResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Found         bool                   `protobuf:"varint,1,opt,name=found,proto3" json:"found,omitempty"`
 	Topics        []*TopicScore          `protobuf:"bytes,2,rep,name=topics,proto3" json:"topics,omitempty"`
+	Regions       []*RegionScore         `protobuf:"bytes,3,rep,name=regions,proto3" json:"regions,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetProfileResponse) Reset() {
 	*x = GetProfileResponse{}
-	mi := &file_proto_profile_v1_profile_proto_msgTypes[2]
+	mi := &file_proto_profile_v1_profile_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -139,7 +192,7 @@ func (x *GetProfileResponse) String() string {
 func (*GetProfileResponse) ProtoMessage() {}
 
 func (x *GetProfileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_profile_v1_profile_proto_msgTypes[2]
+	mi := &file_proto_profile_v1_profile_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -152,7 +205,7 @@ func (x *GetProfileResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProfileResponse.ProtoReflect.Descriptor instead.
 func (*GetProfileResponse) Descriptor() ([]byte, []int) {
-	return file_proto_profile_v1_profile_proto_rawDescGZIP(), []int{2}
+	return file_proto_profile_v1_profile_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetProfileResponse) GetFound() bool {
@@ -169,18 +222,26 @@ func (x *GetProfileResponse) GetTopics() []*TopicScore {
 	return nil
 }
 
+func (x *GetProfileResponse) GetRegions() []*RegionScore {
+	if x != nil {
+		return x.Regions
+	}
+	return nil
+}
+
 type TrackEventRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	VisitorId     string                 `protobuf:"bytes,1,opt,name=visitor_id,json=visitorId,proto3" json:"visitor_id,omitempty"`
 	TopicId       int32                  `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	EventType     string                 `protobuf:"bytes,3,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"`
+	RegionId      int32                  `protobuf:"varint,4,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TrackEventRequest) Reset() {
 	*x = TrackEventRequest{}
-	mi := &file_proto_profile_v1_profile_proto_msgTypes[3]
+	mi := &file_proto_profile_v1_profile_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -192,7 +253,7 @@ func (x *TrackEventRequest) String() string {
 func (*TrackEventRequest) ProtoMessage() {}
 
 func (x *TrackEventRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_profile_v1_profile_proto_msgTypes[3]
+	mi := &file_proto_profile_v1_profile_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -205,7 +266,7 @@ func (x *TrackEventRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackEventRequest.ProtoReflect.Descriptor instead.
 func (*TrackEventRequest) Descriptor() ([]byte, []int) {
-	return file_proto_profile_v1_profile_proto_rawDescGZIP(), []int{3}
+	return file_proto_profile_v1_profile_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *TrackEventRequest) GetVisitorId() string {
@@ -229,6 +290,13 @@ func (x *TrackEventRequest) GetEventType() string {
 	return ""
 }
 
+func (x *TrackEventRequest) GetRegionId() int32 {
+	if x != nil {
+		return x.RegionId
+	}
+	return 0
+}
+
 type TrackEventResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -237,7 +305,7 @@ type TrackEventResponse struct {
 
 func (x *TrackEventResponse) Reset() {
 	*x = TrackEventResponse{}
-	mi := &file_proto_profile_v1_profile_proto_msgTypes[4]
+	mi := &file_proto_profile_v1_profile_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -249,7 +317,7 @@ func (x *TrackEventResponse) String() string {
 func (*TrackEventResponse) ProtoMessage() {}
 
 func (x *TrackEventResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_profile_v1_profile_proto_msgTypes[4]
+	mi := &file_proto_profile_v1_profile_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -262,7 +330,7 @@ func (x *TrackEventResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackEventResponse.ProtoReflect.Descriptor instead.
 func (*TrackEventResponse) Descriptor() ([]byte, []int) {
-	return file_proto_profile_v1_profile_proto_rawDescGZIP(), []int{4}
+	return file_proto_profile_v1_profile_proto_rawDescGZIP(), []int{5}
 }
 
 var File_proto_profile_v1_profile_proto protoreflect.FileDescriptor
@@ -276,16 +344,21 @@ const file_proto_profile_v1_profile_proto_rawDesc = "" +
 	"\n" +
 	"TopicScore\x12\x19\n" +
 	"\btopic_id\x18\x01 \x01(\x05R\atopicId\x12\x14\n" +
-	"\x05score\x18\x02 \x01(\x01R\x05score\"b\n" +
+	"\x05score\x18\x02 \x01(\x01R\x05score\"@\n" +
+	"\vRegionScore\x12\x1b\n" +
+	"\tregion_id\x18\x01 \x01(\x05R\bregionId\x12\x14\n" +
+	"\x05score\x18\x02 \x01(\x01R\x05score\"\x9d\x01\n" +
 	"\x12GetProfileResponse\x12\x14\n" +
 	"\x05found\x18\x01 \x01(\bR\x05found\x126\n" +
-	"\x06topics\x18\x02 \x03(\v2\x1e.eshkere.profile.v1.TopicScoreR\x06topics\"l\n" +
+	"\x06topics\x18\x02 \x03(\v2\x1e.eshkere.profile.v1.TopicScoreR\x06topics\x129\n" +
+	"\aregions\x18\x03 \x03(\v2\x1f.eshkere.profile.v1.RegionScoreR\aregions\"\x89\x01\n" +
 	"\x11TrackEventRequest\x12\x1d\n" +
 	"\n" +
 	"visitor_id\x18\x01 \x01(\tR\tvisitorId\x12\x19\n" +
 	"\btopic_id\x18\x02 \x01(\x05R\atopicId\x12\x1d\n" +
 	"\n" +
-	"event_type\x18\x03 \x01(\tR\teventType\"\x14\n" +
+	"event_type\x18\x03 \x01(\tR\teventType\x12\x1b\n" +
+	"\tregion_id\x18\x04 \x01(\x05R\bregionId\"\x14\n" +
 	"\x12TrackEventResponse2\xca\x01\n" +
 	"\x0eProfileService\x12[\n" +
 	"\n" +
@@ -305,25 +378,27 @@ func file_proto_profile_v1_profile_proto_rawDescGZIP() []byte {
 	return file_proto_profile_v1_profile_proto_rawDescData
 }
 
-var file_proto_profile_v1_profile_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_proto_profile_v1_profile_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_proto_profile_v1_profile_proto_goTypes = []any{
 	(*GetProfileRequest)(nil),  // 0: eshkere.profile.v1.GetProfileRequest
 	(*TopicScore)(nil),         // 1: eshkere.profile.v1.TopicScore
-	(*GetProfileResponse)(nil), // 2: eshkere.profile.v1.GetProfileResponse
-	(*TrackEventRequest)(nil),  // 3: eshkere.profile.v1.TrackEventRequest
-	(*TrackEventResponse)(nil), // 4: eshkere.profile.v1.TrackEventResponse
+	(*RegionScore)(nil),        // 2: eshkere.profile.v1.RegionScore
+	(*GetProfileResponse)(nil), // 3: eshkere.profile.v1.GetProfileResponse
+	(*TrackEventRequest)(nil),  // 4: eshkere.profile.v1.TrackEventRequest
+	(*TrackEventResponse)(nil), // 5: eshkere.profile.v1.TrackEventResponse
 }
 var file_proto_profile_v1_profile_proto_depIdxs = []int32{
 	1, // 0: eshkere.profile.v1.GetProfileResponse.topics:type_name -> eshkere.profile.v1.TopicScore
-	0, // 1: eshkere.profile.v1.ProfileService.GetProfile:input_type -> eshkere.profile.v1.GetProfileRequest
-	3, // 2: eshkere.profile.v1.ProfileService.TrackEvent:input_type -> eshkere.profile.v1.TrackEventRequest
-	2, // 3: eshkere.profile.v1.ProfileService.GetProfile:output_type -> eshkere.profile.v1.GetProfileResponse
-	4, // 4: eshkere.profile.v1.ProfileService.TrackEvent:output_type -> eshkere.profile.v1.TrackEventResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	2, // 1: eshkere.profile.v1.GetProfileResponse.regions:type_name -> eshkere.profile.v1.RegionScore
+	0, // 2: eshkere.profile.v1.ProfileService.GetProfile:input_type -> eshkere.profile.v1.GetProfileRequest
+	4, // 3: eshkere.profile.v1.ProfileService.TrackEvent:input_type -> eshkere.profile.v1.TrackEventRequest
+	3, // 4: eshkere.profile.v1.ProfileService.GetProfile:output_type -> eshkere.profile.v1.GetProfileResponse
+	5, // 5: eshkere.profile.v1.ProfileService.TrackEvent:output_type -> eshkere.profile.v1.TrackEventResponse
+	4, // [4:6] is the sub-list for method output_type
+	2, // [2:4] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_proto_profile_v1_profile_proto_init() }
@@ -337,7 +412,7 @@ func file_proto_profile_v1_profile_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_profile_v1_profile_proto_rawDesc), len(file_proto_profile_v1_profile_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

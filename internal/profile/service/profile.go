@@ -14,9 +14,21 @@ type TopicScore struct {
 	Score   float64
 }
 
+type RegionScore struct {
+	RegionID int
+	Score    float64
+}
+
+type Profile struct {
+	Topics  []TopicScore
+	Regions []RegionScore
+}
+
 type Repository interface {
 	GetTopics(ctx context.Context, visitorID string, limit int) ([]TopicScore, error)
+	GetRegions(ctx context.Context, visitorID string, limit int) ([]RegionScore, error)
 	TrackTopic(ctx context.Context, visitorID string, topicID int, scoreDelta float64, now time.Time) error
+	TrackRegion(ctx context.Context, visitorID string, regionID int, scoreDelta float64, now time.Time) error
 }
 
 type Service struct {
@@ -31,7 +43,7 @@ func New(repo Repository) (*Service, error) {
 	return &Service{repo: repo, now: time.Now}, nil
 }
 
-func (s *Service) GetProfile(ctx context.Context, visitorID string) ([]TopicScore, bool, error) {
+func (s *Service) GetProfile(ctx context.Context, visitorID string) (*Profile, bool, error) {
 	if visitorID == "" {
 		return nil, false, nil
 	}
@@ -40,11 +52,17 @@ func (s *Service) GetProfile(ctx context.Context, visitorID string) ([]TopicScor
 	if err != nil {
 		return nil, false, err
 	}
-	return topics, len(topics) > 0, nil
+	regions, err := s.repo.GetRegions(ctx, visitorID, 10)
+	if err != nil {
+		return nil, false, err
+	}
+
+	profile := &Profile{Topics: topics, Regions: regions}
+	return profile, len(topics) > 0 || len(regions) > 0, nil
 }
 
-func (s *Service) TrackEvent(ctx context.Context, visitorID string, topicID int, eventType string) error {
-	if visitorID == "" || topicID <= 0 {
+func (s *Service) TrackEvent(ctx context.Context, visitorID string, topicID, regionID int, eventType string) error {
+	if visitorID == "" || (topicID <= 0 && regionID <= 0) {
 		return nil
 	}
 
@@ -53,7 +71,18 @@ func (s *Service) TrackEvent(ctx context.Context, visitorID string, topicID int,
 		return fmt.Errorf("unsupported profile event type: %s", eventType)
 	}
 
-	return s.repo.TrackTopic(ctx, visitorID, topicID, scoreDelta, s.now().UTC())
+	now := s.now().UTC()
+	if topicID > 0 {
+		if err := s.repo.TrackTopic(ctx, visitorID, topicID, scoreDelta, now); err != nil {
+			return err
+		}
+	}
+	if regionID > 0 {
+		if err := s.repo.TrackRegion(ctx, visitorID, regionID, scoreDelta, now); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func eventScoreDelta(eventType string) (float64, bool) {

@@ -18,15 +18,22 @@ message TopicScore {
   double score = 2;
 }
 
+message RegionScore {
+  int32 region_id = 1;
+  double score = 2;
+}
+
 message GetProfileResponse {
   bool found = 1;
   repeated TopicScore topics = 2;
+  repeated RegionScore regions = 3;
 }
 
 message TrackEventRequest {
   string visitor_id = 1;
   int32 topic_id = 2;
   string event_type = 3;
+  int32 region_id = 4;
 }
 
 message TrackEventResponse {}

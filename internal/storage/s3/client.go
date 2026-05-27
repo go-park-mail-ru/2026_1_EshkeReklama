@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/url"
+	"path"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -29,6 +31,10 @@ type Client struct {
 }
 
 func NewClient(ctx context.Context, cfg Config) (*Client, error) {
+	if err := validatePublicBaseURL(cfg.Bucket, cfg.PublicBaseURL); err != nil {
+		return nil, err
+	}
+
 	loadOptions := []func(*awsconfig.LoadOptions) error{
 		awsconfig.WithRegion(cfg.Region),
 	}
@@ -100,4 +106,33 @@ func (c *Client) GetPublicURL(key string) string {
 	}
 
 	return baseURL + "/" + cleanKey
+}
+
+func validatePublicBaseURL(bucket, publicBaseURL string) error {
+	bucket = strings.TrimSpace(bucket)
+	publicBaseURL = strings.TrimSpace(publicBaseURL)
+
+	if bucket == "" || publicBaseURL == "" {
+		return nil
+	}
+
+	parsed, err := url.Parse(publicBaseURL)
+	if err != nil {
+		return fmt.Errorf("parse s3 public base url: %w", err)
+	}
+
+	basePath := strings.TrimSpace(parsed.Path)
+	if basePath == "" || basePath == "/" {
+		return nil
+	}
+
+	if lastSegment := path.Base(strings.TrimRight(basePath, "/")); lastSegment != bucket {
+		return fmt.Errorf(
+			"s3 public base url bucket mismatch: bucket=%q public_base_url=%q",
+			bucket,
+			publicBaseURL,
+		)
+	}
+
+	return nil
 }

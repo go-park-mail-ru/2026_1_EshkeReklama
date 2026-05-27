@@ -75,3 +75,19 @@ func TestNewClient_SetsFields(t *testing.T) {
 		t.Fatalf("expected s3 client")
 	}
 }
+
+func TestNewClient_PublicBaseURLBucketMismatch(t *testing.T) {
+	_, err := NewClient(context.Background(), Config{
+		Region:         "us-east-1",
+		Bucket:         "eshkere-media",
+		PublicBaseURL:  "https://cdn.example.com/eshkere",
+		ForcePathStyle: true,
+	})
+	if err == nil {
+		t.Fatalf("expected bucket mismatch error")
+	}
+
+	if !strings.Contains(err.Error(), "bucket mismatch") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}

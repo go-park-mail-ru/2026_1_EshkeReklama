@@ -22,7 +22,19 @@ down-reset:
 	docker compose down -v
 
 coverage:
-	go test ./... -coverprofile=cover.out && grep -v '_easyjson.go:' cover.out > cover.filtered.out && go tool cover -func=cover.filtered.out | tail -n 1
+	go test ./... -coverprofile=cover.out && \
+    grep -v '_easyjson.go:' cover.out | \
+    grep -v 'service_mock_test.go:' | \
+    grep -v 'repo_mocks_test.go:' | \
+    grep -v 'docs/docs.go:' | \
+    grep -v 'tools/easyjson-gen/' | \
+    grep -v '\.pb\.go:' | \
+    grep -v '_grpc\.pb\.go:' | \
+    grep -v 'swagger\.json:' | \
+    grep -v 'swagger\.yaml:' | \
+    grep -v '_generated' \
+    > cover.filtered.out && \
+    go tool cover -func=cover.filtered.out | tail -n 1
 
 lint:
 	golangci-lint run

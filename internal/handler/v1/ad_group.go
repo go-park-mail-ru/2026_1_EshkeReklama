@@ -56,7 +56,9 @@ func (a *API) CreateAdGroup(w http.ResponseWriter, r *http.Request) {
 
 	req, err := newJSONRequest[dto.CreateAdGroupRequest](r)
 	if err != nil {
-		a.rollbackCampaignOnGroupCreateError(w, r, advertiserID, campaignID)
+		if rollbackErr := a.rollbackCampaignOnGroupCreateError(w, r, advertiserID, campaignID); rollbackErr != nil {
+			return
+		}
 		httpx.BadRequest(w, "invalid request")
 		return
 	}

@@ -168,6 +168,13 @@ type stubService struct {
 	updatePartnerBlockSelfAdFn   func(ctx context.Context, partnerID, siteID int, in *serviceinput.UpdatePartnerBlockSelfAd) (*models.PartnerBlock, error)
 	deletePartnerBlockFn         func(ctx context.Context, partnerID, siteID, blockID int) error
 	getPartnerBlockEmbedCodeFn   func(ctx context.Context, partnerID, siteID, blockID int, baseURL string) (string, string, error)
+	listPartnerCountriesFn       func(ctx context.Context) []service.DictionaryItem
+	listPartnerRegionsFn         func(ctx context.Context, countryCode string) []service.DictionaryItem
+	listPartnerFormsFn           func(ctx context.Context) []service.DictionaryItem
+	listPartnerCurrenciesFn      func(ctx context.Context) []service.DictionaryItem
+	listPartnerBlockTypesFn      func(ctx context.Context) []service.BlockTypeDictionaryItem
+	getPartnerGeoTreeFn          func(ctx context.Context) []*service.GeoTreeNode
+	getPartnerIncomeStatsFn      func(ctx context.Context, partnerID int, from, to time.Time) (*service.PartnerIncomeStats, error)
 }
 
 func (s *stubService) CreateAdvertiserProfile(ctx context.Context, id int64, name, email string) error {
@@ -569,21 +576,46 @@ func (s *stubService) GetPartnerBlockEmbedCode(ctx context.Context, partnerID, s
 	return "", "", nil
 }
 
-func (s *stubService) ListPartnerCountries(ctx context.Context) []service.DictionaryItem { return nil }
+func (s *stubService) ListPartnerCountries(ctx context.Context) []service.DictionaryItem {
+	if s.listPartnerCountriesFn != nil {
+		return s.listPartnerCountriesFn(ctx)
+	}
+	return nil
+}
 func (s *stubService) ListPartnerRegistrationRegions(ctx context.Context, countryCode string) []service.DictionaryItem {
+	if s.listPartnerRegionsFn != nil {
+		return s.listPartnerRegionsFn(ctx, countryCode)
+	}
 	return nil
 }
 func (s *stubService) ListPartnerCooperationForms(ctx context.Context) []service.DictionaryItem {
+	if s.listPartnerFormsFn != nil {
+		return s.listPartnerFormsFn(ctx)
+	}
 	return nil
 }
 func (s *stubService) ListPartnerPayoutCurrencies(ctx context.Context) []service.DictionaryItem {
+	if s.listPartnerCurrenciesFn != nil {
+		return s.listPartnerCurrenciesFn(ctx)
+	}
 	return nil
 }
 func (s *stubService) ListPartnerBlockTypes(ctx context.Context) []service.BlockTypeDictionaryItem {
+	if s.listPartnerBlockTypesFn != nil {
+		return s.listPartnerBlockTypesFn(ctx)
+	}
 	return nil
 }
-func (s *stubService) GetPartnerGeoTree(ctx context.Context) []*service.GeoTreeNode { return nil }
+func (s *stubService) GetPartnerGeoTree(ctx context.Context) []*service.GeoTreeNode {
+	if s.getPartnerGeoTreeFn != nil {
+		return s.getPartnerGeoTreeFn(ctx)
+	}
+	return nil
+}
 func (s *stubService) GetPartnerIncomeStats(ctx context.Context, partnerID int, from, to time.Time) (*service.PartnerIncomeStats, error) {
+	if s.getPartnerIncomeStatsFn != nil {
+		return s.getPartnerIncomeStatsFn(ctx, partnerID, from, to)
+	}
 	return &service.PartnerIncomeStats{}, nil
 }
 

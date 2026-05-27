@@ -318,7 +318,7 @@ func TestAdGroupCreate_RollsBackCampaignOnFailure(t *testing.T) {
 	req := httptest.NewRequest(
 		http.MethodPost,
 		"/ad_campaigns/10/ad_groups?rollback_campaign_on_error=true",
-		bytes.NewBufferString(`{"topic_id":1,"region_id":2,"name":"g","age_from":18,"age_to":25,"gender":"any"}`),
+		bytes.NewBufferString(`{"topic":"Авто","region":"Москва","name":"g","age_from":18,"age_to":25,"gender":"any"}`),
 	)
 	req.AddCookie(sess)
 	req.AddCookie(csrf)
@@ -349,7 +349,7 @@ func TestAdGroupCreate_RollsBackCampaignOnInvalidRequest(t *testing.T) {
 	req := httptest.NewRequest(
 		http.MethodPost,
 		"/ad_campaigns/10/ad_groups?rollback_campaign_on_error=true",
-		bytes.NewBufferString(`{"topic_id":1,"audience":"all"}`),
+		bytes.NewBufferString(`{"topic":"Авто","audience":"all"}`),
 	)
 	req.AddCookie(sess)
 	req.AddCookie(csrf)

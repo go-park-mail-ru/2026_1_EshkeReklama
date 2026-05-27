@@ -22,3 +22,15 @@ func TestAdvertiserIDFromContext_NotFound(t *testing.T) {
 		t.Fatalf("expected error")
 	}
 }
+
+func TestPartnerIDFromContext(t *testing.T) {
+	ctx := context.WithValue(context.Background(), PartnerIDKey, 17)
+	if got, err := PartnerIDFromContext(ctx); err != nil || got != 17 {
+		t.Fatalf("expected partner id 17, got %d err=%v", got, err)
+	}
+
+	badCtx := context.WithValue(context.Background(), PartnerIDKey, "17")
+	if _, err := PartnerIDFromContext(badCtx); err == nil {
+		t.Fatalf("expected error for wrong partner id type")
+	}
+}

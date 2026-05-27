@@ -94,6 +94,10 @@ func (s *Service) CompletePaymentByWebhook(ctx context.Context, paymentID string
 		return nil, err
 	}
 
+	if err = s.reactivateAdsWaitingForBalance(ctx, completion.AdvertiserID); err != nil {
+		return nil, err
+	}
+
 	return &WebhookResult{
 		AdvertiserID: completion.AdvertiserID,
 		Balance:      completion.Balance,

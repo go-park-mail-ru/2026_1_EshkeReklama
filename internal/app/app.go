@@ -30,15 +30,16 @@ import (
 )
 
 type App struct {
-	cfg                *config.Config
-	logger             *zap.SugaredLogger
-	closers            []io.Closer
-	service            *service.Service
-	authClient         *authclient.Client
-	profileClient      *profileclient.Client
-	metrics            *observability.Metrics
-	emailSender        *service.SMTPNotificationSender
-	notificationDedupe *redisrepo.NotificationDedupeStore
+	cfg                    *config.Config
+	logger                 *zap.SugaredLogger
+	closers                []io.Closer
+	service                *service.Service
+	authClient             *authclient.Client
+	profileClient          *profileclient.Client
+	metrics                *observability.Metrics
+	emailSender            *service.SMTPNotificationSender
+	emailVerificationStore *redisrepo.EmailVerificationStore
+	notificationDedupe     *redisrepo.NotificationDedupeStore
 }
 
 func New(configPath string) *App {
@@ -137,6 +138,7 @@ func New(configPath string) *App {
 		WebhookURL: cfg.Yookassa.WebhookURL,
 	})
 	emailSender := service.NewSMTPNotificationSender(cfg.SMTP)
+	emailVerificationStore := redisrepo.NewEmailVerificationStore(redisPool)
 
 	svc, err := service.NewService(&service.Config{
 		AdvertiserRepo:           advertiserRepo,
@@ -185,15 +187,16 @@ func New(configPath string) *App {
 	svc.SetProfileClient(pc)
 
 	return &App{
-		cfg:                cfg,
-		logger:             logger,
-		closers:            closers,
-		service:            svc,
-		authClient:         ac,
-		profileClient:      pc,
-		metrics:            metrics,
-		emailSender:        emailSender,
-		notificationDedupe: notificationDedupe,
+		cfg:                    cfg,
+		logger:                 logger,
+		closers:                closers,
+		service:                svc,
+		authClient:             ac,
+		profileClient:          pc,
+		metrics:                metrics,
+		emailSender:            emailSender,
+		emailVerificationStore: emailVerificationStore,
+		notificationDedupe:     notificationDedupe,
 	}
 }
 
@@ -224,6 +227,9 @@ func (a *App) Run() error {
 			HTTPOnly: true,
 			Secure:   a.cfg.Session.CookieSecure,
 		},
+		VerificationStore:       a.emailVerificationStore,
+		VerificationEmailSender: a.emailSender,
+		RegistrationVerifyTTL:   a.cfg.RegistrationVerification.TTL,
 	}))
 
 	apiServer := &http.Server{

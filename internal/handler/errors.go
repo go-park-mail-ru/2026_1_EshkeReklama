@@ -15,13 +15,15 @@ func HandleError(w http.ResponseWriter, r *http.Request, desc string, err error)
 	switch {
 	// 400 Bad Request: Ошибки входных данных
 	case errors.Is(err, errs.BadRequestError),
-		errors.Is(err, errs.ErrInvalidAdvertiserArg):
+		errors.Is(err, errs.ErrInvalidAdvertiserArg),
+		errors.Is(err, errs.ErrInvalidVerifyCode):
 		logger.Debugf("bad request during %s: %v", desc, err)
 		httpx.BadRequest(w, err.Error())
 
 	// 401 Unauthorized: Ошибки авторизации
 	case errors.Is(err, errs.UnauthorizedError),
-		errors.Is(err, errs.ErrInvalidCredentials):
+		errors.Is(err, errs.ErrInvalidCredentials),
+		errors.Is(err, errs.ErrEmailNotVerified):
 		logger.Debugf("unauthorized during %s: %v", desc, err)
 		httpx.Unauthorized(w, err.Error())
 

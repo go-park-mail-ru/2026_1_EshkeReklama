@@ -13,6 +13,7 @@ import (
 
 type NotificationSender interface {
 	SendBalanceAlert(ctx context.Context, to string, subject string, body string) error
+	SendEmailVerificationCode(ctx context.Context, to string, code string) error
 }
 
 type SMTPNotificationSender struct {
@@ -36,6 +37,14 @@ func (s *SMTPNotificationSender) Enabled() bool {
 }
 
 func (s *SMTPNotificationSender) SendBalanceAlert(ctx context.Context, to string, subject string, body string) error {
+	return s.send(ctx, to, subject, body)
+}
+
+func (s *SMTPNotificationSender) SendEmailVerificationCode(ctx context.Context, to string, code string) error {
+	return s.send(ctx, to, "Подтверждение почты", fmt.Sprintf("Ваш код подтверждения: %s\n\nКод действует 15 минут.", code))
+}
+
+func (s *SMTPNotificationSender) send(ctx context.Context, to string, subject string, body string) error {
 	if !s.Enabled() {
 		return fmt.Errorf("smtp is not configured")
 	}

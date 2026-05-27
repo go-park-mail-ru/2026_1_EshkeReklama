@@ -75,11 +75,14 @@ yookassa:
   webhook_url: ${YOOKASSA_WEBHOOK_URL}
 
 smtp:
-  host: smtp.yandex.ru
+  host: smtp.mail.ru
   port: 465
-  user: noreply@eshkereklama.ru
+  user: eshkereklama@mail.ru
   password: ${SMTP_PASSWORD}
 
 balance_automation:
   autopay_interval: 5m
   notification_interval: 15m
+
+registration_verification:
+  ttl: 15m

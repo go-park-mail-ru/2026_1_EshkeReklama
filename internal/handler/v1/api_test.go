@@ -3,6 +3,7 @@ package v1
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -14,6 +15,7 @@ import (
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
+	redisrepo "eshkere/internal/repository/redis"
 	"eshkere/internal/service"
 	serviceinput "eshkere/internal/service/input"
 
@@ -21,6 +23,43 @@ import (
 )
 
 const testCookieName = "session_id"
+
+type stubVerificationStore struct {
+	records map[string]redisrepo.EmailVerificationRecord
+}
+
+func newStubVerificationStore() *stubVerificationStore {
+	return &stubVerificationStore{records: make(map[string]redisrepo.EmailVerificationRecord)}
+}
+
+func (s *stubVerificationStore) Save(_ context.Context, record redisrepo.EmailVerificationRecord, _ time.Duration) error {
+	s.records[record.Email] = record
+	return nil
+}
+
+func (s *stubVerificationStore) Get(_ context.Context, email string) (*redisrepo.EmailVerificationRecord, error) {
+	record, ok := s.records[email]
+	if !ok {
+		return nil, sql.ErrNoRows
+	}
+	return &record, nil
+}
+
+func (s *stubVerificationStore) Delete(_ context.Context, email string) error {
+	delete(s.records, email)
+	return nil
+}
+
+type stubVerificationEmailSender struct {
+	sentTo   string
+	sentCode string
+}
+
+func (s *stubVerificationEmailSender) SendEmailVerificationCode(_ context.Context, to string, code string) error {
+	s.sentTo = to
+	s.sentCode = code
+	return nil
+}
 
 // stubAuthClient simulates the auth service for handler tests.
 type stubAuthClient struct {
@@ -629,7 +668,9 @@ func (s *stubService) GetPartnerIncomeStats(ctx context.Context, partnerID int, 
 	return &service.PartnerIncomeStats{}, nil
 }
 
-func newTestRouter(ac *stubAuthClient, svc Service) *mux.Router {
+func newTestEnv(ac *stubAuthClient, svc Service) (*mux.Router, *stubVerificationStore, *stubVerificationEmailSender) {
+	verificationStore := newStubVerificationStore()
+	emailSender := &stubVerificationEmailSender{}
 	r := mux.NewRouter().StrictSlash(true)
 	r.Use(middleware.CSRF(middleware.CSRFConfig{
 		CookieName: "csrf_token",
@@ -640,14 +681,22 @@ func newTestRouter(ac *stubAuthClient, svc Service) *mux.Router {
 		w.WriteHeader(http.StatusOK)
 	}).Methods(http.MethodGet)
 	handlers.Register(r, NewAPI(APIConfig{
-		AuthClient: ac,
-		Service:    svc,
+		AuthClient:              ac,
+		Service:                 svc,
+		VerificationStore:       verificationStore,
+		VerificationEmailSender: emailSender,
+		RegistrationVerifyTTL:   15 * time.Minute,
 		CookieConfig: CookieConfig{
 			Name:     testCookieName,
 			Path:     "/",
 			HTTPOnly: true,
 		},
 	}))
+	return r, verificationStore, emailSender
+}
+
+func newTestRouter(ac *stubAuthClient, svc Service) *mux.Router {
+	r, _, _ := newTestEnv(ac, svc)
 	return r
 }
 
@@ -695,11 +744,81 @@ func TestRegister_OK(t *testing.T) {
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 
-	if rr.Code != http.StatusOK {
-		t.Fatalf("expected 200 got %d body=%s", rr.Code, rr.Body.String())
+	if rr.Code != http.StatusAccepted {
+		t.Fatalf("expected 202 got %d body=%s", rr.Code, rr.Body.String())
 	}
-	if rr.Result().Header.Get("Set-Cookie") == "" {
-		t.Fatalf("expected session cookie")
+	if got := rr.Result().Header.Get("Set-Cookie"); got != "" {
+		t.Fatalf("expected no session cookie, got %q", got)
+	}
+}
+
+func TestVerifyRegistration_OK(t *testing.T) {
+	ac := newStubAuthClient()
+	svc := &stubService{}
+	r, verificationStore, _ := newTestEnv(ac, svc)
+
+	csrf := getCSRF(t, r)
+
+	ac.registerFn = func(_ context.Context, email, phone, password string) (int64, string, int64, error) {
+		ac.setCredentials(99, email, phone)
+		return 99, "sess-abc", 9999999999, nil
+	}
+
+	registerReq := httptest.NewRequest(http.MethodPost, "/advertisers/register", bytes.NewBufferString(`{"email":"a@a.test","phone":"+70000000000","password":"secret"}`))
+	registerReq.AddCookie(csrf)
+	registerReq.Header.Set("X-CSRF-Token", csrf.Value)
+	registerRR := httptest.NewRecorder()
+	r.ServeHTTP(registerRR, registerReq)
+	if registerRR.Code != http.StatusAccepted {
+		t.Fatalf("expected 202 got %d body=%s", registerRR.Code, registerRR.Body.String())
+	}
+
+	record, err := verificationStore.Get(context.Background(), "a@a.test")
+	if err != nil {
+		t.Fatalf("get verification record: %v", err)
+	}
+
+	verifyReq := httptest.NewRequest(http.MethodPost, "/advertisers/register/verify", bytes.NewBufferString(`{"email":"a@a.test","code":"`+record.Code+`"}`))
+	verifyReq.AddCookie(csrf)
+	verifyReq.Header.Set("X-CSRF-Token", csrf.Value)
+	verifyRR := httptest.NewRecorder()
+	r.ServeHTTP(verifyRR, verifyReq)
+	if verifyRR.Code != http.StatusOK {
+		t.Fatalf("expected 200 got %d body=%s", verifyRR.Code, verifyRR.Body.String())
+	}
+}
+
+func TestLogin_RequiresVerifiedEmail(t *testing.T) {
+	ac := newStubAuthClient()
+	svc := &stubService{}
+	r := newTestRouter(ac, svc)
+
+	csrf := getCSRF(t, r)
+
+	ac.registerFn = func(_ context.Context, email, phone, password string) (int64, string, int64, error) {
+		ac.setCredentials(99, email, phone)
+		return 99, "sess-register", 9999999999, nil
+	}
+	ac.loginFn = func(_ context.Context, identifier, password string) (int64, string, int64, error) {
+		return 99, "sess-login", 9999999999, nil
+	}
+
+	registerReq := httptest.NewRequest(http.MethodPost, "/advertisers/register", bytes.NewBufferString(`{"email":"a@a.test","phone":"+70000000000","password":"secret"}`))
+	registerReq.AddCookie(csrf)
+	registerReq.Header.Set("X-CSRF-Token", csrf.Value)
+	registerRR := httptest.NewRecorder()
+	r.ServeHTTP(registerRR, registerReq)
+	if registerRR.Code != http.StatusAccepted {
+		t.Fatalf("expected 202 got %d body=%s", registerRR.Code, registerRR.Body.String())
+	}
+
+	loginReq := httptest.NewRequest(http.MethodPost, "/advertisers/login", bytes.NewBufferString(`{"identifier":"a@a.test","password":"secret"}`))
+	loginReq.AddCookie(csrf)
+	loginReq.Header.Set("X-CSRF-Token", csrf.Value)
+	loginRR := httptest.NewRecorder()
+	r.ServeHTTP(loginRR, loginReq)
+	if loginRR.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 got %d body=%s", loginRR.Code, loginRR.Body.String())
 	}
 }
 

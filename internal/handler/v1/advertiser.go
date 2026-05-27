@@ -2,8 +2,13 @@ package v1
 
 import (
 	"context"
+	"crypto/rand"
+	"database/sql"
 	"errors"
+	"fmt"
+	"math/big"
 	"net/http"
+	"strings"
 	"time"
 
 	errs "eshkere/internal/errors"
@@ -11,11 +16,13 @@ import (
 	"eshkere/internal/handler/middleware"
 	"eshkere/internal/handler/v1/dto"
 	"eshkere/internal/models"
+	redisrepo "eshkere/internal/repository/redis"
 	svc "eshkere/internal/service"
 	serviceinput "eshkere/internal/service/input"
 	"eshkere/pkg/ctxutils"
 	"eshkere/pkg/httpx"
 
+	goredis "github.com/gomodule/redigo/redis"
 	"github.com/gorilla/mux"
 )
 
@@ -23,6 +30,7 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 	advertisers := r.PathPrefix("/advertisers").Subrouter()
 
 	advertisers.HandleFunc("/register", a.Register).Methods(http.MethodPost)
+	advertisers.HandleFunc("/register/verify", a.VerifyRegistration).Methods(http.MethodPost)
 	advertisers.HandleFunc("/login", a.Login).Methods(http.MethodPost)
 	advertisers.HandleFunc("/login/vk", a.LoginVKID).Methods(http.MethodPost)
 	advertisers.HandleFunc("/logout", a.Logout).Methods(http.MethodPost)
@@ -41,7 +49,7 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 }
 
 // @Summary      Регистрация рекламодателя
-// @Description  Создает новый аккаунт и открывает сессию
+// @Description  Создает новый аккаунт и отправляет код подтверждения на email
 // @Tags         advertiser
 // @Accept       json
 // @Produce      json
@@ -59,25 +67,93 @@ func (a *API) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	advID, sessionID, expiresAt, err := a.authClient.Register(ctx, req.Email, req.Phone, req.Password)
+	email := normalizeVerificationEmail(req.Email)
+
+	advID, sessionID, _, err := a.authClient.Register(ctx, email, req.Phone, req.Password)
 	if err != nil {
+		if errors.Is(err, errs.ErrEmailTaken) {
+			if resendErr := a.resendRegistrationCode(ctx, email); resendErr == nil {
+				httpx.JSON(w, http.StatusAccepted, dto.RegisterResponse{
+					Email:                email,
+					Phone:                req.Phone,
+					VerificationRequired: true,
+					Message:              "Код подтверждения отправлен повторно",
+				})
+				return
+			}
+		}
 		handler.HandleError(w, r, "register advertiser", err)
 		return
 	}
 
-	if err = a.service.CreateAdvertiserProfile(ctx, advID, req.Name, req.Email); err != nil {
+	if err = a.service.CreateAdvertiserProfile(ctx, advID, req.Name, email); err != nil {
 		// компенсирующая операция: откатываем credentials в auth-сервисе
 		_ = a.authClient.Logout(ctx, sessionID)
 		handler.HandleError(w, r, "create advertiser profile", err)
 		return
 	}
 
-	a.setSessionCookie(w, sessionID, time.Unix(expiresAt, 0))
+	_ = a.authClient.Logout(ctx, sessionID)
 
-	httpx.JSON(w, http.StatusOK, dto.RegisterResponse{
-		ID:    int(advID),
-		Email: req.Email,
-		Phone: req.Phone,
+	code, err := generateVerificationCode()
+	if err != nil {
+		handler.HandleError(w, r, "generate verification code", err)
+		return
+	}
+	if err := a.saveAndSendVerificationCode(ctx, advID, email, code); err != nil {
+		handler.HandleError(w, r, "send verification email", err)
+		return
+	}
+
+	httpx.JSON(w, http.StatusAccepted, dto.RegisterResponse{
+		ID:                   int(advID),
+		Email:                email,
+		Phone:                req.Phone,
+		VerificationRequired: true,
+		Message:              "Код подтверждения отправлен на почту",
+	})
+}
+
+func (a *API) VerifyRegistration(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	req, err := newJSONRequest[dto.VerifyRegistrationRequest](r)
+	if err != nil {
+		httpx.BadRequest(w, "invalid request")
+		return
+	}
+
+	email := normalizeVerificationEmail(req.Email)
+	record, err := a.verificationStore.Get(ctx, email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			handler.HandleError(w, r, "verify registration", errs.ErrInvalidVerifyCode)
+			return
+		}
+		if err == goredis.ErrNil {
+			handler.HandleError(w, r, "verify registration", errs.ErrInvalidVerifyCode)
+			return
+		}
+		if errors.Is(err, goredis.ErrNil) {
+			handler.HandleError(w, r, "verify registration", errs.ErrInvalidVerifyCode)
+			return
+		}
+		handler.HandleError(w, r, "verify registration", err)
+		return
+	}
+	if record.Code != strings.TrimSpace(req.Code) {
+		handler.HandleError(w, r, "verify registration", errs.ErrInvalidVerifyCode)
+		return
+	}
+	if err := a.verificationStore.Delete(ctx, email); err != nil {
+		handler.HandleError(w, r, "verify registration", err)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, dto.VerifyRegistrationResponse{
+		Email:    email,
+		Verified: true,
+		Message:  "Почта успешно подтверждена",
 	})
 }
 
@@ -112,6 +188,10 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 		handler.HandleError(w, r, "get advertiser credentials", err)
 		return
 	}
+	if err := a.ensureEmailVerified(ctx, email, sessionID); err != nil {
+		handler.HandleError(w, r, "verify advertiser email", err)
+		return
+	}
 
 	a.setSessionCookie(w, sessionID, time.Unix(expiresAt, 0))
 
@@ -120,6 +200,68 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 		Email: email,
 		Phone: phone,
 	})
+}
+
+func (a *API) ensureEmailVerified(ctx context.Context, email, sessionID string) error {
+	if a.verificationStore == nil {
+		return nil
+	}
+
+	_, err := a.verificationStore.Get(ctx, email)
+	if err == nil {
+		_ = a.authClient.Logout(ctx, sessionID)
+		return errs.ErrEmailNotVerified
+	}
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	}
+	if err == goredis.ErrNil || errors.Is(err, goredis.ErrNil) {
+		return nil
+	}
+	return err
+}
+
+func (a *API) resendRegistrationCode(ctx context.Context, email string) error {
+	record, err := a.verificationStore.Get(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	code, err := generateVerificationCode()
+	if err != nil {
+		return err
+	}
+	return a.saveAndSendVerificationCode(ctx, record.AdvertiserID, email, code)
+}
+
+func (a *API) saveAndSendVerificationCode(ctx context.Context, advertiserID int64, email, code string) error {
+	if a.verificationStore == nil || a.verificationEmailSender == nil {
+		return fmt.Errorf("email verification is not configured")
+	}
+	if err := a.verificationStore.Save(ctx, redisrepo.EmailVerificationRecord{
+		AdvertiserID: advertiserID,
+		Email:        email,
+		Code:         code,
+	}, a.registrationVerifyTTL); err != nil {
+		return err
+	}
+	return a.verificationEmailSender.SendEmailVerificationCode(ctx, email, code)
+}
+
+func generateVerificationCode() (string, error) {
+	var code strings.Builder
+	for i := 0; i < 6; i++ {
+		n, err := rand.Int(rand.Reader, big.NewInt(10))
+		if err != nil {
+			return "", fmt.Errorf("generate verification digit: %w", err)
+		}
+		code.WriteByte(byte('0' + n.Int64()))
+	}
+	return code.String(), nil
+}
+
+func normalizeVerificationEmail(email string) string {
+	return strings.ToLower(strings.TrimSpace(email))
 }
 
 // @Summary      Вход рекламодателя через VK ID

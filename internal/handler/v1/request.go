@@ -21,6 +21,7 @@ type GenericSettingsRequest interface {
 		dto.CreateAdCampaignRequest | dto.UpdateAdCampaignRequest |
 		dto.CreateAdGroupRequest | dto.UpdateAdGroupRequest |
 		dto.RegisterRequest | dto.LoginRequest | dto.VKIDLoginRequest | dto.TopUpBalanceRequest |
+		dto.VerifyRegistrationRequest |
 		dto.ChangePasswordRequest |
 		dto.CreatePaymentRequest | dto.AutopaySettingsRequest | dto.NotificationSettingsRequest |
 		dto.UpdateAdRequest | dto.CreateAppealRequest |

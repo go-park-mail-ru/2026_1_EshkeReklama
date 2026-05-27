@@ -20,4 +20,6 @@ var (
 	ErrInvalidAdvertiserArg = errors.New("invalid advertiser argument")
 	ErrSessionNotFound      = errors.New("session not found")
 	ErrPasswordUnavailable  = errors.New("password change is unavailable")
+	ErrEmailNotVerified     = errors.New("email is not verified")
+	ErrInvalidVerifyCode    = errors.New("invalid verification code")
 )

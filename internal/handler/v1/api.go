@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"eshkere/internal/models"
+	redisrepo "eshkere/internal/repository/redis"
 	"eshkere/internal/service"
 	serviceinput "eshkere/internal/service/input"
 
@@ -100,23 +101,42 @@ type CookieConfig struct {
 	Secure   bool
 }
 
+type VerificationStore interface {
+	Save(ctx context.Context, record redisrepo.EmailVerificationRecord, ttl time.Duration) error
+	Get(ctx context.Context, email string) (*redisrepo.EmailVerificationRecord, error)
+	Delete(ctx context.Context, email string) error
+}
+
+type EmailSender interface {
+	SendEmailVerificationCode(ctx context.Context, to string, code string) error
+}
+
 type APIConfig struct {
-	AuthClient   AuthClient
-	Service      Service
-	CookieConfig CookieConfig
+	AuthClient              AuthClient
+	Service                 Service
+	CookieConfig            CookieConfig
+	VerificationStore       VerificationStore
+	VerificationEmailSender EmailSender
+	RegistrationVerifyTTL   time.Duration
 }
 
 type API struct {
-	authClient   AuthClient
-	service      Service
-	cookieConfig CookieConfig
+	authClient              AuthClient
+	service                 Service
+	cookieConfig            CookieConfig
+	verificationStore       VerificationStore
+	verificationEmailSender EmailSender
+	registrationVerifyTTL   time.Duration
 }
 
 func NewAPI(config APIConfig) *API {
 	return &API{
-		authClient:   config.AuthClient,
-		service:      config.Service,
-		cookieConfig: config.CookieConfig,
+		authClient:              config.AuthClient,
+		service:                 config.Service,
+		cookieConfig:            config.CookieConfig,
+		verificationStore:       config.VerificationStore,
+		verificationEmailSender: config.VerificationEmailSender,
+		registrationVerifyTTL:   config.RegistrationVerifyTTL,
 	}
 }
 

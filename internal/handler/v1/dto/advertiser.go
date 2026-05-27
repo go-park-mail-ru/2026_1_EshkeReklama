@@ -15,9 +15,22 @@ type RegisterRequest struct {
 }
 
 type RegisterResponse struct {
-	ID    int    `json:"id"`
+	ID                   int    `json:"id"`
+	Email                string `json:"email"`
+	Phone                string `json:"phone"`
+	VerificationRequired bool   `json:"verification_required"`
+	Message              string `json:"message"`
+}
+
+type VerifyRegistrationRequest struct {
 	Email string `json:"email"`
-	Phone string `json:"phone"`
+	Code  string `json:"code"`
+}
+
+type VerifyRegistrationResponse struct {
+	Email    string `json:"email"`
+	Verified bool   `json:"verified"`
+	Message  string `json:"message"`
 }
 
 type LoginRequest struct {

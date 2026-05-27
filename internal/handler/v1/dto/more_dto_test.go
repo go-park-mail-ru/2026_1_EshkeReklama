@@ -70,17 +70,17 @@ func TestAdditionalDTOConverters(t *testing.T) {
 	partnerDate := time.Date(2026, 2, 3, 0, 0, 0, 0, time.UTC)
 	partnerCreated := time.Date(2026, 2, 4, 5, 6, 7, 0, time.UTC)
 	partnerProfile := PartnerToProfile(&models.Partner{
-		ID:                4,
-		LastName:          "Ivanov",
-		FirstName:         "Ivan",
-		MiddleName:        "Ivanovich",
-		BirthDate:         partnerDate,
-		CountryCode:       "RU",
+		ID:                     4,
+		LastName:               "Ivanov",
+		FirstName:              "Ivan",
+		MiddleName:             "Ivanovich",
+		BirthDate:              partnerDate,
+		CountryCode:            "RU",
 		RegistrationRegionCode: "MSK",
-		CooperationForm:   models.CooperationFormSelfEmployed,
-		PayoutCurrency:    models.PayoutCurrencyRUB,
-		Balance:           99,
-		CreatedAt:         partnerCreated,
+		CooperationForm:        models.CooperationFormSelfEmployed,
+		PayoutCurrency:         models.PayoutCurrencyRUB,
+		Balance:                99,
+		CreatedAt:              partnerCreated,
 	}, "partner@example.com", "+7999")
 	if partnerProfile.ID != 4 || partnerProfile.BirthDate != "2026-02-03" || partnerProfile.Email != "partner@example.com" {
 		t.Fatalf("unexpected partner profile: %+v", partnerProfile)

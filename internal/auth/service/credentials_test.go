@@ -323,6 +323,40 @@ func TestAuthenticateVKIDSyncsMissingContactsForExistingVKUser(t *testing.T) {
 	}
 }
 
+func TestUpdateAllowsPartialVKContacts(t *testing.T) {
+	var updatedEmail, updatedPhone string
+
+	repo := &stubCredentialsRepo{
+		createFunc:     func(context.Context, string, string, string) (int64, error) { return 0, nil },
+		createVKFunc:   func(context.Context, string, string, int64) (int64, error) { return 0, nil },
+		getByEmailFunc: func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		getByPhoneFunc: func(context.Context, string) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		getByVKFunc:    func(context.Context, int64) (*authrepo.Credential, error) { return nil, sql.ErrNoRows },
+		getByIDFunc: func(_ context.Context, id int64) (*authrepo.Credential, error) {
+			return &authrepo.Credential{ID: id, Email: "", Phone: ""}, nil
+		},
+		linkVKFunc: func(context.Context, int64, int64) error { return nil },
+		updateFunc: func(_ context.Context, id int64, email, phone string) error {
+			updatedEmail = email
+			updatedPhone = phone
+			return nil
+		},
+		deleteFunc: func(context.Context, int64) error { return nil },
+	}
+
+	svc := NewCredentialsService(repo, nil)
+	updated, err := svc.Update(context.Background(), 42, "vk@example.com", "")
+	if err != nil {
+		t.Fatalf("partial update with empty phone: %v", err)
+	}
+	if updatedEmail != "vk@example.com" || updatedPhone != "" {
+		t.Fatalf("unexpected update args: email=%q phone=%q", updatedEmail, updatedPhone)
+	}
+	if updated.Email != "vk@example.com" || updated.Phone != "" {
+		t.Fatalf("unexpected updated credential: %#v", updated)
+	}
+}
+
 func TestAuthenticateVKIDConflictAndHelpers(t *testing.T) {
 	if phone, err := normalizePhone("+7 (900) 123-45-67"); err != nil || phone != "9001234567" {
 		t.Fatalf("unexpected normalized phone: %q %v", phone, err)

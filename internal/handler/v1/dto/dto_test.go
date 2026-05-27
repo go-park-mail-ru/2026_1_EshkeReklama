@@ -39,8 +39,8 @@ func TestAdvertiserToProfile_NilAndNonNil(t *testing.T) {
 
 	now := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
 	adv := &models.Advertiser{ID: 1, Name: "n", Balance: 10, CreatedAt: now}
-	p := AdvertiserWithContactsToProfile(adv, "e", "p")
-	if p.ID != 1 || p.Email != "e" || p.Phone != "p" || p.CreatedAt != now.Format(time.RFC3339) {
+	p := AdvertiserWithContactsToProfile(adv, "e", "p", true)
+	if p.ID != 1 || p.Email != "e" || p.Phone != "p" || !p.CanChangePassword || p.CreatedAt != now.Format(time.RFC3339) {
 		t.Fatalf("unexpected profile: %+v", p)
 	}
 }

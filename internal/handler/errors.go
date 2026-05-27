@@ -47,6 +47,9 @@ func HandleError(w http.ResponseWriter, r *http.Request, desc string, err error)
 	case errors.Is(err, errs.BusinessLogicError):
 		logger.Debugf("business logic error during %s: %v", desc, err)
 		httpx.BusinessLogic(w, err.Error())
+	case errors.Is(err, errs.ErrPasswordUnavailable):
+		logger.Debugf("business rule during %s: %v", desc, err)
+		httpx.BusinessLogic(w, err.Error())
 
 	// 501 Not Implemented: Функционал еще не готов
 	case errors.Is(err, errs.NotImplementedError):

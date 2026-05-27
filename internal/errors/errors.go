@@ -19,4 +19,5 @@ var (
 	ErrVKIDConflict         = errors.New("vk id account conflict")
 	ErrInvalidAdvertiserArg = errors.New("invalid advertiser argument")
 	ErrSessionNotFound      = errors.New("session not found")
+	ErrPasswordUnavailable  = errors.New("password change is unavailable")
 )

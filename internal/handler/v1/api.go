@@ -17,8 +17,9 @@ type AuthClient interface {
 	LoginVKID(ctx context.Context, accessToken string, userID int64) (advertiserID int64, sessionID string, expiresAt int64, firstName string, lastName string, err error)
 	ValidateSession(ctx context.Context, sessionID string) (advertiserID int64, err error)
 	Logout(ctx context.Context, sessionID string) error
-	GetCredentials(ctx context.Context, advertiserID int64) (email, phone string, err error)
+	GetCredentials(ctx context.Context, advertiserID int64) (email, phone string, canChangePassword bool, err error)
 	UpdateCredentials(ctx context.Context, advertiserID int64, email, phone string) (updatedEmail, updatedPhone string, err error)
+	ChangePassword(ctx context.Context, advertiserID int64, currentPassword, newPassword string) error
 }
 
 type Service interface {

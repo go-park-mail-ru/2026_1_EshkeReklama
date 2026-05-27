@@ -36,6 +36,7 @@ func (a *API) RegisterAdvertiserHandlers(r *mux.Router) {
 
 	advertisers.Handle("/me", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.Me))).Methods(http.MethodGet)
 	advertisers.Handle("/me", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.UpdateProfile))).Methods(http.MethodPut)
+	advertisers.Handle("/me/password", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.ChangePassword))).Methods(http.MethodPut)
 	advertisers.Handle("/me/avatar", middleware.Auth(a.authClient, a.cookieConfig.Name)(http.HandlerFunc(a.UpdateAvatar))).Methods(http.MethodPut)
 }
 
@@ -106,7 +107,7 @@ func (a *API) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email, phone, err := a.authClient.GetCredentials(ctx, advID)
+	email, phone, _, err := a.authClient.GetCredentials(ctx, advID)
 	if err != nil {
 		handler.HandleError(w, r, "get advertiser credentials", err)
 		return
@@ -148,7 +149,7 @@ func (a *API) LoginVKID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email, phone, err := a.authClient.GetCredentials(ctx, advID)
+	email, phone, _, err := a.authClient.GetCredentials(ctx, advID)
 	if err != nil {
 		handler.HandleError(w, r, "get advertiser credentials", err)
 		return
@@ -194,13 +195,48 @@ func (a *API) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email, phone, err := a.authClient.GetCredentials(ctx, int64(advertiserID))
+	email, phone, canChangePassword, err := a.authClient.GetCredentials(ctx, int64(advertiserID))
 	if err != nil {
 		handler.HandleError(w, r, "getting advertiser credentials", err)
 		return
 	}
 
-	httpx.JSON(w, http.StatusOK, dto.AdvertiserWithContactsToProfile(adv, email, phone))
+	httpx.JSON(w, http.StatusOK, dto.AdvertiserWithContactsToProfile(adv, email, phone, canChangePassword))
+}
+
+// @Summary      Смена пароля рекламодателя
+// @Description  Обновляет пароль текущего рекламодателя по сессии
+// @Tags         advertiser
+// @Accept       json
+// @Produce      json
+// @Param        body   body      dto.ChangePasswordRequest  true  "Текущий и новый пароль"
+// @Success      204
+// @Failure      400    {object}  httpx.Error
+// @Failure      401    {object}  httpx.Error
+// @Failure      422    {object}  httpx.Error "Смена пароля недоступна для VK ID аккаунтов без локального пароля"
+// @Router       /advertisers/me/password [put]
+// @Security     CookieAuth
+func (a *API) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "getting advertiser id from ctx", err)
+		return
+	}
+
+	req, err := newJSONRequest[dto.ChangePasswordRequest](r)
+	if err != nil {
+		httpx.BadRequest(w, "invalid request")
+		return
+	}
+
+	if err := a.authClient.ChangePassword(ctx, int64(advertiserID), req.CurrentPassword, req.NewPassword); err != nil {
+		handler.HandleError(w, r, "changing advertiser password", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // @Summary      Обновление профиля рекламодателя
@@ -251,7 +287,13 @@ func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	httpx.JSON(w, http.StatusOK, dto.AdvertiserWithContactsToProfile(adv, email, phone))
+	_, _, canChangePassword, err := a.authClient.GetCredentials(ctx, int64(advertiserID))
+	if err != nil {
+		handler.HandleError(w, r, "getting advertiser credentials", err)
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, dto.AdvertiserWithContactsToProfile(adv, email, phone, canChangePassword))
 }
 
 func hasAdvertiserProfileChanges(req *dto.UpdateAdvertiserProfileRequest) bool {
@@ -264,10 +306,11 @@ func (a *API) resolveUpdatedContacts(
 	req *dto.UpdateAdvertiserProfileRequest,
 ) (string, string, error) {
 	if req.Email == nil && req.Phone == nil {
-		return a.authClient.GetCredentials(ctx, advertiserID)
+		email, phone, _, err := a.authClient.GetCredentials(ctx, advertiserID)
+		return email, phone, err
 	}
 
-	email, phone, err := a.authClient.GetCredentials(ctx, advertiserID)
+	email, phone, _, err := a.authClient.GetCredentials(ctx, advertiserID)
 	if err != nil {
 		return "", "", err
 	}
@@ -493,13 +536,13 @@ func (a *API) UpdateAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email, phone, err := a.authClient.GetCredentials(ctx, int64(advertiserID))
+	email, phone, canChangePassword, err := a.authClient.GetCredentials(ctx, int64(advertiserID))
 	if err != nil {
 		handler.HandleError(w, r, "getting advertiser credentials", err)
 		return
 	}
 
-	httpx.JSON(w, http.StatusOK, dto.AdvertiserWithContactsToProfile(adv, email, phone))
+	httpx.JSON(w, http.StatusOK, dto.AdvertiserWithContactsToProfile(adv, email, phone, canChangePassword))
 }
 
 func (a *API) setSessionCookie(w http.ResponseWriter, sessionID string, expiresAt time.Time) {

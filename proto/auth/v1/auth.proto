@@ -12,6 +12,7 @@ service AuthService {
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc GetCredentials(GetCredentialsRequest) returns (GetCredentialsResponse);
   rpc UpdateCredentials(UpdateCredentialsRequest) returns (UpdateCredentialsResponse);
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
 }
 
 message RegisterRequest {
@@ -67,6 +68,7 @@ message GetCredentialsResponse {
   int64 advertiser_id = 1;
   string email = 2;
   string phone = 3;
+  bool can_change_password = 4;
 }
 
 message UpdateCredentialsRequest {
@@ -80,3 +82,11 @@ message UpdateCredentialsResponse {
   string email = 2;
   string phone = 3;
 }
+
+message ChangePasswordRequest {
+  int64 advertiser_id = 1;
+  string current_password = 2;
+  string new_password = 3;
+}
+
+message ChangePasswordResponse {}

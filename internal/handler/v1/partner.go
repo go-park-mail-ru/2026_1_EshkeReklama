@@ -82,7 +82,7 @@ func (a *API) LoginPartner(w http.ResponseWriter, r *http.Request) {
 		handler.HandleError(w, r, "login partner", err)
 		return
 	}
-	email, phone, err := a.authClient.GetCredentials(ctx, partnerID)
+	email, phone, _, err := a.authClient.GetCredentials(ctx, partnerID)
 	if err != nil {
 		handler.HandleError(w, r, "get partner credentials", err)
 		return
@@ -114,7 +114,7 @@ func (a *API) MePartner(w http.ResponseWriter, r *http.Request) {
 		handler.HandleError(w, r, "get partner by id", err)
 		return
 	}
-	email, phone, err := a.authClient.GetCredentials(ctx, int64(partnerID))
+	email, phone, _, err := a.authClient.GetCredentials(ctx, int64(partnerID))
 	if err != nil {
 		handler.HandleError(w, r, "get partner credentials", err)
 		return
@@ -163,9 +163,10 @@ func (a *API) UpdatePartner(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) resolveUpdatedPartnerContacts(ctx context.Context, partnerID int64, req *dto.UpdatePartnerProfileRequest) (string, string, error) {
 	if req.Email == nil && req.Phone == nil {
-		return a.authClient.GetCredentials(ctx, partnerID)
+		email, phone, _, err := a.authClient.GetCredentials(ctx, partnerID)
+		return email, phone, err
 	}
-	email, phone, err := a.authClient.GetCredentials(ctx, partnerID)
+	email, phone, _, err := a.authClient.GetCredentials(ctx, partnerID)
 	if err != nil {
 		return "", "", err
 	}

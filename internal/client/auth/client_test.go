@@ -36,10 +36,13 @@ func (s *authTestServer) Logout(context.Context, *authv1.LogoutRequest) (*authv1
 	return &authv1.LogoutResponse{}, nil
 }
 func (s *authTestServer) GetCredentials(context.Context, *authv1.GetCredentialsRequest) (*authv1.GetCredentialsResponse, error) {
-	return &authv1.GetCredentialsResponse{Email: "user@example.com", Phone: "9001234567"}, nil
+	return &authv1.GetCredentialsResponse{Email: "user@example.com", Phone: "9001234567", CanChangePassword: true}, nil
 }
 func (s *authTestServer) UpdateCredentials(context.Context, *authv1.UpdateCredentialsRequest) (*authv1.UpdateCredentialsResponse, error) {
 	return nil, status.Error(codes.InvalidArgument, "bad arg")
+}
+func (s *authTestServer) ChangePassword(context.Context, *authv1.ChangePasswordRequest) (*authv1.ChangePasswordResponse, error) {
+	return nil, status.Error(codes.FailedPrecondition, "password change is unavailable for vk id accounts")
 }
 
 func TestClientCallsAndMapsErrors(t *testing.T) {
@@ -65,13 +68,16 @@ func TestClientCallsAndMapsErrors(t *testing.T) {
 		t.Fatalf("logout: %v", err)
 	}
 
-	email, phone, err := client.GetCredentials(context.Background(), 11)
-	if err != nil || email != "user@example.com" || phone != "9001234567" {
-		t.Fatalf("get credentials: %q %q %v", email, phone, err)
+	email, phone, canChangePassword, err := client.GetCredentials(context.Background(), 11)
+	if err != nil || email != "user@example.com" || phone != "9001234567" || !canChangePassword {
+		t.Fatalf("get credentials: %q %q %t %v", email, phone, canChangePassword, err)
 	}
 
 	if _, _, err := client.UpdateCredentials(context.Background(), 11, "new@example.com", "9001234567"); err != errs.ErrInvalidAdvertiserArg {
 		t.Fatalf("expected invalid advertiser arg, got %v", err)
+	}
+	if err := client.ChangePassword(context.Background(), 11, "old", "new"); err != errs.ErrPasswordUnavailable {
+		t.Fatalf("expected password unavailable, got %v", err)
 	}
 }
 
@@ -83,6 +89,7 @@ func TestMapErr(t *testing.T) {
 		{status.Error(codes.AlreadyExists, "phone taken"), errs.ErrPhoneTaken},
 		{status.Error(codes.AlreadyExists, "email taken"), errs.ErrEmailTaken},
 		{status.Error(codes.FailedPrecondition, "nyi"), errs.NotImplementedError},
+		{status.Error(codes.FailedPrecondition, "password change is unavailable for vk id accounts"), errs.ErrPasswordUnavailable},
 		{status.Error(codes.NotFound, "credentials not found"), errs.NotFoundError},
 		{status.Error(codes.NotFound, "session not found"), errs.ErrSessionNotFound},
 		{status.Error(codes.InvalidArgument, "bad"), errs.ErrInvalidAdvertiserArg},

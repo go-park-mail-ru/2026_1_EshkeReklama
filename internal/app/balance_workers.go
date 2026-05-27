@@ -67,7 +67,7 @@ func (a *App) processNotificationCycle(ctx context.Context) {
 			continue
 		}
 
-		email, _, err := a.authClient.GetCredentials(ctx, int64(settings.AdvertiserID))
+		email, _, _, err := a.authClient.GetCredentials(ctx, int64(settings.AdvertiserID))
 		if err != nil || email == "" {
 			continue
 		}

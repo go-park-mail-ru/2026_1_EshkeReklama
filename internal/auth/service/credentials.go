@@ -22,6 +22,7 @@ type CredentialsRepo interface {
 	GetByID(ctx context.Context, id int64) (*authrepo.Credential, error)
 	LinkVKUserID(ctx context.Context, id, vkUserID int64) error
 	Update(ctx context.Context, id int64, email, phone string) error
+	UpdatePasswordHash(ctx context.Context, id int64, passwordHash string) error
 	Delete(ctx context.Context, id int64) error
 }
 
@@ -39,12 +40,13 @@ func NewCredentialsService(repo CredentialsRepo, vkidAuth VKIDAuthenticator) *Cr
 }
 
 var (
-	ErrEmailTaken         = errors.New("email already registered")
-	ErrPhoneTaken         = errors.New("phone already registered")
-	ErrInvalidCredentials = errors.New("invalid credentials")
-	ErrInvalidArg         = errors.New("invalid argument")
-	ErrVKIDConflict       = errors.New("vk credentials conflict")
-	ErrVKIDUnavailable    = errors.New("vk id auth is not configured")
+	ErrEmailTaken          = errors.New("email already registered")
+	ErrPhoneTaken          = errors.New("phone already registered")
+	ErrInvalidCredentials  = errors.New("invalid credentials")
+	ErrInvalidArg          = errors.New("invalid argument")
+	ErrVKIDConflict        = errors.New("vk credentials conflict")
+	ErrVKIDUnavailable     = errors.New("vk id auth is not configured")
+	ErrPasswordUnavailable = errors.New("password change is unavailable for vk id accounts")
 )
 
 func (s *CredentialsService) Register(ctx context.Context, email, phone, password string) (id int64, err error) {
@@ -194,6 +196,39 @@ func (s *CredentialsService) GetByID(ctx context.Context, id int64) (*authrepo.C
 	}
 
 	return s.repo.GetByID(ctx, id)
+}
+
+func (s *CredentialsService) ChangePassword(ctx context.Context, id int64, currentPassword, newPassword string) error {
+	if id <= 0 {
+		return fmt.Errorf("%w: invalid advertiser id", ErrInvalidArg)
+	}
+
+	currentPassword = strings.TrimSpace(currentPassword)
+	newPassword = strings.TrimSpace(newPassword)
+	if currentPassword == "" || newPassword == "" {
+		return fmt.Errorf("%w: current and new password are required", ErrInvalidArg)
+	}
+	if len(newPassword) < 6 {
+		return fmt.Errorf("%w: password too short", ErrInvalidArg)
+	}
+
+	cred, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if cred.PasswordHash == "" {
+		return ErrPasswordUnavailable
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(cred.PasswordHash), []byte(currentPassword)); err != nil {
+		return ErrInvalidCredentials
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("hash password: %w", err)
+	}
+
+	return s.repo.UpdatePasswordHash(ctx, id, string(hash))
 }
 
 func (s *CredentialsService) Update(ctx context.Context, id int64, email, phone string) (*authrepo.Credential, error) {

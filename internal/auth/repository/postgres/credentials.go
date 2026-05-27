@@ -130,6 +130,17 @@ func (r *CredentialsRepository) Update(ctx context.Context, id int64, email, pho
 	return nil
 }
 
+func (r *CredentialsRepository) UpdatePasswordHash(ctx context.Context, id int64, passwordHash string) error {
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE auth.credentials SET password_hash = $2, updated_at = NOW() WHERE id = $1`,
+		id, passwordHash,
+	)
+	if err != nil {
+		return fmt.Errorf("update password hash: %w", err)
+	}
+	return nil
+}
+
 func (r *CredentialsRepository) Delete(ctx context.Context, id int64) error {
 	_, err := r.db.ExecContext(ctx,
 		`DELETE FROM auth.credentials WHERE id = $1`,

@@ -109,9 +109,10 @@ func (s *Server) GetCredentials(ctx context.Context, req *authv1.GetCredentialsR
 	}
 
 	return &authv1.GetCredentialsResponse{
-		AdvertiserId: cred.ID,
-		Email:        cred.Email,
-		Phone:        cred.Phone,
+		AdvertiserId:      cred.ID,
+		Email:             cred.Email,
+		Phone:             cred.Phone,
+		CanChangePassword: cred.PasswordHash != "",
 	}, nil
 }
 
@@ -128,6 +129,14 @@ func (s *Server) UpdateCredentials(ctx context.Context, req *authv1.UpdateCreden
 	}, nil
 }
 
+func (s *Server) ChangePassword(ctx context.Context, req *authv1.ChangePasswordRequest) (*authv1.ChangePasswordResponse, error) {
+	if err := s.creds.ChangePassword(ctx, req.AdvertiserId, req.CurrentPassword, req.NewPassword); err != nil {
+		return nil, mapErr(err)
+	}
+
+	return &authv1.ChangePasswordResponse{}, nil
+}
+
 func mapErr(err error) error {
 	switch {
 	case errors.Is(err, authsvc.ErrEmailTaken):
@@ -142,6 +151,8 @@ func mapErr(err error) error {
 		return status.Error(codes.InvalidArgument, err.Error())
 	case errors.Is(err, authsvc.ErrVKIDUnavailable):
 		return status.Error(codes.FailedPrecondition, "vk id auth is not configured")
+	case errors.Is(err, authsvc.ErrPasswordUnavailable):
+		return status.Error(codes.FailedPrecondition, "password change is unavailable for vk id accounts")
 	case errors.Is(err, sql.ErrNoRows):
 		return status.Error(codes.NotFound, "credentials not found")
 	default:

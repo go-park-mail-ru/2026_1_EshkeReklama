@@ -6,19 +6,19 @@ import (
 )
 
 type CreateAdGroupRequest struct {
-	TopicID  int    `json:"topic_id" validate:"required"`
-	RegionID int    `json:"region_id" validate:"required"`
-	Name     string `json:"name" validate:"required"`
-	AgeFrom  int    `json:"age_from" validate:"required"`
-	AgeTo    int    `json:"age_to" validate:"required"`
-	Gender   string `json:"gender" validate:"required,oneof=male female any"`
+	Topic   string `json:"topic" validate:"required"`
+	Region  string `json:"region" validate:"required"`
+	Name    string `json:"name" validate:"required"`
+	AgeFrom int    `json:"age_from" validate:"required"`
+	AgeTo   int    `json:"age_to" validate:"required"`
+	Gender  string `json:"gender" validate:"required,oneof=man woman any"`
 }
 
 func (c *CreateAdGroupRequest) ToInput(campaignID int) *serviceinput.CreateAdGroup {
 	return &serviceinput.CreateAdGroup{
 		AdCampaignID: campaignID,
-		TopicID:      c.TopicID,
-		RegionID:     c.RegionID,
+		Topic:        c.Topic,
+		Region:       c.Region,
 		Name:         c.Name,
 		AgeFrom:      c.AgeFrom,
 		AgeTo:        c.AgeTo,
@@ -31,45 +31,45 @@ type CreateAdGroupResponse struct {
 }
 
 type UpdateAdGroupRequest struct {
-	TopicID  *int    `json:"topic_id" validate:"omitempty,min=1"`
-	RegionID *int    `json:"region_id" validate:"omitempty,min=1"`
-	Name     *string `json:"name" validate:"omitempty,min=1"`
-	AgeFrom  *int    `json:"age_from" validate:"omitempty,min=1"`
-	AgeTo    *int    `json:"age_to" validate:"omitempty,min=1"`
-	Gender   *string `json:"gender" validate:"omitempty,min=1,oneof=male female any"`
+	Topic   *string `json:"topic" validate:"omitempty,min=1"`
+	Region  *string `json:"region" validate:"omitempty,min=1"`
+	Name    *string `json:"name" validate:"omitempty,min=1"`
+	AgeFrom *int    `json:"age_from" validate:"omitempty,min=1"`
+	AgeTo   *int    `json:"age_to" validate:"omitempty,min=1"`
+	Gender  *string `json:"gender" validate:"omitempty,min=1,oneof=man woman any"`
 }
 
 func (u *UpdateAdGroupRequest) ToInput(groupID int) *serviceinput.UpdateAdGroup {
 	return &serviceinput.UpdateAdGroup{
-		ID:       groupID,
-		TopicID:  u.TopicID,
-		RegionID: u.RegionID,
-		Name:     u.Name,
-		AgeFrom:  u.AgeFrom,
-		AgeTo:    u.AgeTo,
-		Gender:   (*models.GenderType)(u.Gender),
+		ID:      groupID,
+		Topic:   u.Topic,
+		Region:  u.Region,
+		Name:    u.Name,
+		AgeFrom: u.AgeFrom,
+		AgeTo:   u.AgeTo,
+		Gender:  (*models.GenderType)(u.Gender),
 	}
 }
 
 type AdGroupResponse struct {
-	ID       int    `json:"id"`
-	TopicID  int    `json:"topic_id"`
-	RegionID int    `json:"region_id"`
-	Name     string `json:"name"`
-	AgeFrom  int    `json:"age_from"`
-	AgeTo    int    `json:"age_to"`
-	Gender   string `json:"gender"`
+	ID      int    `json:"id"`
+	Topic   string `json:"topic"`
+	Region  string `json:"region"`
+	Name    string `json:"name"`
+	AgeFrom int    `json:"age_from"`
+	AgeTo   int    `json:"age_to"`
+	Gender  string `json:"gender"`
 }
 
 func ToAdGroupResponse(g *models.AdGroup) *AdGroupResponse {
 	return &AdGroupResponse{
-		ID:       g.ID,
-		TopicID:  g.TopicID,
-		RegionID: g.RegionID,
-		Name:     g.Name,
-		AgeFrom:  g.AgeFrom,
-		AgeTo:    g.AgeTo,
-		Gender:   string(g.Gender),
+		ID:      g.ID,
+		Topic:   g.Topic,
+		Region:  g.Region,
+		Name:    g.Name,
+		AgeFrom: g.AgeFrom,
+		AgeTo:   g.AgeTo,
+		Gender:  string(g.Gender),
 	}
 }
 

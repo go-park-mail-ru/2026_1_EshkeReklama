@@ -86,6 +86,8 @@ func New(configPath string) *App {
 	adCampaignRepo := postgres.NewAdCampaignRepository(db)
 	feedLinkRepo := postgres.NewFeedLinkRepository(db)
 	appealRepo := postgres.NewAppealRepository(db)
+	topicRepo := postgres.NewTopicRepository(db)
+	regionRepo := postgres.NewRegionRepository(db)
 	adRequestStore := redisrepo.NewAdRequestStore(redisPool)
 	notificationDedupe := redisrepo.NewNotificationDedupeStore(redisPool)
 	var adEventPublisher service.AdEventPublisher
@@ -155,8 +157,8 @@ func New(configPath string) *App {
 		AppealStorage:            appealStorage,
 		AdStorage:                adStorage,
 		AdActionRepo:             nil,
-		TopicRepo:                nil,
-		RegionRepo:               nil,
+		TopicRepo:                topicRepo,
+		RegionRepo:               regionRepo,
 		ProfileClient:            nil,
 		AdRequestStore:           adRequestStore,
 		AdEventPublisher:         adEventPublisher,

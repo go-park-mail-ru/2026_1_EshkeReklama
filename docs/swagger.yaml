@@ -27,10 +27,10 @@ definitions:
         type: integer
       name:
         type: string
-      region_id:
-        type: integer
-      topic_id:
-        type: integer
+      region:
+        type: string
+      topic:
+        type: string
     type: object
   dto.AdRequest:
     properties:
@@ -195,23 +195,23 @@ definitions:
         type: integer
       gender:
         enum:
-        - male
-        - female
+        - man
+        - woman
         - any
         type: string
       name:
         type: string
-      region_id:
-        type: integer
-      topic_id:
-        type: integer
+      region:
+        type: string
+      topic:
+        type: string
     required:
     - age_from
     - age_to
     - gender
     - name
-    - region_id
-    - topic_id
+    - region
+    - topic
     type: object
   dto.CreateAdGroupResponse:
     properties:
@@ -741,20 +741,20 @@ definitions:
         type: integer
       gender:
         enum:
-        - male
-        - female
+        - man
+        - woman
         - any
         minLength: 1
         type: string
       name:
         minLength: 1
         type: string
-      region_id:
-        minimum: 1
-        type: integer
-      topic_id:
-        minimum: 1
-        type: integer
+      region:
+        minLength: 1
+        type: string
+      topic:
+        minLength: 1
+        type: string
     type: object
   dto.UpdateAdStatusRequest:
     properties:

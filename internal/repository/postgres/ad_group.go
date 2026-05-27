@@ -24,15 +24,21 @@ const (
 		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`
 
 	selectAdGroupByID = `SELECT
-		id, ad_campaign_id, topic_id, region_id, name, age_from, age_to, gender, created_at, updated_at
-	FROM eshkere.ad_group
-	WHERE id = $1`
+		ag.id, ag.ad_campaign_id, ag.topic_id, ag.region_id, t.name, r.name,
+		ag.name, ag.age_from, ag.age_to, ag.gender, ag.created_at, ag.updated_at
+	FROM eshkere.ad_group ag
+	JOIN eshkere.topic t ON t.id = ag.topic_id
+	JOIN eshkere.region r ON r.id = ag.region_id
+	WHERE ag.id = $1`
 
 	selectAdGroupsByCampaignID = `SELECT
-		id, ad_campaign_id, topic_id, region_id, name, age_from, age_to, gender, created_at, updated_at
-	FROM eshkere.ad_group
-	WHERE ad_campaign_id = $1
-	ORDER BY created_at DESC, id DESC`
+		ag.id, ag.ad_campaign_id, ag.topic_id, ag.region_id, t.name, r.name,
+		ag.name, ag.age_from, ag.age_to, ag.gender, ag.created_at, ag.updated_at
+	FROM eshkere.ad_group ag
+	JOIN eshkere.topic t ON t.id = ag.topic_id
+	JOIN eshkere.region r ON r.id = ag.region_id
+	WHERE ag.ad_campaign_id = $1
+	ORDER BY ag.created_at DESC, ag.id DESC`
 
 	updateAdGroup = `UPDATE eshkere.ad_group SET
 		ad_campaign_id = $1, topic_id = $2, region_id = $3, name = $4, age_from = $5, age_to = $6, gender = $7, updated_at = $8
@@ -68,6 +74,8 @@ func (r *AdGroupRepository) GetByID(ctx context.Context, id int) (*models.AdGrou
 		&g.AdCampaignID,
 		&g.TopicID,
 		&g.RegionID,
+		&g.Topic,
+		&g.Region,
 		&g.Name,
 		&g.AgeFrom,
 		&g.AgeTo,
@@ -102,6 +110,8 @@ func (r *AdGroupRepository) ListByCampaignID(ctx context.Context, campaignID int
 			&g.AdCampaignID,
 			&g.TopicID,
 			&g.RegionID,
+			&g.Topic,
+			&g.Region,
 			&g.Name,
 			&g.AgeFrom,
 			&g.AgeTo,

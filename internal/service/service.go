@@ -132,9 +132,13 @@ type AdStorage interface {
 
 type AdActionRepository interface{}
 
-type TopicRepository interface{}
+type TopicRepository interface {
+	GetIDByName(ctx context.Context, name string) (int, error)
+}
 
-type RegionRepository interface{}
+type RegionRepository interface {
+	GetIDByName(ctx context.Context, name string) (int, error)
+}
 
 type AppealRepository interface {
 	Create(ctx context.Context, appeal *models.Appeal) error

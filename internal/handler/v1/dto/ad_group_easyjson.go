@@ -36,25 +36,25 @@ func easyjson92a79907DecodeEshkereInternalHandlerV1Dto(in *jlexer.Lexer, out *Up
 			continue
 		}
 		switch key {
-		case "topic_id":
+		case "topic":
 			if in.IsNull() {
 				in.Skip()
-				out.TopicID = nil
+				out.Topic = nil
 			} else {
-				if out.TopicID == nil {
-					out.TopicID = new(int)
+				if out.Topic == nil {
+					out.Topic = new(string)
 				}
-				*out.TopicID = int(in.Int())
+				*out.Topic = string(in.String())
 			}
-		case "region_id":
+		case "region":
 			if in.IsNull() {
 				in.Skip()
-				out.RegionID = nil
+				out.Region = nil
 			} else {
-				if out.RegionID == nil {
-					out.RegionID = new(int)
+				if out.Region == nil {
+					out.Region = new(string)
 				}
-				*out.RegionID = int(in.Int())
+				*out.Region = string(in.String())
 			}
 		case "name":
 			if in.IsNull() {
@@ -111,21 +111,21 @@ func easyjson92a79907EncodeEshkereInternalHandlerV1Dto(out *jwriter.Writer, in U
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"topic_id\":"
+		const prefix string = ",\"topic\":"
 		out.RawString(prefix[1:])
-		if in.TopicID == nil {
+		if in.Topic == nil {
 			out.RawString("null")
 		} else {
-			out.Int(int(*in.TopicID))
+			out.String(string(*in.Topic))
 		}
 	}
 	{
-		const prefix string = ",\"region_id\":"
+		const prefix string = ",\"region\":"
 		out.RawString(prefix)
-		if in.RegionID == nil {
+		if in.Region == nil {
 			out.RawString("null")
 		} else {
-			out.Int(int(*in.RegionID))
+			out.String(string(*in.Region))
 		}
 	}
 	{
@@ -392,10 +392,10 @@ func easyjson92a79907DecodeEshkereInternalHandlerV1Dto3(in *jlexer.Lexer, out *C
 			continue
 		}
 		switch key {
-		case "topic_id":
-			out.TopicID = int(in.Int())
-		case "region_id":
-			out.RegionID = int(in.Int())
+		case "topic":
+			out.Topic = string(in.String())
+		case "region":
+			out.Region = string(in.String())
 		case "name":
 			out.Name = string(in.String())
 		case "age_from":
@@ -419,14 +419,14 @@ func easyjson92a79907EncodeEshkereInternalHandlerV1Dto3(out *jwriter.Writer, in 
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"topic_id\":"
+		const prefix string = ",\"topic\":"
 		out.RawString(prefix[1:])
-		out.Int(int(in.TopicID))
+		out.String(string(in.Topic))
 	}
 	{
-		const prefix string = ",\"region_id\":"
+		const prefix string = ",\"region\":"
 		out.RawString(prefix)
-		out.Int(int(in.RegionID))
+		out.String(string(in.Region))
 	}
 	{
 		const prefix string = ",\"name\":"
@@ -495,10 +495,10 @@ func easyjson92a79907DecodeEshkereInternalHandlerV1Dto4(in *jlexer.Lexer, out *A
 		switch key {
 		case "id":
 			out.ID = int(in.Int())
-		case "topic_id":
-			out.TopicID = int(in.Int())
-		case "region_id":
-			out.RegionID = int(in.Int())
+		case "topic":
+			out.Topic = string(in.String())
+		case "region":
+			out.Region = string(in.String())
 		case "name":
 			out.Name = string(in.String())
 		case "age_from":
@@ -527,14 +527,14 @@ func easyjson92a79907EncodeEshkereInternalHandlerV1Dto4(out *jwriter.Writer, in 
 		out.Int(int(in.ID))
 	}
 	{
-		const prefix string = ",\"topic_id\":"
+		const prefix string = ",\"topic\":"
 		out.RawString(prefix)
-		out.Int(int(in.TopicID))
+		out.String(string(in.Topic))
 	}
 	{
-		const prefix string = ",\"region_id\":"
+		const prefix string = ",\"region\":"
 		out.RawString(prefix)
-		out.Int(int(in.RegionID))
+		out.String(string(in.Region))
 	}
 	{
 		const prefix string = ",\"name\":"

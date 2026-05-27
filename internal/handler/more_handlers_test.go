@@ -191,10 +191,13 @@ func TestAdGroup_And_Ads_CRUD(t *testing.T) {
 			if in.AdCampaignID != 10 || in.Name != "g" {
 				t.Fatalf("unexpected group input: %+v", in)
 			}
+			if in.Topic != "Авто" || in.Region != "Москва" {
+				t.Fatalf("unexpected group dictionaries: %+v", in)
+			}
 			return &models.AdGroup{ID: 5}, nil
 		})
 
-	createGroupReq := httptest.NewRequest(http.MethodPost, "/ad_campaigns/10/ad_groups", bytes.NewBufferString(`{"topic_id":1,"region_id":2,"name":"g","age_from":18,"age_to":25,"gender":"any"}`))
+	createGroupReq := httptest.NewRequest(http.MethodPost, "/ad_campaigns/10/ad_groups", bytes.NewBufferString(`{"topic":"Авто","region":"Москва","name":"g","age_from":18,"age_to":25,"gender":"any"}`))
 	createGroupReq.AddCookie(sess)
 	createGroupReq.AddCookie(csrf)
 	createGroupReq.Header.Set("X-CSRF-Token", csrf.Value)

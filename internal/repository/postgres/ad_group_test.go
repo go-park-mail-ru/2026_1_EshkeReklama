@@ -36,8 +36,8 @@ func TestAdGroupRepository_CRUD(t *testing.T) {
 	now := time.Now()
 	mock.ExpectQuery(regexp.QuoteMeta(selectAdGroupByID)).
 		WithArgs(5).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "ad_campaign_id", "topic_id", "region_id", "name", "age_from", "age_to", "gender", "created_at", "updated_at"}).
-			AddRow(5, 1, 2, 3, "g", 18, 25, "any", now, sql.NullTime{}),
+		WillReturnRows(sqlmock.NewRows([]string{"id", "ad_campaign_id", "topic_id", "region_id", "topic", "region", "name", "age_from", "age_to", "gender", "created_at", "updated_at"}).
+			AddRow(5, 1, 2, 3, "Авто", "Москва", "g", 18, 25, "any", now, sql.NullTime{}),
 		)
 
 	got, err := repo.GetByID(context.Background(), 5)
@@ -50,8 +50,8 @@ func TestAdGroupRepository_CRUD(t *testing.T) {
 
 	mock.ExpectQuery(regexp.QuoteMeta(selectAdGroupsByCampaignID)).
 		WithArgs(1).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "ad_campaign_id", "topic_id", "region_id", "name", "age_from", "age_to", "gender", "created_at", "updated_at"}).
-			AddRow(5, 1, 2, 3, "g", 18, 25, "any", now, sql.NullTime{}),
+		WillReturnRows(sqlmock.NewRows([]string{"id", "ad_campaign_id", "topic_id", "region_id", "topic", "region", "name", "age_from", "age_to", "gender", "created_at", "updated_at"}).
+			AddRow(5, 1, 2, 3, "Авто", "Москва", "g", 18, 25, "any", now, sql.NullTime{}),
 		)
 
 	list, err := repo.ListByCampaignID(context.Background(), 1)

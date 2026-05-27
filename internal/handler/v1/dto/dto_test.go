@@ -46,9 +46,9 @@ func TestAdvertiserToProfile_NilAndNonNil(t *testing.T) {
 }
 
 func TestToModel_AdGroup(t *testing.T) {
-	req := CreateAdGroupRequest{TopicID: 1, RegionID: 2, Name: "g", AgeFrom: 18, AgeTo: 25, Gender: "any"}
+	req := CreateAdGroupRequest{Topic: "Авто", Region: "Москва", Name: "g", AgeFrom: 18, AgeTo: 25, Gender: "any"}
 	in := req.ToInput(10)
-	if in.AdCampaignID != 10 || in.TopicID != 1 || in.Gender != "any" {
+	if in.AdCampaignID != 10 || in.Topic != "Авто" || in.Gender != "any" {
 		t.Fatalf("unexpected input: %+v", in)
 	}
 }
@@ -70,15 +70,15 @@ func TestToListAdCampaignsResponse(t *testing.T) {
 }
 
 func TestToAdGroupResponse(t *testing.T) {
-	g := &models.AdGroup{ID: 1, TopicID: 2, RegionID: 3, Name: "n", AgeFrom: 1, AgeTo: 2, Gender: "any"}
+	g := &models.AdGroup{ID: 1, TopicID: 2, RegionID: 3, Topic: "Авто", Region: "Москва", Name: "n", AgeFrom: 1, AgeTo: 2, Gender: "any"}
 	resp := ToAdGroupResponse(g)
-	if resp.ID != 1 || resp.TopicID != 2 {
+	if resp.ID != 1 || resp.Topic != "Авто" {
 		t.Fatalf("unexpected resp: %+v", resp)
 	}
 }
 
 func TestToListAdGroupsResponse(t *testing.T) {
-	groups := []*models.AdGroup{{ID: 1, TopicID: 2}}
+	groups := []*models.AdGroup{{ID: 1, Topic: "Авто"}}
 	resp := ToListAdGroupsResponse(9, groups)
 	if resp.AdCampaignID != 9 || len(resp.Groups) != 1 || resp.Groups[0].ID != 1 {
 		t.Fatalf("unexpected list groups response: %+v", resp)

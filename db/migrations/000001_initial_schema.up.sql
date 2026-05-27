@@ -24,8 +24,8 @@ CREATE TABLE eshkere.region (
     name    TEXT    NOT NULL UNIQUE
 );
 
-INSERT INTO eshkere.topic (name) VALUES ('any');
-INSERT INTO eshkere.region (name) VALUES ('any');
+INSERT INTO eshkere.topic (name) VALUES ('Любой');
+INSERT INTO eshkere.region (name) VALUES ('Любой');
 
 CREATE TABLE eshkere.advertiser (
     id              INT                         PRIMARY KEY GENERATED ALWAYS AS IDENTITY,

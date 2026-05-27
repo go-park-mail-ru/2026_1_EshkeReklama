@@ -3489,11 +3489,11 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "region_id": {
-                    "type": "integer"
+                "region": {
+                    "type": "string"
                 },
-                "topic_id": {
-                    "type": "integer"
+                "topic": {
+                    "type": "string"
                 }
             }
         },
@@ -3740,8 +3740,8 @@ const docTemplate = `{
                 "age_to",
                 "gender",
                 "name",
-                "region_id",
-                "topic_id"
+                "region",
+                "topic"
             ],
             "properties": {
                 "age_from": {
@@ -3753,19 +3753,19 @@ const docTemplate = `{
                 "gender": {
                     "type": "string",
                     "enum": [
-                        "male",
-                        "female",
+                        "man",
+                        "woman",
                         "any"
                     ]
                 },
                 "name": {
                     "type": "string"
                 },
-                "region_id": {
-                    "type": "integer"
+                "region": {
+                    "type": "string"
                 },
-                "topic_id": {
-                    "type": "integer"
+                "topic": {
+                    "type": "string"
                 }
             }
         },
@@ -4568,8 +4568,8 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 1,
                     "enum": [
-                        "male",
-                        "female",
+                        "man",
+                        "woman",
                         "any"
                     ]
                 },
@@ -4577,13 +4577,13 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 1
                 },
-                "region_id": {
-                    "type": "integer",
-                    "minimum": 1
+                "region": {
+                    "type": "string",
+                    "minLength": 1
                 },
-                "topic_id": {
-                    "type": "integer",
-                    "minimum": 1
+                "topic": {
+                    "type": "string",
+                    "minLength": 1
                 }
             }
         },

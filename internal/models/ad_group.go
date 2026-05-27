@@ -18,6 +18,8 @@ type AdGroup struct {
 	AdCampaignID int          `db:"ad_campaign_id"`
 	TopicID      int          `db:"topic_id"`
 	RegionID     int          `db:"region_id"`
+	Topic        string       `db:"topic"`
+	Region       string       `db:"region"`
 	Name         string       `db:"name"`
 	AgeFrom      int          `db:"age_from"`
 	AgeTo        int          `db:"age_to"`

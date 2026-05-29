@@ -6,13 +6,15 @@ import (
 )
 
 type UpdateAdStatusRequest struct {
-	Status string `json:"status" validate:"required,oneof=approve disapprove"`
+	Status  string `json:"status" validate:"required,oneof=approve disapprove"`
+	Message string `json:"message" validate:"omitempty,max=2000"`
 }
 
 func (r *UpdateAdStatusRequest) ToInput(adID int) *serviceinput.UpdateAdStatus {
 	return &serviceinput.UpdateAdStatus{
 		AdID:     adID,
 		Decision: serviceinput.AdModerationDecision(r.Status),
+		Message:  r.Message,
 	}
 }
 

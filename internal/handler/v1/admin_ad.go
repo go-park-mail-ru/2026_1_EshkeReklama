@@ -22,6 +22,7 @@ func (a *API) RegisterAdminHandlers(r *mux.Router) {
 	admins.HandleFunc("/ads/{ad_id}/status", a.UpdateAdStatus).Methods(http.MethodPatch)
 	admins.HandleFunc("/ads", a.ListAdminAds).Methods(http.MethodGet)
 
+	a.RegisterAdminSupportHandlers(r)
 }
 
 // GetAdminAdByID возвращает объявление для просмотра администратором.

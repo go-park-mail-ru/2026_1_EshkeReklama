@@ -23,6 +23,7 @@ import (
 	"eshkere/internal/repository/postgres"
 	redisrepo "eshkere/internal/repository/redis"
 	"eshkere/internal/service"
+	"eshkere/internal/ws"
 	"eshkere/internal/yookassa"
 
 	s3 "eshkere/internal/storage/s3"
@@ -44,6 +45,7 @@ type App struct {
 	passwordResetStore     *redisrepo.PasswordResetStore
 	credentialsManager     *authsvc.CredentialsService
 	notificationDedupe     *redisrepo.NotificationDedupeStore
+	supportHub             *ws.SupportHub
 }
 
 func New(configPath string) *App {
@@ -92,11 +94,14 @@ func New(configPath string) *App {
 	adCampaignRepo := postgres.NewAdCampaignRepository(db)
 	feedLinkRepo := postgres.NewFeedLinkRepository(db)
 	appealRepo := postgres.NewAppealRepository(db)
+	supportRepo := postgres.NewSupportRepository(db)
 	topicRepo := postgres.NewTopicRepository(db)
 	regionRepo := postgres.NewRegionRepository(db)
 	adRequestStore := redisrepo.NewAdRequestStore(redisPool)
 	notificationDedupe := redisrepo.NewNotificationDedupeStore(redisPool)
 	aiImageGenerationStore := redisrepo.NewAIImageGenerationStore(redisPool)
+	supportHub := ws.NewSupportHub(redisPool)
+	closers = append(closers, supportHub)
 	var adEventPublisher service.AdEventPublisher
 	var statsReader service.StatsReader
 	if brokers := cfg.Kafka.BrokerList(); len(brokers) > 0 && cfg.Kafka.AdEventsTopic != "" {
@@ -181,6 +186,8 @@ func New(configPath string) *App {
 		AdRepo:                   adRepo,
 		FeedLinkRepo:             feedLinkRepo,
 		AppealRepo:               appealRepo,
+		SupportRepo:              supportRepo,
+		SupportBroadcaster:       supportHub,
 		AvatarStorage:            avatarStorage,
 		AppealStorage:            appealStorage,
 		AdStorage:                adStorage,
@@ -213,6 +220,7 @@ func New(configPath string) *App {
 	}
 	closers = append(closers, pc)
 	svc.SetProfileClient(pc)
+	supportHub.Start()
 
 	return &App{
 		cfg:                    cfg,
@@ -227,6 +235,7 @@ func New(configPath string) *App {
 		passwordResetStore:     passwordResetStore,
 		credentialsManager:     credentialsManager,
 		notificationDedupe:     notificationDedupe,
+		supportHub:             supportHub,
 	}
 }
 
@@ -245,13 +254,14 @@ func (a *App) Run() error {
 		CookieName: "csrf_token",
 		HeaderName: "X-CSRF-Token",
 		Secure:     a.cfg.Session.CookieSecure,
-		SkipPaths:  []string{"/api/ad/request", "/api/webhook/yookassa"},
+		SkipPaths:  []string{"/api/ad/request", "/api/webhook/yookassa", "/api/ws/support"},
 	}))
 
 	apiRouter := router.PathPrefix(v1.APIPrefix).Subrouter()
 	handler.Register(apiRouter, v1.NewAPI(v1.APIConfig{
 		Service:    a.service,
 		AuthClient: a.authClient,
+		SupportHub: a.supportHub,
 		CookieConfig: v1.CookieConfig{
 			Name:     a.cfg.Session.CookieName,
 			Path:     a.cfg.Session.CookiePath,

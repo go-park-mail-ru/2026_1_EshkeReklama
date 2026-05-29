@@ -225,7 +225,11 @@ func (s *Service) UpdateAdModerationStatus(ctx context.Context, in *serviceinput
 		return err
 	}
 
-	return s.recalculateCampaignStatus(ctx, campaign.ID)
+	if err := s.recalculateCampaignStatus(ctx, campaign.ID); err != nil {
+		return err
+	}
+
+	return s.createModeratorMessageForCampaign(ctx, campaign.ID, campaign.AdvertiserID, in.Message)
 }
 
 func (s *Service) canStartAd(ctx context.Context, campaign *models.AdCampaign) bool {

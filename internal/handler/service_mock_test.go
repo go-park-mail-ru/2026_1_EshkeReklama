@@ -893,3 +893,94 @@ func (mr *MockServiceMockRecorder) GetPartnerIncomeStats(ctx, partnerID, from, t
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPartnerIncomeStats", reflect.TypeOf((*MockService)(nil).GetPartnerIncomeStats), ctx, partnerID, from, to)
 }
+
+func (m *MockService) GetSupportThreadByCampaign(ctx context.Context, advertiserID, campaignID int) (*models.SupportThread, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSupportThreadByCampaign", ctx, advertiserID, campaignID)
+	ret0, _ := ret[0].(*models.SupportThread)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (mr *MockServiceMockRecorder) GetSupportThreadByCampaign(ctx, advertiserID, campaignID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupportThreadByCampaign", reflect.TypeOf((*MockService)(nil).GetSupportThreadByCampaign), ctx, advertiserID, campaignID)
+}
+
+func (m *MockService) GetSupportThread(ctx context.Context, threadID int) (*models.SupportThread, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSupportThread", ctx, threadID)
+	ret0, _ := ret[0].(*models.SupportThread)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (mr *MockServiceMockRecorder) GetSupportThread(ctx, threadID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupportThread", reflect.TypeOf((*MockService)(nil).GetSupportThread), ctx, threadID)
+}
+
+func (m *MockService) ListSupportMessages(ctx context.Context, advertiserID, threadID, limit int, beforeID *int) ([]*models.SupportMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListSupportMessages", ctx, advertiserID, threadID, limit, beforeID)
+	ret0, _ := ret[0].([]*models.SupportMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (mr *MockServiceMockRecorder) ListSupportMessages(ctx, advertiserID, threadID, limit, beforeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSupportMessages", reflect.TypeOf((*MockService)(nil).ListSupportMessages), ctx, advertiserID, threadID, limit, beforeID)
+}
+
+func (m *MockService) CreateSupportMessage(ctx context.Context, advertiserID, threadID int, text string) (*models.SupportMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSupportMessage", ctx, advertiserID, threadID, text)
+	ret0, _ := ret[0].(*models.SupportMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (mr *MockServiceMockRecorder) CreateSupportMessage(ctx, advertiserID, threadID, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSupportMessage", reflect.TypeOf((*MockService)(nil).CreateSupportMessage), ctx, advertiserID, threadID, text)
+}
+
+func (m *MockService) ListAdminSupportThreads(ctx context.Context) ([]*models.SupportThreadSummary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAdminSupportThreads", ctx)
+	ret0, _ := ret[0].([]*models.SupportThreadSummary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (mr *MockServiceMockRecorder) ListAdminSupportThreads(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAdminSupportThreads", reflect.TypeOf((*MockService)(nil).ListAdminSupportThreads), ctx)
+}
+
+func (m *MockService) ListAdminSupportMessages(ctx context.Context, threadID, limit int, beforeID *int) ([]*models.SupportMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAdminSupportMessages", ctx, threadID, limit, beforeID)
+	ret0, _ := ret[0].([]*models.SupportMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (mr *MockServiceMockRecorder) ListAdminSupportMessages(ctx, threadID, limit, beforeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAdminSupportMessages", reflect.TypeOf((*MockService)(nil).ListAdminSupportMessages), ctx, threadID, limit, beforeID)
+}
+
+func (m *MockService) CreateAdminSupportMessage(ctx context.Context, adminID, threadID int, text string) (*models.SupportMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateAdminSupportMessage", ctx, adminID, threadID, text)
+	ret0, _ := ret[0].(*models.SupportMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (mr *MockServiceMockRecorder) CreateAdminSupportMessage(ctx, adminID, threadID, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAdminSupportMessage", reflect.TypeOf((*MockService)(nil).CreateAdminSupportMessage), ctx, adminID, threadID, text)
+}

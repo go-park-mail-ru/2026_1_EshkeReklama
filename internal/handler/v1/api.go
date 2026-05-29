@@ -72,6 +72,14 @@ type Service interface {
 	DeleteAd(ctx context.Context, advertiserID, adID int) error
 	GetAdStats(ctx context.Context, advertiserID, campaignID, groupID, adID int, from, to time.Time) (*service.AdStats, error)
 
+	GetSupportThreadByCampaign(ctx context.Context, advertiserID, campaignID int) (*models.SupportThread, error)
+	GetSupportThread(ctx context.Context, threadID int) (*models.SupportThread, error)
+	ListSupportMessages(ctx context.Context, advertiserID, threadID, limit int, beforeID *int) ([]*models.SupportMessage, error)
+	CreateSupportMessage(ctx context.Context, advertiserID, threadID int, text string) (*models.SupportMessage, error)
+	ListAdminSupportThreads(ctx context.Context) ([]*models.SupportThreadSummary, error)
+	ListAdminSupportMessages(ctx context.Context, threadID, limit int, beforeID *int) ([]*models.SupportMessage, error)
+	CreateAdminSupportMessage(ctx context.Context, adminID, threadID int, text string) (*models.SupportMessage, error)
+
 	CreateAppeal(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error)
 	ListAppeals(ctx context.Context, advertiserID int) ([]*models.Appeal, error)
 	GetAppealByID(ctx context.Context, appealID int) (*models.Appeal, error)
@@ -134,6 +142,7 @@ type CredentialsManager interface {
 type APIConfig struct {
 	AuthClient              AuthClient
 	Service                 Service
+	SupportHub              wsSubscriber
 	CookieConfig            CookieConfig
 	VerificationStore       VerificationStore
 	VerificationEmailSender EmailSender
@@ -146,6 +155,7 @@ type APIConfig struct {
 type API struct {
 	authClient              AuthClient
 	service                 Service
+	supportHub              wsSubscriber
 	cookieConfig            CookieConfig
 	verificationStore       VerificationStore
 	verificationEmailSender EmailSender
@@ -161,6 +171,7 @@ func NewAPI(config APIConfig) *API {
 	return &API{
 		authClient:              config.AuthClient,
 		service:                 config.Service,
+		supportHub:              config.SupportHub,
 		cookieConfig:            config.CookieConfig,
 		verificationStore:       config.VerificationStore,
 		verificationEmailSender: config.VerificationEmailSender,
@@ -189,4 +200,6 @@ func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterAdminHandlers(r)
 	a.RegisterFeedHandlers(r)
 	a.RegisterAppealHandlers(r)
+	a.RegisterSupportHandlers(r)
+	a.RegisterSupportWSHandler(r)
 }

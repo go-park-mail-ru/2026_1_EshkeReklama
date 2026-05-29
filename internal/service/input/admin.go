@@ -10,4 +10,5 @@ const (
 type UpdateAdStatus struct {
 	AdID     int
 	Decision AdModerationDecision
+	Message  string
 }

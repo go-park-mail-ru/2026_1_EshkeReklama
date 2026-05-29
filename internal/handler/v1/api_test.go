@@ -569,6 +569,34 @@ func (s *stubService) GetAdStats(ctx context.Context, advertiserID, campaignID, 
 	return &service.AdStats{}, nil
 }
 
+func (s *stubService) GetSupportThreadByCampaign(context.Context, int, int) (*models.SupportThread, error) {
+	return nil, nil
+}
+
+func (s *stubService) GetSupportThread(context.Context, int) (*models.SupportThread, error) {
+	return nil, nil
+}
+
+func (s *stubService) ListSupportMessages(context.Context, int, int, int, *int) ([]*models.SupportMessage, error) {
+	return nil, nil
+}
+
+func (s *stubService) CreateSupportMessage(context.Context, int, int, string) (*models.SupportMessage, error) {
+	return nil, nil
+}
+
+func (s *stubService) ListAdminSupportThreads(context.Context) ([]*models.SupportThreadSummary, error) {
+	return nil, nil
+}
+
+func (s *stubService) ListAdminSupportMessages(context.Context, int, int, *int) ([]*models.SupportMessage, error) {
+	return nil, nil
+}
+
+func (s *stubService) CreateAdminSupportMessage(context.Context, int, int, string) (*models.SupportMessage, error) {
+	return nil, nil
+}
+
 func (s *stubService) CreateAppeal(ctx context.Context, in *serviceinput.CreateAppeal) (*models.Appeal, error) {
 	if s.createAppealFn != nil {
 		return s.createAppealFn(ctx, in)

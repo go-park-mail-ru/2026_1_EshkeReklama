@@ -150,6 +150,19 @@ type AppealRepository interface {
 	UpdateImage(ctx context.Context, appealID int, imageKey string) error
 }
 
+type SupportRepository interface {
+	CreateThread(ctx context.Context, thread *models.SupportThread) error
+	GetThreadByID(ctx context.Context, threadID int) (*models.SupportThread, error)
+	GetThreadByCampaignID(ctx context.Context, campaignID int) (*models.SupportThread, error)
+	ListMessages(ctx context.Context, threadID, limit int, beforeID *int) ([]*models.SupportMessage, error)
+	CreateMessage(ctx context.Context, msg *models.SupportMessage) error
+	ListThreads(ctx context.Context) ([]*models.SupportThreadSummary, error)
+}
+
+type SupportBroadcaster interface {
+	Broadcast(ctx context.Context, threadID int, msg *models.SupportMessage) error
+}
+
 type TopicScore struct {
 	TopicID int
 	Score   float64
@@ -326,6 +339,8 @@ type Config struct {
 	TopicRepo                TopicRepository
 	RegionRepo               RegionRepository
 	AppealRepo               AppealRepository
+	SupportRepo              SupportRepository
+	SupportBroadcaster       SupportBroadcaster
 	ProfileClient            ProfileClient
 	AdRequestStore           AdRequestStore
 	AdEventPublisher         AdEventPublisher
@@ -356,6 +371,8 @@ type Service struct {
 	topicRepo                TopicRepository
 	regionRepo               RegionRepository
 	appealRepo               AppealRepository
+	supportRepo              SupportRepository
+	supportBroadcaster       SupportBroadcaster
 	profileClient            ProfileClient
 	adRequestStore           AdRequestStore
 	adEventPublisher         AdEventPublisher
@@ -391,6 +408,8 @@ func NewService(cfg *Config) (*Service, error) {
 		topicRepo:                cfg.TopicRepo,
 		regionRepo:               cfg.RegionRepo,
 		appealRepo:               cfg.AppealRepo,
+		supportRepo:              cfg.SupportRepo,
+		supportBroadcaster:       cfg.SupportBroadcaster,
 		profileClient:            cfg.ProfileClient,
 		adRequestStore:           cfg.AdRequestStore,
 		adEventPublisher:         cfg.AdEventPublisher,

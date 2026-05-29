@@ -38,6 +38,8 @@ func easyjsonAcbdbae7DecodeEshkereInternalHandlerV1Dto(in *jlexer.Lexer, out *Up
 		switch key {
 		case "status":
 			out.Status = string(in.String())
+		case "message":
+			out.Message = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -56,6 +58,11 @@ func easyjsonAcbdbae7EncodeEshkereInternalHandlerV1Dto(out *jwriter.Writer, in U
 		const prefix string = ",\"status\":"
 		out.RawString(prefix[1:])
 		out.String(string(in.Status))
+	}
+	if in.Message != "" {
+		const prefix string = ",\"message\":"
+		out.RawString(prefix)
+		out.String(string(in.Message))
 	}
 	out.RawByte('}')
 }

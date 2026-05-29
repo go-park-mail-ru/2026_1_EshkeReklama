@@ -26,6 +26,25 @@ func TestBuildGenerateAdTextPrompt(t *testing.T) {
 	if !strings.Contains(prompt.Messages[1].Content, "деловой, уверенный, ясный") {
 		t.Fatalf("tone normalization missing in user prompt: %s", prompt.Messages[1].Content)
 	}
+	if !strings.Contains(prompt.Messages[0].Content, "для товаров, услуг, заведений и digital-продуктов") {
+		t.Fatalf("system prompt should be general-purpose: %s", prompt.Messages[0].Content)
+	}
+}
+
+func TestBuildGenerateAdTextPrompt_WithoutProductName(t *testing.T) {
+	prompt := BuildGenerateAdTextPrompt(GenerateAdTextInput{
+		ProductDescription: "Уютная кофейня на набережной с завтраками и кофе навынос",
+		Tone:               "friendly",
+		HeadlineMaxLen:     60,
+		BodyMaxLen:         150,
+	})
+
+	if !strings.Contains(prompt.Messages[1].Content, "Название продукта: не указано") {
+		t.Fatalf("missing fallback product name: %s", prompt.Messages[1].Content)
+	}
+	if !strings.Contains(prompt.Messages[1].Content, "Описание товара или услуги: Уютная кофейня") {
+		t.Fatalf("missing product description label: %s", prompt.Messages[1].Content)
+	}
 }
 
 func TestBuildGenerateAdVariantsPrompt(t *testing.T) {
@@ -43,6 +62,9 @@ func TestBuildGenerateAdVariantsPrompt(t *testing.T) {
 	}
 	if !strings.Contains(prompt.Messages[1].Content, "дружелюбный, тёплый, простой") {
 		t.Fatalf("friendly tone normalization missing: %s", prompt.Messages[1].Content)
+	}
+	if !strings.Contains(prompt.Messages[0].Content, "для товаров, услуг, заведений и digital-продуктов") {
+		t.Fatalf("variants system prompt should be general-purpose: %s", prompt.Messages[0].Content)
 	}
 }
 

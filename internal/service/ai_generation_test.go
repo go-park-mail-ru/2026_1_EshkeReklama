@@ -120,6 +120,55 @@ func TestGenerateAdVariants_OK(t *testing.T) {
 	}
 }
 
+func TestGenerateAdText_WithoutProductName_OK(t *testing.T) {
+	called := false
+	svc, err := NewService(&Config{
+		AdvertiserRepo: &aiTestAdvertiserRepo{
+			advertiser: &models.Advertiser{
+				ID:              2,
+				Tariff:          models.TariffTypePro,
+				TariffExpiresAt: sql.NullTime{Time: time.Now().Add(24 * time.Hour), Valid: true},
+			},
+		},
+		AIProvider: &aiTestProvider{
+			textFn: func(_ context.Context, in GenerateAdTextInput) (*GeneratedAdText, error) {
+				called = true
+				if in.ProductName != "" {
+					t.Fatalf("expected empty product name to be allowed, got %q", in.ProductName)
+				}
+				if in.ProductDescription == "" {
+					t.Fatal("expected product description to be passed through")
+				}
+				return &GeneratedAdText{
+					Headline: " Уютная кофейня у воды ",
+					Body:     " Свежий кофе и завтраки на набережной каждый день. ",
+				}, nil
+			},
+			variantsFn: func(context.Context, GenerateAdVariantsInput) (*GeneratedAdVariants, error) { return nil, nil },
+			imageFn:    func(context.Context, GenerateAdImageInput) (*GeneratedAdImage, error) { return nil, nil },
+		},
+	})
+	if err != nil {
+		t.Fatalf("new service: %v", err)
+	}
+
+	out, err := svc.GenerateAdText(context.Background(), 2, GenerateAdTextInput{
+		ProductDescription: "Уютная кофейня на набережной со свежей выпечкой",
+		Tone:               "friendly",
+		HeadlineMaxLen:     60,
+		BodyMaxLen:         150,
+	})
+	if err != nil {
+		t.Fatalf("generate ad text: %v", err)
+	}
+	if !called {
+		t.Fatal("expected provider to be called")
+	}
+	if out.Headline != "Уютная кофейня у воды" || out.Body == "" {
+		t.Fatalf("unexpected output: %+v", out)
+	}
+}
+
 func TestGenerateAdImage_LimitExceeded(t *testing.T) {
 	store := &aiTestImageGenerationStore{attempt: 4}
 	svc, err := NewService(&Config{

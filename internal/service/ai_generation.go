@@ -98,17 +98,14 @@ func (s *Service) GenerateAdImage(ctx context.Context, advertiserID int, in Gene
 }
 
 func validateGenerateAdTextInput(in GenerateAdTextInput) error {
-	if strings.TrimSpace(in.ProductName) == "" {
-		return fmt.Errorf("%w: product name is required", errs.ErrInvalidAdvertiserArg)
-	}
 	if strings.TrimSpace(in.ProductDescription) == "" {
 		return fmt.Errorf("%w: product description is required", errs.ErrInvalidAdvertiserArg)
 	}
 	if in.HeadlineMaxLen <= 0 || in.HeadlineMaxLen > 120 {
 		return fmt.Errorf("%w: headline max len must be between 1 and 120", errs.ErrInvalidAdvertiserArg)
 	}
-	if in.BodyMaxLen <= 0 || in.BodyMaxLen > 500 {
-		return fmt.Errorf("%w: body max len must be between 1 and 500", errs.ErrInvalidAdvertiserArg)
+	if in.BodyMaxLen <= 0 || in.BodyMaxLen > 150 {
+		return fmt.Errorf("%w: body max len must be between 1 and 150", errs.ErrInvalidAdvertiserArg)
 	}
 	return nil
 }

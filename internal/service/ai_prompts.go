@@ -16,8 +16,12 @@ type AIPromptSet struct {
 
 func BuildGenerateAdTextPrompt(in GenerateAdTextInput) AIPromptSet {
 	in = normalizeGenerateAdTextInput(in)
+	productName := strings.TrimSpace(in.ProductName)
+	if productName == "" {
+		productName = "не указано"
+	}
 
-	system := `Ты опытный рекламный копирайтер для digital-рекламы. Твоя задача — создавать короткие, понятные и убедительные рекламные объявления на русском языке.
+	system := `Ты опытный рекламный копирайтер. Твоя задача — создавать короткие, понятные и убедительные рекламные объявления на русском языке для товаров, услуг, заведений и digital-продуктов.
 
 Правила:
 - Пиши только на русском языке.
@@ -26,6 +30,9 @@ func BuildGenerateAdTextPrompt(in GenerateAdTextInput) AIPromptSet {
 - Не используй запрещённые или сомнительные формулировки: "лучший", "гарантированно", "100%", "навсегда", если этого нет во входе.
 - Заголовок должен быть коротким, цепким и ясным.
 - Описание должно объяснять пользу продукта простым языком.
+- Если рекламируется физическое место, заведение или офлайн-услуга, делай акцент на атмосфере, удобстве, впечатлении и реальной ценности для посетителя.
+- Если рекламируется товар, делай акцент на пользе, особенностях применения и понятном результате для клиента.
+- Если рекламируется digital-продукт или сервис, делай акцент на выгоде, удобстве, экономии времени, росте эффективности или понятном результате.
 - Не добавляй лишние пояснения, комментарии, markdown или кавычки вокруг всего ответа.
 - Верни результат строго в JSON-формате с полями:
   {
@@ -40,7 +47,7 @@ func BuildGenerateAdTextPrompt(in GenerateAdTextInput) AIPromptSet {
 
 Данные о продукте:
 Название продукта: %s
-Описание продукта: %s
+Описание товара или услуги: %s
 Тон: %s
 
 Ограничения:
@@ -54,7 +61,7 @@ func BuildGenerateAdTextPrompt(in GenerateAdTextInput) AIPromptSet {
 - без ложных обещаний
 - без эмодзи
 - без HTML`,
-		in.ProductName,
+		productName,
 		in.ProductDescription,
 		normalizeToneDescription(in.Tone),
 		in.HeadlineMaxLen,
@@ -71,8 +78,12 @@ func BuildGenerateAdTextPrompt(in GenerateAdTextInput) AIPromptSet {
 
 func BuildGenerateAdVariantsPrompt(in GenerateAdVariantsInput) AIPromptSet {
 	in = normalizeGenerateAdVariantsInput(in)
+	productName := strings.TrimSpace(in.ProductName)
+	if productName == "" {
+		productName = "не указано"
+	}
 
-	system := `Ты опытный рекламный копирайтер для A/B тестов в digital-рекламе. Твоя задача — создавать несколько разных рекламных вариантов для одного и того же продукта на русском языке.
+	system := `Ты опытный рекламный копирайтер для A/B тестов. Твоя задача — создавать несколько разных рекламных вариантов на русском языке для товаров, услуг, заведений и digital-продуктов.
 
 Правила:
 - Пиши только на русском языке.
@@ -82,6 +93,8 @@ func BuildGenerateAdVariantsPrompt(in GenerateAdVariantsInput) AIPromptSet {
 - Каждый вариант должен состоять из headline и body.
 - Заголовки должны быть короткими и разными по подаче.
 - Описания должны быть ясными и ориентированными на выгоду.
+- Если рекламируется физическое место, заведение или офлайн-услуга, допускай более атмосферную и жизненную подачу без выдуманных деталей.
+- Если рекламируется товар или digital-продукт, делай варианты разными по углу подачи: выгода, удобство, результат, простота, экономия времени.
 - Не добавляй комментарии, пояснения, markdown и ничего вне JSON.
 - Верни результат строго в JSON-формате:
   {
@@ -97,7 +110,7 @@ func BuildGenerateAdVariantsPrompt(in GenerateAdVariantsInput) AIPromptSet {
 
 Данные о продукте:
 Название продукта: %s
-Описание продукта: %s
+Описание товара или услуги: %s
 Тон: %s
 
 Ограничения:
@@ -111,7 +124,7 @@ func BuildGenerateAdVariantsPrompt(in GenerateAdVariantsInput) AIPromptSet {
 - без эмодзи
 - без HTML`,
 		in.Count,
-		in.ProductName,
+		productName,
 		in.ProductDescription,
 		normalizeToneDescription(in.Tone),
 		in.HeadlineMaxLen,

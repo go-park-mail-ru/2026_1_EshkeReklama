@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -51,8 +50,6 @@ func TestOpenAITextProviderGenerateAdText(t *testing.T) {
 }
 
 func TestNanoBananaImageProviderGenerateAdImage(t *testing.T) {
-	createCalls := 0
-	statusCalls := 0
 	provider := NewNanoBananaImageProvider(NanoBananaImageProviderConfig{
 		APIKey:       "test-nanobanana-key",
 		BaseURL:      "https://nanobanana.test",
@@ -63,7 +60,6 @@ func TestNanoBananaImageProviderGenerateAdImage(t *testing.T) {
 	provider.httpClient = &http.Client{Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
 		switch {
 		case r.Method == http.MethodPost && r.URL.Path == "/api/v1/nanobanana/generate":
-			createCalls++
 			if got := r.Header.Get("Authorization"); got != "Bearer test-nanobanana-key" {
 				t.Fatalf("unexpected auth header: %s", got)
 			}
@@ -87,19 +83,17 @@ func TestNanoBananaImageProviderGenerateAdImage(t *testing.T) {
 			if payload.CallbackURL != "https://example.com/callback" {
 				t.Fatalf("unexpected callback url: %s", payload.CallbackURL)
 			}
-			return jsonResponse(http.StatusOK, `{"code":200,"msg":"success","data":{"taskId":"task-`+strconv.Itoa(createCalls)+`"}}`), nil
+			return jsonResponse(http.StatusOK, `{"code":200,"msg":"success","data":{"taskId":"task-1"}}`), nil
 		case r.Method == http.MethodGet && r.URL.Path == "/api/v1/nanobanana/record-info":
-			statusCalls++
-			taskID := r.URL.Query().Get("taskId")
 			return jsonResponse(http.StatusOK, `{
 				"code":200,
 				"msg":"success",
 				"data":{
-					"taskId":"`+taskID+`",
+					"taskId":"task-1",
 					"successFlag":1,
 					"errorCode":0,
 					"errorMessage":"",
-					"response":{"resultImageUrl":"https://cdn.example.com/generated-`+strconv.Itoa(statusCalls)+`.jpg"}
+					"response":{"resultImageUrl":"https://cdn.example.com/generated-1.jpg"}
 				}
 			}`), nil
 		default:
@@ -109,22 +103,19 @@ func TestNanoBananaImageProviderGenerateAdImage(t *testing.T) {
 	})}
 
 	out, err := provider.GenerateAdImage(context.Background(), GenerateAdImageInput{
-		Prompt: "Платформа аналитики",
-		Style:  "clean",
-		Format: "feed",
-		Count:  3,
+		Prompt:        "Платформа аналитики",
+		Style:         "clean",
+		Format:        "feed",
+		GenerationKey: "draft-1",
 	})
 	if err != nil {
 		t.Fatalf("generate ad image: %v", err)
 	}
-	if len(out.Images) != 3 {
+	if len(out.Images) != 1 {
 		t.Fatalf("expected 3 images, got %+v", out.Images)
 	}
 	if out.Images[0].ImageURL != "https://cdn.example.com/generated-1.jpg" {
 		t.Fatalf("unexpected first image: %+v", out.Images)
-	}
-	if createCalls != 3 || statusCalls != 3 {
-		t.Fatalf("expected 3 create and 3 status calls, got create=%d status=%d", createCalls, statusCalls)
 	}
 }
 

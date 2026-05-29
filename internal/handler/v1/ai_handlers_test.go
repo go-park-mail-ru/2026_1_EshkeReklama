@@ -119,7 +119,7 @@ func TestGenerateAdImage_OK(t *testing.T) {
 		"prompt":"Светлый баннер с ноутбуком и графиком роста",
 		"style":"clean",
 		"format":"feed",
-		"count":3
+		"generation_key":"draft-1"
 	}`))
 	req.AddCookie(csrf)
 	req.AddCookie(session)

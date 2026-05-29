@@ -96,6 +96,7 @@ func New(configPath string) *App {
 	regionRepo := postgres.NewRegionRepository(db)
 	adRequestStore := redisrepo.NewAdRequestStore(redisPool)
 	notificationDedupe := redisrepo.NewNotificationDedupeStore(redisPool)
+	aiImageGenerationStore := redisrepo.NewAIImageGenerationStore(redisPool)
 	var adEventPublisher service.AdEventPublisher
 	var statsReader service.StatsReader
 	if brokers := cfg.Kafka.BrokerList(); len(brokers) > 0 && cfg.Kafka.AdEventsTopic != "" {
@@ -192,6 +193,7 @@ func New(configPath string) *App {
 		StatsReader:              statsReader,
 		YookassaClient:           yookassaClient,
 		AIProvider:               aiProvider,
+		AIImageGenerationStore:   aiImageGenerationStore,
 	})
 	if err != nil {
 		logger.Fatalf("Failed to init service: %v", err)

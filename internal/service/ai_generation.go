@@ -4,9 +4,12 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	errs "eshkere/internal/errors"
 )
+
+const aiImageGenerationLimitTTL = 30 * 24 * time.Hour
 
 func (s *Service) GenerateAdText(ctx context.Context, advertiserID int, in GenerateAdTextInput) (*GeneratedAdText, error) {
 	if _, err := s.RequireProActive(ctx, advertiserID); err != nil {
@@ -66,6 +69,17 @@ func (s *Service) GenerateAdImage(ctx context.Context, advertiserID int, in Gene
 	if s.aiProvider == nil {
 		return nil, fmt.Errorf("%w: ai provider is not configured", errs.NotImplementedError)
 	}
+	if s.aiImageGenerationStore != nil {
+		reserveKey := fmt.Sprintf("%d:%s", advertiserID, in.GenerationKey)
+		attempt, allowed, err := s.aiImageGenerationStore.Reserve(ctx, reserveKey, aiImageGenerationLimitTTL)
+		if err != nil {
+			return nil, err
+		}
+		if !allowed {
+			return nil, fmt.Errorf("%w: image generation limit reached, max 3 regenerations per creative", errs.ErrPlanLimitExceeded)
+		}
+		_ = attempt
+	}
 
 	out, err := s.aiProvider.GenerateAdImage(ctx, normalizeGenerateAdImageInput(in))
 	if err != nil {
@@ -119,13 +133,13 @@ func validateGenerateAdImageInput(in GenerateAdImageInput) error {
 	if strings.TrimSpace(in.Prompt) == "" {
 		return fmt.Errorf("%w: prompt is required", errs.ErrInvalidAdvertiserArg)
 	}
+	if strings.TrimSpace(in.GenerationKey) == "" {
+		return fmt.Errorf("%w: generation_key is required", errs.ErrInvalidAdvertiserArg)
+	}
 	switch strings.ToLower(strings.TrimSpace(in.Format)) {
 	case "", "feed", "stories", "story":
 	default:
 		return fmt.Errorf("%w: format must be feed or stories", errs.ErrInvalidAdvertiserArg)
-	}
-	if in.Count != 0 && (in.Count < 1 || in.Count > 3) {
-		return fmt.Errorf("%w: count must be between 1 and 3", errs.ErrInvalidAdvertiserArg)
 	}
 	return nil
 }
@@ -148,11 +162,9 @@ func normalizeGenerateAdImageInput(in GenerateAdImageInput) GenerateAdImageInput
 	in.Prompt = strings.TrimSpace(in.Prompt)
 	in.Style = strings.TrimSpace(in.Style)
 	in.Format = strings.TrimSpace(strings.ToLower(in.Format))
+	in.GenerationKey = strings.TrimSpace(in.GenerationKey)
 	if in.Format == "story" {
 		in.Format = "stories"
-	}
-	if in.Count <= 0 {
-		in.Count = 3
 	}
 	return in
 }

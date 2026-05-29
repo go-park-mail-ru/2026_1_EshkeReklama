@@ -41,17 +41,17 @@ func (r GenerateAdVariantsRequest) ToInput() service.GenerateAdVariantsInput {
 }
 
 type GenerateAdImageRequest struct {
-	Prompt string `json:"prompt"`
-	Style  string `json:"style"`
-	Format string `json:"format"`
-	Count  int    `json:"count"`
+	Prompt        string `json:"prompt"`
+	Style         string `json:"style"`
+	Format        string `json:"format"`
+	GenerationKey string `json:"generation_key"`
 }
 
 func (r GenerateAdImageRequest) ToInput() service.GenerateAdImageInput {
 	return service.GenerateAdImageInput{
-		Prompt: r.Prompt,
-		Style:  r.Style,
-		Format: r.Format,
-		Count:  r.Count,
+		Prompt:        r.Prompt,
+		Style:         r.Style,
+		Format:        r.Format,
+		GenerationKey: r.GenerationKey,
 	}
 }

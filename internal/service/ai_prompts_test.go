@@ -48,8 +48,9 @@ func TestBuildGenerateAdVariantsPrompt(t *testing.T) {
 
 func TestBuildGenerateAdImagePrompt(t *testing.T) {
 	prompt := BuildGenerateAdImagePrompt(GenerateAdImageInput{
-		Prompt: "Платформа для аналитики рекламы",
-		Format: "feed",
+		Prompt:        "Платформа для аналитики рекламы",
+		Format:        "feed",
+		GenerationKey: "draft-1",
 	})
 
 	if !strings.Contains(prompt.Messages[1].Content, "Платформа для аналитики рекламы") {
@@ -65,10 +66,10 @@ func TestBuildGenerateAdImagePrompt(t *testing.T) {
 
 func TestBuildNanoBananaImagePrompt(t *testing.T) {
 	prompt := BuildNanoBananaImagePrompt(GenerateAdImageInput{
-		Prompt: "платформы аналитики рекламы",
-		Style:  "clean",
-		Format: "stories",
-		Count:  3,
+		Prompt:        "платформы аналитики рекламы",
+		Style:         "clean",
+		Format:        "stories",
+		GenerationKey: "draft-1",
 	})
 
 	if !strings.Contains(prompt, "9:16 vertical marketing creative for stories placement") {

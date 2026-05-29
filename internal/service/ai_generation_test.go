@@ -28,6 +28,15 @@ type aiTestProvider struct {
 	imageFn    func(ctx context.Context, in GenerateAdImageInput) (*GeneratedAdImage, error)
 }
 
+type aiTestImageGenerationStore struct {
+	attempt int
+}
+
+func (s *aiTestImageGenerationStore) Reserve(context.Context, string, time.Duration) (int, bool, error) {
+	s.attempt++
+	return s.attempt, s.attempt <= 4, nil
+}
+
 func (p *aiTestProvider) GenerateAdText(ctx context.Context, in GenerateAdTextInput) (*GeneratedAdText, error) {
 	return p.textFn(ctx, in)
 }
@@ -108,5 +117,39 @@ func TestGenerateAdVariants_OK(t *testing.T) {
 	}
 	if got := out.Variants[0].Headline; got != "Вариант 1" {
 		t.Fatalf("expected trimmed headline, got %q", got)
+	}
+}
+
+func TestGenerateAdImage_LimitExceeded(t *testing.T) {
+	store := &aiTestImageGenerationStore{attempt: 4}
+	svc, err := NewService(&Config{
+		AdvertiserRepo: &aiTestAdvertiserRepo{
+			advertiser: &models.Advertiser{
+				ID:              2,
+				Tariff:          models.TariffTypePro,
+				TariffExpiresAt: sql.NullTime{Time: time.Now().Add(24 * time.Hour), Valid: true},
+			},
+		},
+		AIProvider: &aiTestProvider{
+			imageFn: func(_ context.Context, _ GenerateAdImageInput) (*GeneratedAdImage, error) {
+				return &GeneratedAdImage{Images: []GeneratedAdImageVariant{{ImageURL: "https://example.com/1.png"}}}, nil
+			},
+			textFn:     func(context.Context, GenerateAdTextInput) (*GeneratedAdText, error) { return nil, nil },
+			variantsFn: func(context.Context, GenerateAdVariantsInput) (*GeneratedAdVariants, error) { return nil, nil },
+		},
+		AIImageGenerationStore: store,
+	})
+	if err != nil {
+		t.Fatalf("new service: %v", err)
+	}
+
+	_, err = svc.GenerateAdImage(context.Background(), 2, GenerateAdImageInput{
+		Prompt:        "CRM for gyms",
+		Style:         "clean",
+		Format:        "feed",
+		GenerationKey: "draft-1",
+	})
+	if err == nil {
+		t.Fatal("expected limit exceeded error")
 	}
 }

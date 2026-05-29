@@ -258,10 +258,10 @@ type GeneratedAdVariants struct {
 }
 
 type GenerateAdImageInput struct {
-	Prompt string
-	Style  string
-	Format string
-	Count  int
+	Prompt        string
+	Style         string
+	Format        string
+	GenerationKey string
 }
 
 type GeneratedAdImageVariant struct {
@@ -276,6 +276,10 @@ type AIProvider interface {
 	GenerateAdText(ctx context.Context, in GenerateAdTextInput) (*GeneratedAdText, error)
 	GenerateAdVariants(ctx context.Context, in GenerateAdVariantsInput) (*GeneratedAdVariants, error)
 	GenerateAdImage(ctx context.Context, in GenerateAdImageInput) (*GeneratedAdImage, error)
+}
+
+type AIImageGenerationUsageStore interface {
+	Reserve(ctx context.Context, key string, ttl time.Duration) (attempt int, allowed bool, err error)
 }
 
 type AdRequestRecord struct {
@@ -328,6 +332,7 @@ type Config struct {
 	YookassaClient           YookassaClient
 	StatsReader              StatsReader
 	AIProvider               AIProvider
+	AIImageGenerationStore   AIImageGenerationUsageStore
 }
 
 type Service struct {
@@ -357,6 +362,7 @@ type Service struct {
 	yookassaClient           YookassaClient
 	statsReader              StatsReader
 	aiProvider               AIProvider
+	aiImageGenerationStore   AIImageGenerationUsageStore
 }
 
 func NewService(cfg *Config) (*Service, error) {
@@ -391,6 +397,7 @@ func NewService(cfg *Config) (*Service, error) {
 		yookassaClient:           cfg.YookassaClient,
 		statsReader:              cfg.StatsReader,
 		aiProvider:               cfg.AIProvider,
+		aiImageGenerationStore:   cfg.AIImageGenerationStore,
 	}, nil
 }
 

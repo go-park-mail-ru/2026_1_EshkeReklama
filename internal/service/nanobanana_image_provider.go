@@ -75,49 +75,11 @@ func (p *NanoBananaImageProvider) GenerateAdImage(ctx context.Context, in Genera
 		return nil, fmt.Errorf("%w: nanobanana callback url is not configured", errs.NotImplementedError)
 	}
 
-	count := in.Count
-	if count <= 1 {
-		taskID, err := p.createTask(ctx, in)
-		if err != nil {
-			return nil, err
-		}
-		return p.waitForResult(ctx, taskID, p.pollTimeout)
+	taskID, err := p.createTask(ctx, in)
+	if err != nil {
+		return nil, err
 	}
-
-	images := make([]GeneratedAdImageVariant, count)
-	for i := 0; i < count; i++ {
-		singleInput := in
-		singleInput.Count = 1
-
-		taskID, err := p.createTask(ctx, singleInput)
-		if err != nil {
-			return nil, err
-		}
-
-		result, err := p.waitForResult(ctx, taskID, p.pollTimeout*time.Duration(count))
-		if err != nil {
-			return nil, err
-		}
-		if result == nil || len(result.Images) == 0 || strings.TrimSpace(result.Images[0].ImageURL) == "" {
-			return nil, fmt.Errorf("%w: nanobanana returned empty image", errs.InternalServiceError)
-		}
-
-		images[i] = GeneratedAdImageVariant{ImageURL: strings.TrimSpace(result.Images[0].ImageURL)}
-	}
-
-	filtered := make([]GeneratedAdImageVariant, 0, len(images))
-	for _, image := range images {
-		if strings.TrimSpace(image.ImageURL) != "" {
-			filtered = append(filtered, image)
-		}
-	}
-	if len(filtered) == 0 {
-		return nil, fmt.Errorf("%w: nanobanana returned no images", errs.InternalServiceError)
-	}
-
-	return &GeneratedAdImage{
-		Images: filtered,
-	}, nil
+	return p.waitForResult(ctx, taskID, p.pollTimeout)
 }
 
 func (p *NanoBananaImageProvider) createTask(ctx context.Context, in GenerateAdImageInput) (string, error) {

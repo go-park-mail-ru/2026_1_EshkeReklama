@@ -22,15 +22,15 @@ func NewPaymentTransactionRepository(db *sql.DB) *PaymentTransactionRepository {
 
 const (
 	insertPaymentTransaction = `INSERT INTO eshkere.payment_transaction
-		(id, advertiser_id, amount, status, created_at)
-		VALUES ($1, $2, $3, $4, NOW())`
+		(id, advertiser_id, amount, status, payment_type, created_at)
+		VALUES ($1, $2, $3, $4, $5, NOW())`
 
 	selectPaymentTransactionByID = `SELECT
-		id, advertiser_id, amount, status, created_at, updated_at
+		id, advertiser_id, amount, status, payment_type, created_at, updated_at
 	FROM eshkere.payment_transaction
 	WHERE id = $1`
 
-	selectPaymentTransactionForUpdate = `SELECT advertiser_id, amount, status
+	selectPaymentTransactionForUpdate = `SELECT advertiser_id, amount, status, payment_type
 	FROM eshkere.payment_transaction
 	WHERE id = $1
 	FOR UPDATE`
@@ -54,7 +54,7 @@ func (r *PaymentTransactionRepository) Create(ctx context.Context, tx *models.Pa
 		return fmt.Errorf("payment transaction cannot be nil")
 	}
 
-	_, err := r.db.ExecContext(ctx, insertPaymentTransaction, tx.ID, tx.AdvertiserID, tx.Amount, tx.Status)
+	_, err := r.db.ExecContext(ctx, insertPaymentTransaction, tx.ID, tx.AdvertiserID, tx.Amount, tx.Status, tx.PaymentType)
 	if err != nil {
 		return fmt.Errorf("insert payment transaction: %w", err)
 	}
@@ -71,6 +71,7 @@ func (r *PaymentTransactionRepository) GetByID(ctx context.Context, id string) (
 		&tx.AdvertiserID,
 		&tx.Amount,
 		&tx.Status,
+		&tx.PaymentType,
 		&tx.CreatedAt,
 		&tx.UpdatedAt,
 	)
@@ -105,8 +106,9 @@ func (r *PaymentTransactionRepository) Complete(
 		advertiserID int
 		amount       int64
 		current      models.PaymentTransactionStatus
+		paymentType  models.PaymentType
 	)
-	err = dbTx.QueryRowContext(ctx, selectPaymentTransactionForUpdate, paymentID).Scan(&advertiserID, &amount, &current)
+	err = dbTx.QueryRowContext(ctx, selectPaymentTransactionForUpdate, paymentID).Scan(&advertiserID, &amount, &current, &paymentType)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("%w: payment transaction not found", errs.NotFoundError)
@@ -116,6 +118,7 @@ func (r *PaymentTransactionRepository) Complete(
 
 	result := &models.PaymentCompletionResult{
 		AdvertiserID: advertiserID,
+		PaymentType:  paymentType,
 		AlreadyFinal: current == models.PaymentTransactionStatusSucceeded || current == models.PaymentTransactionStatusCanceled,
 	}
 	if result.AlreadyFinal {
@@ -141,8 +144,15 @@ func (r *PaymentTransactionRepository) Complete(
 			return nil, fmt.Errorf("update advertiser payment method: %w", err)
 		}
 
-		if err = dbTx.QueryRowContext(ctx, incrementAdvertiserBalance, amount, advertiserID, now).Scan(&result.Balance); err != nil {
-			return nil, fmt.Errorf("increment advertiser balance: %w", err)
+		switch paymentType {
+		case models.PaymentTypeSubscription:
+			if err = dbTx.QueryRowContext(ctx, `SELECT balance FROM eshkere.advertiser WHERE id = $1`, advertiserID).Scan(&result.Balance); err != nil {
+				return nil, fmt.Errorf("load advertiser balance after subscription payment: %w", err)
+			}
+		default:
+			if err = dbTx.QueryRowContext(ctx, incrementAdvertiserBalance, amount, advertiserID, now).Scan(&result.Balance); err != nil {
+				return nil, fmt.Errorf("increment advertiser balance: %w", err)
+			}
 		}
 	}
 

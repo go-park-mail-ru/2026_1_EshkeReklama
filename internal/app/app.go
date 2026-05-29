@@ -279,6 +279,9 @@ func (a *App) startBackgroundWorkers() {
 	if interval := a.cfg.BalanceAutomation.NotificationInterval; interval > 0 {
 		go a.runNotificationWorker(interval)
 	}
+	if interval := a.cfg.BalanceAutomation.SubscriptionExpiryInterval; interval > 0 {
+		go a.runSubscriptionExpiryWorker(interval)
+	}
 }
 
 func (a *App) waitShutdown(servers []*http.Server, serverErr <-chan error) error {

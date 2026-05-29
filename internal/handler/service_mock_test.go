@@ -428,6 +428,36 @@ func (mr *MockServiceMockRecorder) RunAutopayCycle(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunAutopayCycle", reflect.TypeOf((*MockService)(nil).RunAutopayCycle), ctx)
 }
 
+// PurchaseProSubscription mocks base method.
+func (m *MockService) PurchaseProSubscription(ctx context.Context, advertiserID int) (*service.TariffInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PurchaseProSubscription", ctx, advertiserID)
+	ret0, _ := ret[0].(*service.TariffInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PurchaseProSubscription indicates an expected call of PurchaseProSubscription.
+func (mr *MockServiceMockRecorder) PurchaseProSubscription(ctx, advertiserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PurchaseProSubscription", reflect.TypeOf((*MockService)(nil).PurchaseProSubscription), ctx, advertiserID)
+}
+
+// GetTariffInfo mocks base method.
+func (m *MockService) GetTariffInfo(ctx context.Context, advertiserID int) (*service.TariffInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTariffInfo", ctx, advertiserID)
+	ret0, _ := ret[0].(*service.TariffInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTariffInfo indicates an expected call of GetTariffInfo.
+func (mr *MockServiceMockRecorder) GetTariffInfo(ctx, advertiserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTariffInfo", reflect.TypeOf((*MockService)(nil).GetTariffInfo), ctx, advertiserID)
+}
+
 // UpdateAd mocks base method.
 func (m *MockService) UpdateAd(ctx context.Context, advertiserID int, in *input.UpdateAd) error {
 	m.ctrl.T.Helper()

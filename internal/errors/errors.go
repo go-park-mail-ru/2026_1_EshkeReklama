@@ -22,4 +22,7 @@ var (
 	ErrPasswordUnavailable  = errors.New("password change is unavailable")
 	ErrEmailNotVerified     = errors.New("email is not verified")
 	ErrInvalidVerifyCode    = errors.New("invalid verification code")
+	ErrPlanLimitExceeded    = errors.New("plan limit exceeded")
+	ErrProRequired          = errors.New("pro subscription required")
+	ErrInsufficientBalance  = errors.New("insufficient balance")
 )

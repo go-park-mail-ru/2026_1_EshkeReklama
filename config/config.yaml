@@ -83,6 +83,7 @@ smtp:
 balance_automation:
   autopay_interval: 5m
   notification_interval: 15m
+  subscription_expiry_interval: 1h
 
 registration_verification:
   ttl: 15m

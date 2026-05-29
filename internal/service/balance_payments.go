@@ -33,7 +33,7 @@ func (s *Service) CreateBalancePayment(ctx context.Context, advertiserID int, am
 
 	payment, err := s.yookassaClient.CreateRedirectPayment(ctx, amount, "Пополнение баланса рекламодателя", map[string]string{
 		"advertiser_id": fmt.Sprintf("%d", advertiserID),
-		"amount_rub":    fmt.Sprintf("%d", amount),
+		"payment_type":  string(models.PaymentTypeBalance),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create yookassa payment: %w", err)
@@ -47,6 +47,7 @@ func (s *Service) CreateBalancePayment(ctx context.Context, advertiserID int, am
 		AdvertiserID: advertiserID,
 		Amount:       amount,
 		Status:       models.PaymentTransactionStatusPending,
+		PaymentType:  models.PaymentTypeBalance,
 	}); err != nil {
 		return nil, err
 	}
@@ -94,8 +95,16 @@ func (s *Service) CompletePaymentByWebhook(ctx context.Context, paymentID string
 		return nil, err
 	}
 
-	if err = s.reactivateAdsWaitingForBalance(ctx, completion.AdvertiserID); err != nil {
-		return nil, err
+	if completion.PaymentType == models.PaymentTypeSubscription {
+		if !completion.AlreadyFinal {
+			if _, err = s.ActivatePro(ctx, completion.AdvertiserID); err != nil {
+				return nil, fmt.Errorf("activate pro after payment: %w", err)
+			}
+		}
+	} else if !completion.AlreadyFinal {
+		if err = s.reactivateAdsWaitingForBalance(ctx, completion.AdvertiserID); err != nil {
+			return nil, err
+		}
 	}
 
 	return &WebhookResult{

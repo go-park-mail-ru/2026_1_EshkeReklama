@@ -39,6 +39,9 @@ const (
 	WHERE id = $8`
 
 	deleteAdCampaign = `DELETE FROM eshkere.ad_campaign WHERE id = $1`
+
+	countActiveCampaignsByAdvertiserID = `SELECT COUNT(*) FROM eshkere.ad_campaign
+		WHERE advertiser_id = $1 AND status != 'turned_off'`
 )
 
 func (r *AdCampaignRepository) Create(ctx context.Context, c *models.AdCampaign) error {
@@ -134,6 +137,17 @@ func (r *AdCampaignRepository) Update(ctx context.Context, c *models.AdCampaign)
 	}
 
 	return nil
+}
+
+func (r *AdCampaignRepository) CountActiveByAdvertiserID(ctx context.Context, advertiserID int) (int, error) {
+	logger.GetLoggerFromCtx(ctx).Debugf("db: count active ad_campaigns for advertiser: %d", advertiserID)
+
+	var count int
+	err := r.db.QueryRowContext(ctx, countActiveCampaignsByAdvertiserID, advertiserID).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("count active campaigns: %w", err)
+	}
+	return count, nil
 }
 
 func (r *AdCampaignRepository) Delete(ctx context.Context, id int) error {

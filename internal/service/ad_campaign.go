@@ -10,6 +10,20 @@ import (
 )
 
 func (s *Service) CreateAdCampaign(ctx context.Context, in *serviceinput.CreateAdCampaign) (*models.AdCampaign, error) {
+	adv, err := s.advertiserRepo.GetByID(ctx, in.AdvertiserID)
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := s.adCampaignRepo.CountActiveByAdvertiserID(ctx, in.AdvertiserID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := checkActiveCampaignLimit(adv, count); err != nil {
+		return nil, err
+	}
+
 	c := &models.AdCampaign{
 		AdvertiserID: in.AdvertiserID,
 		Status:       models.AdStatusModeration,

@@ -56,7 +56,6 @@ type UpdateAdvertiserProfileRequest struct {
 	Phone   *string `json:"phone"`
 	Company *string `json:"company"`
 	City    *string `json:"city"`
-	Tariff  *string `json:"tariff"`
 }
 
 func (u *UpdateAdvertiserProfileRequest) ToInput(advertiserID int) *serviceinput.UpdateAdvertiserProfile {
@@ -66,7 +65,6 @@ func (u *UpdateAdvertiserProfileRequest) ToInput(advertiserID int) *serviceinput
 		Surname:      u.Surname,
 		Company:      u.Company,
 		City:         u.City,
-		Tariff:       u.Tariff,
 	}
 }
 
@@ -91,19 +89,21 @@ type ConfirmPasswordResetRequest struct {
 
 // AdvertiserProfileResponse — публичные поля рекламодателя (без пароля).
 type AdvertiserProfileResponse struct {
-	ID                int    `json:"id"`
-	Name              string `json:"name"`
-	Surname           string `json:"surname"`
-	Email             string `json:"email"`
-	Phone             string `json:"phone"`
-	AvatarURL         string `json:"avatar_url,omitempty"`
-	Balance           int64  `json:"balance"`
-	Company           string `json:"company"`
-	City              string `json:"city"`
-	Tariff            string `json:"tariff"`
-	Role              string `json:"role"`
-	CanChangePassword bool   `json:"can_change_password"`
-	CreatedAt         string `json:"created_at"`
+	ID                int     `json:"id"`
+	Name              string  `json:"name"`
+	Surname           string  `json:"surname"`
+	Email             string  `json:"email"`
+	Phone             string  `json:"phone"`
+	AvatarURL         string  `json:"avatar_url,omitempty"`
+	Balance           int64   `json:"balance"`
+	Company           string  `json:"company"`
+	City              string  `json:"city"`
+	Tariff            string  `json:"tariff"`
+	IsProActive       bool    `json:"is_pro_active"`
+	TariffExpiresAt   *string `json:"tariff_expires_at,omitempty"`
+	Role              string  `json:"role"`
+	CanChangePassword bool    `json:"can_change_password"`
+	CreatedAt         string  `json:"created_at"`
 }
 
 type TopUpBalanceRequest struct {
@@ -165,7 +165,8 @@ func AdvertiserWithContactsToProfile(adv *models.Advertiser, email, phone string
 	if adv == nil {
 		return AdvertiserProfileResponse{}
 	}
-	return AdvertiserProfileResponse{
+
+	resp := AdvertiserProfileResponse{
 		ID:                adv.ID,
 		Name:              adv.Name,
 		Surname:           adv.Surname.String,
@@ -176,8 +177,16 @@ func AdvertiserWithContactsToProfile(adv *models.Advertiser, email, phone string
 		Company:           adv.Company.String,
 		City:              adv.City.String,
 		Tariff:            string(adv.Tariff),
+		IsProActive:       adv.IsProActive(),
 		Role:              string(adv.Role),
 		CanChangePassword: canChangePassword,
 		CreatedAt:         adv.CreatedAt.Format(time.RFC3339),
 	}
+
+	if adv.TariffExpiresAt.Valid {
+		formatted := adv.TariffExpiresAt.Time.Format(time.RFC3339)
+		resp.TariffExpiresAt = &formatted
+	}
+
+	return resp
 }

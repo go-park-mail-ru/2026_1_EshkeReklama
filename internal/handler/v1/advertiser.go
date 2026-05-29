@@ -557,7 +557,7 @@ func (a *API) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func hasAdvertiserProfileChanges(req *dto.UpdateAdvertiserProfileRequest) bool {
-	return req.Name != nil || req.Surname != nil || req.Company != nil || req.City != nil || req.Tariff != nil
+	return req.Name != nil || req.Surname != nil || req.Company != nil || req.City != nil
 }
 
 func (a *API) resolveUpdatedContacts(

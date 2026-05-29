@@ -110,8 +110,9 @@ type SMTPConfig struct {
 }
 
 type BalanceAutomationConfig struct {
-	AutopayInterval      time.Duration `yaml:"autopay_interval"`
-	NotificationInterval time.Duration `yaml:"notification_interval"`
+	AutopayInterval            time.Duration `yaml:"autopay_interval"`
+	NotificationInterval       time.Duration `yaml:"notification_interval"`
+	SubscriptionExpiryInterval time.Duration `yaml:"subscription_expiry_interval"`
 }
 
 type RegistrationVerificationConfig struct {

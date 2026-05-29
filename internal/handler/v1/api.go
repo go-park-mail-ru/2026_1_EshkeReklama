@@ -38,6 +38,9 @@ type Service interface {
 	UpdateAdvertiserNotificationSettings(ctx context.Context, settings *models.AdvertiserNotificationSettings) error
 	RunAutopayCycle(ctx context.Context) (int, error)
 
+	GetTariffInfo(ctx context.Context, advertiserID int) (*service.TariffInfo, error)
+	PurchaseProSubscription(ctx context.Context, advertiserID int) (*service.TariffInfo, error)
+
 	GenerateFeedLink(ctx context.Context, campaignID int) (string, error)
 	GetAdByFeedToken(ctx context.Context, token string) (*models.Ad, error)
 	RequestAd(ctx context.Context, embedToken, visitorID string) (*service.AdRequestResult, error)
@@ -167,6 +170,7 @@ func NewAPI(config APIConfig) *API {
 func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterPaymentHandlers(r)
 	a.RegisterAdvertiserHandlers(r)
+	a.RegisterSubscriptionHandlers(r)
 	a.RegisterPartnerHandlers(r)
 	a.RegisterPartnerDictionaryHandlers(r)
 	a.RegisterPartnerSiteHandlers(r)

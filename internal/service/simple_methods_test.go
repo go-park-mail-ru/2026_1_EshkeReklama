@@ -17,9 +17,12 @@ func TestService_PassthroughMethods(t *testing.T) {
 	cRepo := NewMockAdCampaignRepository(ctrl)
 	gRepo := NewMockAdGroupRepository(ctrl)
 	aRepo := NewMockAdRepository(ctrl)
+	advRepo := NewMockAdvertiserRepository(ctrl)
 
-	svc, _ := NewService(&Config{AdCampaignRepo: cRepo, AdGroupRepo: gRepo, AdRepo: aRepo})
+	svc, _ := NewService(&Config{AdCampaignRepo: cRepo, AdGroupRepo: gRepo, AdRepo: aRepo, AdvertiserRepo: advRepo})
 
+	advRepo.EXPECT().GetByID(gomock.Any(), 1).Return(&models.Advertiser{ID: 1, Tariff: models.TariffTypeBasic}, nil)
+	cRepo.EXPECT().CountActiveByAdvertiserID(gomock.Any(), 1).Return(0, nil)
 	cRepo.EXPECT().Create(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ context.Context, c *models.AdCampaign) error {
 			if c.AdvertiserID != 1 || c.Name != "camp" || c.Status != models.AdStatusModeration {

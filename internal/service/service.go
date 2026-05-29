@@ -15,6 +15,7 @@ type AdvertiserRepository interface {
 	CreateProfile(ctx context.Context, id int64, name string) error
 	GetByID(ctx context.Context, id int) (*models.Advertiser, error)
 	Update(ctx context.Context, a *models.Advertiser) error
+	ListExpiredProAdvertiserIDs(ctx context.Context) ([]int, error)
 }
 
 type PaymentTransactionRepository interface {
@@ -80,6 +81,7 @@ type AdCampaignRepository interface {
 	Create(ctx context.Context, c *models.AdCampaign) error
 	GetByID(ctx context.Context, id int) (*models.AdCampaign, error)
 	ListByAdvertiserID(ctx context.Context, advertiserID int) ([]*models.AdCampaign, error)
+	CountActiveByAdvertiserID(ctx context.Context, advertiserID int) (int, error)
 	Update(ctx context.Context, c *models.AdCampaign) error
 	Delete(ctx context.Context, id int) error
 }

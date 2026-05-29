@@ -85,6 +85,21 @@ func (mr *MockAdvertiserRepositoryMockRecorder) Update(ctx, a any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockAdvertiserRepository)(nil).Update), ctx, a)
 }
 
+// ListExpiredProAdvertiserIDs mocks base method.
+func (m *MockAdvertiserRepository) ListExpiredProAdvertiserIDs(ctx context.Context) ([]int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListExpiredProAdvertiserIDs", ctx)
+	ret0, _ := ret[0].([]int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListExpiredProAdvertiserIDs indicates an expected call of ListExpiredProAdvertiserIDs.
+func (mr *MockAdvertiserRepositoryMockRecorder) ListExpiredProAdvertiserIDs(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListExpiredProAdvertiserIDs", reflect.TypeOf((*MockAdvertiserRepository)(nil).ListExpiredProAdvertiserIDs), ctx)
+}
+
 // MockPartnerRepository is a mock of PartnerRepository interface.
 type MockPartnerRepository struct {
 	ctrl     *gomock.Controller
@@ -536,6 +551,21 @@ func (m *MockAdCampaignRepository) Update(ctx context.Context, c *models.AdCampa
 func (mr *MockAdCampaignRepositoryMockRecorder) Update(ctx, c any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockAdCampaignRepository)(nil).Update), ctx, c)
+}
+
+// CountActiveByAdvertiserID mocks base method.
+func (m *MockAdCampaignRepository) CountActiveByAdvertiserID(ctx context.Context, advertiserID int) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountActiveByAdvertiserID", ctx, advertiserID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountActiveByAdvertiserID indicates an expected call of CountActiveByAdvertiserID.
+func (mr *MockAdCampaignRepositoryMockRecorder) CountActiveByAdvertiserID(ctx, advertiserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountActiveByAdvertiserID", reflect.TypeOf((*MockAdCampaignRepository)(nil).CountActiveByAdvertiserID), ctx, advertiserID)
 }
 
 // MockAdGroupRepository is a mock of AdGroupRepository interface.

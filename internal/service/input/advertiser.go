@@ -6,5 +6,4 @@ type UpdateAdvertiserProfile struct {
 	Surname      *string
 	Company      *string
 	City         *string
-	Tariff       *string
 }

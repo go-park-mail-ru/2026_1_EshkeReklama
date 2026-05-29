@@ -38,9 +38,7 @@ func (s *Service) UpdateAdvertiserProfile(ctx context.Context, in *serviceinput.
 	if in.City != nil {
 		adv.City = sql.NullString{String: *in.City, Valid: true}
 	}
-	if in.Tariff != nil {
-		adv.Tariff = models.TariffType(*in.Tariff)
-	}
+	// Тариф меняется только через ActivatePro / DeactivatePro (после оплаты)
 
 	if err = s.advertiserRepo.Update(ctx, adv); err != nil {
 		return nil, err

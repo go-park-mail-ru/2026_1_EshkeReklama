@@ -358,6 +358,14 @@ func (s *stubService) RunAutopayCycle(ctx context.Context) (int, error) {
 	return 0, nil
 }
 
+func (s *stubService) GetTariffInfo(ctx context.Context, advertiserID int) (*service.TariffInfo, error) {
+	return &service.TariffInfo{Tariff: "basic"}, nil
+}
+
+func (s *stubService) PurchaseProSubscription(ctx context.Context, advertiserID int) (*service.TariffInfo, error) {
+	return &service.TariffInfo{Tariff: "pro", IsProActive: true, MaxCampaigns: 20}, nil
+}
+
 func (s *stubService) GenerateFeedLink(ctx context.Context, campaignID int) (string, error) {
 	if s.generateFeedLinkFn != nil {
 		return s.generateFeedLinkFn(ctx, campaignID)

@@ -27,6 +27,13 @@ func HandleError(w http.ResponseWriter, r *http.Request, desc string, err error)
 		logger.Debugf("unauthorized during %s: %v", desc, err)
 		httpx.Unauthorized(w, err.Error())
 
+	// 402 Payment Required: Превышен лимит тарифа или нужна Pro-подписка
+	case errors.Is(err, errs.ErrPlanLimitExceeded),
+		errors.Is(err, errs.ErrProRequired),
+		errors.Is(err, errs.ErrInsufficientBalance):
+		logger.Debugf("plan limit during %s: %v", desc, err)
+		httpx.ErrorJSON(w, http.StatusPaymentRequired, err.Error())
+
 	// 403 Forbidden: Пользователь авторизован, но у него нет нужных прав
 	case errors.Is(err, errs.ForbiddenError):
 		logger.Debugf("forbidden during %s: %v", desc, err)

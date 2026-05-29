@@ -197,27 +197,28 @@ func TestPaymentTransactionRepository_CreateGetByIDAndNullableString(t *testing.
 	}
 
 	mock.ExpectExec("INSERT INTO eshkere.payment_transaction").
-		WithArgs("pay_1", 15, int64(1200), models.PaymentTransactionStatusPending).
+		WithArgs("pay_1", 15, int64(1200), models.PaymentTransactionStatusPending, models.PaymentTypeBalance).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	if err := repo.Create(context.Background(), &models.PaymentTransaction{
 		ID:           "pay_1",
 		AdvertiserID: 15,
 		Amount:       1200,
 		Status:       models.PaymentTransactionStatusPending,
+		PaymentType:  models.PaymentTypeBalance,
 	}); err != nil {
 		t.Fatalf("create payment tx: %v", err)
 	}
 
-	mock.ExpectQuery("SELECT\\s+id, advertiser_id, amount, status, created_at, updated_at").
+	mock.ExpectQuery("SELECT\\s+id, advertiser_id, amount, status, payment_type, created_at, updated_at").
 		WithArgs("pay_1").
-		WillReturnRows(sqlmock.NewRows([]string{"id", "advertiser_id", "amount", "status", "created_at", "updated_at"}).
-			AddRow("pay_1", 15, int64(1200), models.PaymentTransactionStatusPending, now, now))
+		WillReturnRows(sqlmock.NewRows([]string{"id", "advertiser_id", "amount", "status", "payment_type", "created_at", "updated_at"}).
+			AddRow("pay_1", 15, int64(1200), models.PaymentTransactionStatusPending, models.PaymentTypeBalance, now, now))
 	tx, err := repo.GetByID(ctx, "pay_1")
 	if err != nil || tx.ID != "pay_1" || tx.AdvertiserID != 15 {
 		t.Fatalf("unexpected payment tx: %+v err=%v", tx, err)
 	}
 
-	mock.ExpectQuery("SELECT\\s+id, advertiser_id, amount, status, created_at, updated_at").
+	mock.ExpectQuery("SELECT\\s+id, advertiser_id, amount, status, payment_type, created_at, updated_at").
 		WithArgs("missing").
 		WillReturnError(sql.ErrNoRows)
 	if _, err := repo.GetByID(ctx, "missing"); !errors.Is(err, errs.NotFoundError) {
@@ -234,10 +235,10 @@ func TestPaymentTransactionRepository_CompleteSucceeded(t *testing.T) {
 	repo := NewPaymentTransactionRepository(db)
 
 	mock.ExpectBegin()
-	mock.ExpectQuery("SELECT advertiser_id, amount, status\\s+FROM eshkere.payment_transaction").
+	mock.ExpectQuery("SELECT advertiser_id, amount, status, payment_type\\s+FROM eshkere.payment_transaction").
 		WithArgs("pay_2").
-		WillReturnRows(sqlmock.NewRows([]string{"advertiser_id", "amount", "status"}).
-			AddRow(19, int64(2500), models.PaymentTransactionStatusPending))
+		WillReturnRows(sqlmock.NewRows([]string{"advertiser_id", "amount", "status", "payment_type"}).
+			AddRow(19, int64(2500), models.PaymentTransactionStatusPending, models.PaymentTypeBalance))
 	mock.ExpectExec("UPDATE eshkere.payment_transaction").
 		WithArgs("pay_2", models.PaymentTransactionStatusSucceeded, sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(0, 1))
@@ -267,10 +268,10 @@ func TestPaymentTransactionRepository_CompleteAlreadyFinal(t *testing.T) {
 	repo := NewPaymentTransactionRepository(db)
 
 	mock.ExpectBegin()
-	mock.ExpectQuery("SELECT advertiser_id, amount, status\\s+FROM eshkere.payment_transaction").
+	mock.ExpectQuery("SELECT advertiser_id, amount, status, payment_type\\s+FROM eshkere.payment_transaction").
 		WithArgs("pay_3").
-		WillReturnRows(sqlmock.NewRows([]string{"advertiser_id", "amount", "status"}).
-			AddRow(23, int64(1000), models.PaymentTransactionStatusSucceeded))
+		WillReturnRows(sqlmock.NewRows([]string{"advertiser_id", "amount", "status", "payment_type"}).
+			AddRow(23, int64(1000), models.PaymentTransactionStatusSucceeded, models.PaymentTypeBalance))
 	mock.ExpectQuery("SELECT balance FROM eshkere.advertiser WHERE id = \\$1").
 		WithArgs(23).
 		WillReturnRows(sqlmock.NewRows([]string{"balance"}).AddRow(int64(5000)))

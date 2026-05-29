@@ -169,16 +169,6 @@ func easyjson94f0a767DecodeEshkereInternalHandlerV1Dto1(in *jlexer.Lexer, out *U
 				}
 				*out.City = string(in.String())
 			}
-		case "tariff":
-			if in.IsNull() {
-				in.Skip()
-				out.Tariff = nil
-			} else {
-				if out.Tariff == nil {
-					out.Tariff = new(string)
-				}
-				*out.Tariff = string(in.String())
-			}
 		default:
 			in.SkipRecursive()
 		}
@@ -245,15 +235,6 @@ func easyjson94f0a767EncodeEshkereInternalHandlerV1Dto1(out *jwriter.Writer, in 
 			out.RawString("null")
 		} else {
 			out.String(string(*in.City))
-		}
-	}
-	{
-		const prefix string = ",\"tariff\":"
-		out.RawString(prefix)
-		if in.Tariff == nil {
-			out.RawString("null")
-		} else {
-			out.String(string(*in.Tariff))
 		}
 	}
 	out.RawByte('}')

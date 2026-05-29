@@ -37,6 +37,33 @@ ROWS="$(run_query)"
 
 IFS='|' read -r MIN_ID MAX_ID CNT <<<"$ROWS"
 echo "count=${CNT} min_id=${MIN_ID} max_id=${MAX_ID}"
-echo "Добавьте в perf_test/.env:"
-echo "READ_MIN_AD_ID=${MIN_ID}"
-echo "READ_MAX_AD_ID=${MAX_ID}"
+
+if [[ -z "$MIN_ID" || -z "$MAX_ID" || "$CNT" == "0" ]]; then
+  echo "Нет объявлений LOADTEST_* — сначала ./perf_test/run_create.sh" >&2
+  exit 1
+fi
+
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "Нет ${ENV_FILE}" >&2
+  exit 1
+fi
+
+update_env() {
+  local key="$1" val="$2"
+  if grep -q "^${key}=" "$ENV_FILE"; then
+    if [[ "$(uname)" == "Darwin" ]]; then
+      sed -i '' "s|^${key}=.*|${key}=${val}|" "$ENV_FILE"
+    else
+      sed -i "s|^${key}=.*|${key}=${val}|" "$ENV_FILE"
+    fi
+  else
+    echo "${key}=${val}" >>"$ENV_FILE"
+  fi
+}
+
+update_env READ_MIN_AD_ID "$MIN_ID"
+update_env READ_MAX_AD_ID "$MAX_ID"
+
+echo "Записано в ${ENV_FILE}:"
+echo "  READ_MIN_AD_ID=${MIN_ID}"
+echo "  READ_MAX_AD_ID=${MAX_ID}"

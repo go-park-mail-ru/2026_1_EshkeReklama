@@ -56,7 +56,7 @@ func TestBuildGenerateAdImagePrompt(t *testing.T) {
 	if !strings.Contains(prompt.Messages[1].Content, "Платформа для аналитики рекламы") {
 		t.Fatalf("product description missing: %s", prompt.Messages[1].Content)
 	}
-	if !strings.Contains(prompt.Messages[1].Content, "clean modern advertising visual") {
+	if !strings.Contains(prompt.Messages[1].Content, "clean, fresh and premium commercial look") {
 		t.Fatalf("default image style missing: %s", prompt.Messages[1].Content)
 	}
 	if !strings.Contains(prompt.Messages[1].Content, "лента, горизонтальный 1200x628") {
@@ -67,37 +67,55 @@ func TestBuildGenerateAdImagePrompt(t *testing.T) {
 func TestBuildNanoBananaImagePrompt(t *testing.T) {
 	prompt := BuildNanoBananaImagePrompt(GenerateAdImageInput{
 		Prompt:        "платформы аналитики рекламы",
-		Style:         "clean",
+		Style:         "Чистый",
 		Format:        "stories",
 		GenerationKey: "draft-1",
 	})
 
-	if !strings.Contains(prompt, "9:16 vertical marketing creative for stories placement") {
+	if !strings.Contains(prompt, "9:16 vertical advertising photo for stories placement") {
 		t.Fatalf("format instruction missing: %s", prompt)
 	}
-	if !strings.Contains(prompt, "Strictly no text, no letters, no typography") {
-		t.Fatalf("negative instructions missing: %s", prompt)
+	if !strings.Contains(prompt, "Strictly NO device screens") {
+		t.Fatalf("device negative instructions missing: %s", prompt)
 	}
-	if !strings.Contains(prompt, "digital product visual") {
-		t.Fatalf("digital prompt should preserve product UI hints: %s", prompt)
+	if !strings.Contains(prompt, "clean, fresh and premium commercial look") {
+		t.Fatalf("russian clean style should be resolved: %s", prompt)
+	}
+	if strings.Contains(prompt, "dashboard") && !strings.Contains(prompt, "no dashboard") {
+		t.Fatalf("prompt must not request dashboards: %s", prompt)
 	}
 }
 
 func TestBuildNanoBananaImagePromptLifestyle(t *testing.T) {
 	prompt := BuildNanoBananaImagePrompt(GenerateAdImageInput{
 		Prompt:        "уютная кофейня на набережной",
-		Style:         "clean",
+		Style:         "Яркий",
 		Format:        "feed",
 		GenerationKey: "draft-1",
 	})
 
-	if !strings.Contains(prompt, "realistic commercial lifestyle advertising image") {
+	if !strings.Contains(prompt, "commercial lifestyle advertising photo") {
 		t.Fatalf("lifestyle prompt should request commercial photo style: %s", prompt)
 	}
-	if !strings.Contains(prompt, "Strictly no tablet, no laptop, no phone screen") {
+	if !strings.Contains(prompt, "Strictly NO device screens") {
 		t.Fatalf("lifestyle prompt should ban devices: %s", prompt)
 	}
-	if strings.Contains(prompt, "digital product visual") {
-		t.Fatalf("lifestyle prompt must not mention digital product visuals: %s", prompt)
+	if !strings.Contains(prompt, "vivid, bold and energetic commercial look") {
+		t.Fatalf("russian bright style should be resolved: %s", prompt)
+	}
+}
+
+func TestNormalizeImageStyleRussianLabels(t *testing.T) {
+	cases := map[string]string{
+		"Чистый":     "clean, fresh and premium commercial look",
+		"Яркий":      "vivid, bold and energetic commercial look",
+		"Минимализм": "minimalist commercial look",
+		"":           "clean, fresh and premium commercial look",
+	}
+	for input, want := range cases {
+		got := normalizeImageStyle(input)
+		if !strings.Contains(got, want) {
+			t.Fatalf("style %q => %q, want contains %q", input, got, want)
+		}
 	}
 }

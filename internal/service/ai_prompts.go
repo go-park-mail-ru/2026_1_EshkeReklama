@@ -129,16 +129,16 @@ func BuildGenerateAdVariantsPrompt(in GenerateAdVariantsInput) AIPromptSet {
 func BuildGenerateAdImagePrompt(in GenerateAdImageInput) AIPromptSet {
 	in = normalizeGenerateAdImageInput(in)
 
-	system := `Ты создаёшь промпты для генерации рекламных изображений. Твоя задача — подготовить качественное описание визуала для digital-баннера.
+	system := `Ты создаёшь промпты для генерации рекламных изображений. Твоя задача — подготовить качественное описание визуала для интернет-рекламы.
 
 Правила:
-- Описание должно быть на английском языке, если это улучшает качество генерации изображения.
-- Изображение должно выглядеть как современный рекламный креатив.
+- Описание должно быть на английском языке (это улучшает качество генерации изображения).
+- Изображение должно выглядеть как реальная премиальная рекламная фотография, а не как цифровой макет.
 - Композиция должна быть чистой, понятной и визуально привлекательной.
-- Не добавляй текст внутри изображения, если это не указано отдельно.
-- Избегай перегруженности деталями.
+- Не добавляй текст внутри изображения.
+- Главный объект — реальный продукт, товар, место, еда или сцена из описания.
+- Категорически избегай экранов, гаджетов, телефонов, ноутбуков, мониторов, интерфейсов, дашбордов, графиков, диаграмм, голограмм и футуристических хайтек-панелей, если пользователь явно не попросил об этом.
 - Избегай запрещённого, шокирующего, сексуализированного, опасного или вводящего в заблуждение контента.
-- Делай визуал пригодным для рекламы продукта или сервиса.
 - Верни строго JSON:
   {
     "prompt": "строка"
@@ -156,12 +156,13 @@ func BuildGenerateAdImagePrompt(in GenerateAdImageInput) AIPromptSet {
 %s
 
 Нужно:
-- современный рекламный стиль
-- чистая композиция
+- реальная премиальная рекламная фотография
+- чистая композиция и сильный смысловой акцент
 - без текста на изображении
-- визуал должен передавать ценность продукта
-- если продукт digital, можно использовать интерфейсы, ноутбук, смартфон, графики, рабочую среду
-- если продукт физический, сфокусируйся на товаре как главном объекте`,
+- визуал должен передавать ценность продукта через реальный предмет, сцену или атмосферу
+- если продукт физический — покажи сам товар как главный объект
+- если продукт — услуга или цифровой сервис — покажи реальную сцену, людей или предметную композицию, передающую пользу, БЕЗ экранов и интерфейсов
+- никаких устройств, экранов, интерфейсов, графиков и футуристических панелей`,
 		in.Prompt,
 		normalizeImageStyle(in.Style),
 		normalizeAdFormatDescription(in.Format),
@@ -175,39 +176,54 @@ func BuildGenerateAdImagePrompt(in GenerateAdImageInput) AIPromptSet {
 	}
 }
 
+// nanoBananaNegativePrompt — общий запрещающий блок. Главное лекарство от
+// "устройств с экранами" и "футуристических графиков": нейробанан очень охотно
+// рисует UI/дашборды/HUD, если их явно не запретить.
+const nanoBananaNegativePrompt = "Strictly no text, no letters, no words, no numbers, no typography, no captions, no slogans, no logos, no watermark, no fake brand names, no UI labels, no poster or banner layout. " +
+	"Strictly NO device screens, no smartphone, no tablet, no laptop, no computer, no monitor, no TV, no dashboard, no app interface, no website UI, no buttons, no holograms, no holographic panels, no floating screens, no charts, no graphs, no diagrams, no data visualizations, no infographics, no futuristic sci-fi HUD, no glowing tech interface, no abstract neon 3D shapes — unless the product description explicitly asks for them. " +
+	"The result must look like a real, polished advertising photograph captured with a professional camera, not a digital mockup, app screenshot, 3D render, stock template or finished banner with copy."
+
 func BuildNanoBananaImagePrompt(in GenerateAdImageInput) string {
 	in = normalizeGenerateAdImageInput(in)
 
-	formatInstruction := "16:9 horizontal marketing creative for feed placement"
-	compositionInstruction := "leave clean breathing space, strong focal point, balanced composition for a feed ad"
+	formatInstruction := "16:9 horizontal advertising photo for feed placement"
+	compositionInstruction := "leave clean breathing space, strong single focal point, balanced and natural composition"
 	switch in.Format {
 	case "stories":
-		formatInstruction = "9:16 vertical marketing creative for stories placement"
-		compositionInstruction = "vertical composition, subject centered or slightly lower, enough empty space near top and bottom for UI overlays"
+		formatInstruction = "9:16 vertical advertising photo for stories placement"
+		compositionInstruction = "vertical composition, subject centered or slightly lower, enough empty space near the top and bottom"
 	}
 
 	styleInstruction := normalizeImageStyle(in.Style)
 	productDescription := strings.TrimSpace(in.Prompt)
 	if productDescription == "" {
-		productDescription = "advertising image"
+		productDescription = "the advertised product"
 	}
 
 	switch detectNanoBananaPromptMode(productDescription) {
 	case nanoBananaPromptModeLifestyle:
 		return fmt.Sprintf(
-			"Create a realistic commercial lifestyle advertising image for %s. %s. Style: %s. Focus on the real place, physical product, atmosphere, people, furniture, food, drinks, lighting, architecture, packaging, or environment if relevant. Make it feel like premium commercial photography, natural, believable, inviting, and emotionally clear. %s. Strictly no text, no letters, no typography, no words, no slogans, no CTA buttons, no logo, no watermark, no fake brand names, no captions, no poster layout. Strictly no tablet, no laptop, no phone screen, no monitor, no dashboard, no app interface, no digital UI, no floating device, no holographic panel, no analytics screen, unless the user explicitly asked for such devices. Make it look like a polished ad photo, not a digital product mockup or stock template.",
+			"Create a high-quality, photorealistic commercial lifestyle advertising photo for %s. "+
+				"Show the real place, environment, atmosphere, people, interior, furniture, food, drinks, packaging or moment described, "+
+				"captured like authentic premium commercial photography: natural realistic lighting, believable real-world setting, "+
+				"true-to-life colors, natural depth of field, inviting and emotionally warm. %s. %s. Style: %s. %s",
 			productDescription,
 			formatInstruction,
-			styleInstruction,
 			compositionInstruction,
+			styleInstruction,
+			nanoBananaNegativePrompt,
 		)
 	default:
 		return fmt.Sprintf(
-			"Create a premium modern advertising creative for %s. %s. Style: %s. Show a believable digital product visual, polished interface elements, subtle dashboards, analytics cues, product UI, or device mockup only if relevant to the described product. Keep the scene clean, modern, product-focused, visually clear, and suitable for a polished SaaS or app advertisement. %s. Strictly no text, no letters, no typography, no words, no slogans, no CTA buttons, no logo, no watermark, no fake brand names, no UI labels, no captions, no poster layout, no stock ad template. Make it look like a polished visual asset background for an ad, not a finished banner with copy.",
+			"Create a high-quality, photorealistic commercial advertising photo for %s. "+
+				"If the product is a physical item, show the real product itself as the clear, beautifully lit hero subject on a tasteful real surface or background. "+
+				"If the product is a service or digital product, show a relevant believable real-world scene, the people who benefit from it, or an elegant conceptual still life that conveys its value — never a screen, gadget or interface. "+
+				"Make it look like premium professional advertising photography: realistic materials and textures, true-to-life colors, natural depth of field, clean and desirable. %s. %s. Style: %s. %s",
 			productDescription,
 			formatInstruction,
-			styleInstruction,
 			compositionInstruction,
+			styleInstruction,
+			nanoBananaNegativePrompt,
 		)
 	}
 }
@@ -215,23 +231,27 @@ func BuildNanoBananaImagePrompt(in GenerateAdImageInput) string {
 type nanoBananaPromptMode string
 
 const (
-	nanoBananaPromptModeDigital   nanoBananaPromptMode = "digital"
+	// nanoBananaPromptModeProduct — дефолт: реальный товар/услуга как герой кадра,
+	// без устройств и интерфейсов.
+	nanoBananaPromptModeProduct   nanoBananaPromptMode = "product"
 	nanoBananaPromptModeLifestyle nanoBananaPromptMode = "lifestyle"
 )
 
 func detectNanoBananaPromptMode(description string) nanoBananaPromptMode {
 	normalized := strings.ToLower(strings.TrimSpace(description))
 	if normalized == "" {
-		return nanoBananaPromptModeDigital
+		return nanoBananaPromptModeProduct
 	}
 
 	lifestyleKeywords := []string{
 		"кофей", "кафе", "кофе", "ресторан", "бар", "пекар", "булоч", "кондитер",
 		"магазин", "бутик", "салон", "парикмах", "spa", "спа", "отел", "гостин",
 		"терраса", "набереж", "пицц", "бургер", "суши", "еда", "десерт", "цветоч",
+		"фитнес", "спортзал", "путешеств", "тур", "отдых", "клиник", "стоматолог",
 		"coffee", "cafe", "restaurant", "bar", "bakery", "pastry", "dessert",
 		"shop", "store", "salon", "hotel", "spa", "terrace", "embankment",
 		"waterfront", "promenade", "pizza", "burger", "sushi", "flower", "boutique",
+		"fitness", "gym", "travel", "tour", "clinic", "dental",
 	}
 	for _, keyword := range lifestyleKeywords {
 		if strings.Contains(normalized, keyword) {
@@ -239,7 +259,7 @@ func detectNanoBananaPromptMode(description string) nanoBananaPromptMode {
 		}
 	}
 
-	return nanoBananaPromptModeDigital
+	return nanoBananaPromptModeProduct
 }
 
 func normalizeToneDescription(tone string) string {
@@ -259,14 +279,17 @@ func normalizeToneDescription(tone string) string {
 	}
 }
 
+// normalizeImageStyle переводит выбранный на фронте стиль ("Чистый" / "Яркий" /
+// "Минимализм", либо их англоязычные ключи) в подробный визуальный дескриптор
+// для генератора изображений.
 func normalizeImageStyle(style string) string {
 	switch strings.ToLower(strings.TrimSpace(style)) {
-	case "", "clean":
-		return "clean modern advertising visual, soft gradients, minimal premium SaaS look"
-	case "bold":
-		return "bold modern advertising visual, high contrast, strong focal point, premium marketing look"
-	case "minimal":
-		return "minimal polished product visual, restrained composition, elegant and uncluttered"
+	case "", "чистый", "clean", "clean modern advertising visual":
+		return "clean, fresh and premium commercial look; bright soft natural lighting; light, airy and uncluttered background; neutral refined color palette; crisp sharp focus; generous clean breathing space; modern, trustworthy, professional advertising photography"
+	case "яркий", "bright", "vivid", "bold":
+		return "vivid, bold and energetic commercial look; rich saturated colors with lively color accents; punchy high-contrast lighting; dynamic, eye-catching and joyful mood; expressive vibrant background; striking attention-grabbing premium advertising photography"
+	case "минимализм", "минимал", "minimal", "minimalism", "minimalistic":
+		return "minimalist commercial look; one clear hero subject; large amount of negative space; restrained muted or monochrome palette; simple plain background; calm, balanced and elegant composition; refined and uncluttered premium advertising photography"
 	default:
 		return strings.TrimSpace(style)
 	}

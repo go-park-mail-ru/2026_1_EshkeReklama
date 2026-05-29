@@ -39,7 +39,7 @@ perf_test/
    ```bash
    cp perf_test/env.example perf_test/.env
    # отредактировать BASE_URL, логин, пароль
-   ./perf_test/setup.sh
+   source perf_test/.env
    ```
 
 3. **Проверить/выдать роль Admin для read-теста**:

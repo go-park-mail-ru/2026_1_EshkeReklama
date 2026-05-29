@@ -5,6 +5,12 @@
 local campaign = os.getenv("LOADTEST_CAMPAIGN")
 local group = os.getenv("LOADTEST_GROUP")
 local prefix = os.getenv("LOADTEST_PREFIX") or "LOADTEST_"
+local session_id = os.getenv("WRK_SESSION_ID") or ""
+local csrf_token = os.getenv("WRK_CSRF_TOKEN") or ""
+
+if session_id == "" or csrf_token == "" then
+  error("set WRK_SESSION_ID and WRK_CSRF_TOKEN (run_create.sh exports them from .env)")
+end
 
 if not campaign or not group then
   error("set LOADTEST_CAMPAIGN and LOADTEST_GROUP (run ./perf_test/setup.sh)")
@@ -35,7 +41,11 @@ request = function()
     campaign,
     group
   )
+  local body = body_for(title)
   local headers = {}
   headers["Content-Type"] = "multipart/form-data; boundary=" .. boundary
-  return wrk.format("POST", path, headers, body_for(title))
+  headers["Content-Length"] = tostring(#body)
+  headers["Cookie"] = "session_id=" .. session_id .. "; csrf_token=" .. csrf_token
+  headers["X-CSRF-Token"] = csrf_token
+  return wrk.format("POST", path, headers, body)
 end

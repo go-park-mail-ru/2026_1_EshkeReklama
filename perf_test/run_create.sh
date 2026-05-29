@@ -21,6 +21,8 @@ WRK_DURATION_CREATE="${WRK_DURATION_CREATE:-30m}"
 LOADTEST_PREFIX="${LOADTEST_PREFIX:-LOADTEST_}"
 
 export LOADTEST_CAMPAIGN LOADTEST_GROUP LOADTEST_PREFIX
+export WRK_SESSION_ID="$SESSION_ID"
+export WRK_CSRF_TOKEN="$CSRF_TOKEN"
 
 if ! command -v wrk >/dev/null; then
   echo "Установите wrk: brew install wrk" >&2
@@ -38,8 +40,6 @@ echo "" | tee -a "$OUT"
 
 wrk -t"$WRK_THREADS" -c"$WRK_CONNECTIONS" -d"$WRK_DURATION_CREATE" \
   -s "${ROOT}/perf_test/wrk/create.lua" \
-  -H "Cookie: session_id=${SESSION_ID}; csrf_token=${CSRF_TOKEN}" \
-  -H "X-CSRF-Token: ${CSRF_TOKEN}" \
   "${BASE_URL}" 2>&1 | tee -a "$OUT"
 
 echo "" | tee -a "$OUT"

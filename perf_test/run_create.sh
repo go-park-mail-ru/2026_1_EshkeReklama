@@ -38,7 +38,7 @@ echo "" | tee -a "$OUT"
 
 wrk -t"$WRK_THREADS" -c"$WRK_CONNECTIONS" -d"$WRK_DURATION_CREATE" \
   -s "${ROOT}/perf_test/wrk/create.lua" \
-  -H "Cookie: session_id=${SESSION_ID}" \
+  -H "Cookie: session_id=${SESSION_ID}; csrf_token=${CSRF_TOKEN}" \
   -H "X-CSRF-Token: ${CSRF_TOKEN}" \
   "${BASE_URL}" 2>&1 | tee -a "$OUT"
 

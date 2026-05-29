@@ -10,7 +10,7 @@ if [[ -n "${DATABASE_URL:-}" ]]; then
     "SELECT min(id), max(id), count(*) FROM eshkere.ad WHERE title LIKE '${PREFIX}%';")"
 else
   : "${PGHOST:=localhost}"
-  : "${PGDATABASE:=eshkere}"
+  : "${PGDATABASE:=db}"
   ROWS="$(psql -h "$PGHOST" -U "${PGUSER:-postgres}" -d "$PGDATABASE" -tA -c \
     "SELECT min(id), max(id), count(*) FROM eshkere.ad WHERE title LIKE '${PREFIX}%';")"
 fi

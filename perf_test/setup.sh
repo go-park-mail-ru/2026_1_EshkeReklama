@@ -70,7 +70,7 @@ if [[ -z "${GROUP_ID:-}" ]]; then
     -X POST "${BASE_URL}/api/ad_campaigns/${CAMPAIGN_ID}/ad_groups" \
     -H "Content-Type: application/json" \
     -H "X-CSRF-Token: ${CSRF}" \
-    -d '{"topic":"IT и Технологии","region":"Москва","name":"LOADTEST_group","age_from":18,"age_to":65,"gender":"any"}')"
+    -d '{"topic":"Технологии","region":"Москва","name":"LOADTEST_group","age_from":18,"age_to":65,"gender":"any"}')"
   GROUP_ID="$(python3 -c "import json,sys; print(json.load(sys.stdin)['id'])" <<<"$GROUP_RESP")"
 fi
 

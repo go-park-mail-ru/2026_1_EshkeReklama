@@ -189,16 +189,57 @@ func BuildNanoBananaImagePrompt(in GenerateAdImageInput) string {
 	styleInstruction := normalizeImageStyle(in.Style)
 	productDescription := strings.TrimSpace(in.Prompt)
 	if productDescription == "" {
-		productDescription = "digital product advertising creative"
+		productDescription = "advertising image"
 	}
 
-	return fmt.Sprintf(
-		"Create a premium modern advertising creative for %s. %s. Style: %s. Show a believable digital-product visual, polished interface elements, subtle growth or analytics cues only if relevant, clean lighting, premium SaaS aesthetic, simple background, high visual clarity. %s. Strictly no text, no letters, no typography, no words, no slogans, no CTA buttons, no logo, no watermark, no fake brand names, no UI labels, no captions, no poster layout, no stock ad template. Make it look like a polished visual asset background for an ad, not a finished banner with copy.",
-		productDescription,
-		formatInstruction,
-		styleInstruction,
-		compositionInstruction,
-	)
+	switch detectNanoBananaPromptMode(productDescription) {
+	case nanoBananaPromptModeLifestyle:
+		return fmt.Sprintf(
+			"Create a realistic commercial lifestyle advertising image for %s. %s. Style: %s. Focus on the real place, physical product, atmosphere, people, furniture, food, drinks, lighting, architecture, packaging, or environment if relevant. Make it feel like premium commercial photography, natural, believable, inviting, and emotionally clear. %s. Strictly no text, no letters, no typography, no words, no slogans, no CTA buttons, no logo, no watermark, no fake brand names, no captions, no poster layout. Strictly no tablet, no laptop, no phone screen, no monitor, no dashboard, no app interface, no digital UI, no floating device, no holographic panel, no analytics screen, unless the user explicitly asked for such devices. Make it look like a polished ad photo, not a digital product mockup or stock template.",
+			productDescription,
+			formatInstruction,
+			styleInstruction,
+			compositionInstruction,
+		)
+	default:
+		return fmt.Sprintf(
+			"Create a premium modern advertising creative for %s. %s. Style: %s. Show a believable digital product visual, polished interface elements, subtle dashboards, analytics cues, product UI, or device mockup only if relevant to the described product. Keep the scene clean, modern, product-focused, visually clear, and suitable for a polished SaaS or app advertisement. %s. Strictly no text, no letters, no typography, no words, no slogans, no CTA buttons, no logo, no watermark, no fake brand names, no UI labels, no captions, no poster layout, no stock ad template. Make it look like a polished visual asset background for an ad, not a finished banner with copy.",
+			productDescription,
+			formatInstruction,
+			styleInstruction,
+			compositionInstruction,
+		)
+	}
+}
+
+type nanoBananaPromptMode string
+
+const (
+	nanoBananaPromptModeDigital   nanoBananaPromptMode = "digital"
+	nanoBananaPromptModeLifestyle nanoBananaPromptMode = "lifestyle"
+)
+
+func detectNanoBananaPromptMode(description string) nanoBananaPromptMode {
+	normalized := strings.ToLower(strings.TrimSpace(description))
+	if normalized == "" {
+		return nanoBananaPromptModeDigital
+	}
+
+	lifestyleKeywords := []string{
+		"кофей", "кафе", "кофе", "ресторан", "бар", "пекар", "булоч", "кондитер",
+		"магазин", "бутик", "салон", "парикмах", "spa", "спа", "отел", "гостин",
+		"терраса", "набереж", "пицц", "бургер", "суши", "еда", "десерт", "цветоч",
+		"coffee", "cafe", "restaurant", "bar", "bakery", "pastry", "dessert",
+		"shop", "store", "salon", "hotel", "spa", "terrace", "embankment",
+		"waterfront", "promenade", "pizza", "burger", "sushi", "flower", "boutique",
+	}
+	for _, keyword := range lifestyleKeywords {
+		if strings.Contains(normalized, keyword) {
+			return nanoBananaPromptModeLifestyle
+		}
+	}
+
+	return nanoBananaPromptModeDigital
 }
 
 func normalizeToneDescription(tone string) string {

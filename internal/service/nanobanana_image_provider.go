@@ -12,6 +12,7 @@ import (
 	"time"
 
 	errs "eshkere/internal/errors"
+	"eshkere/pkg/logger"
 )
 
 type NanoBananaImageProviderConfig struct {
@@ -75,15 +76,36 @@ func (p *NanoBananaImageProvider) GenerateAdImage(ctx context.Context, in Genera
 		return nil, fmt.Errorf("%w: nanobanana callback url is not configured", errs.NotImplementedError)
 	}
 
+	logger.GetLoggerFromCtx(ctx).Infow(
+		"nanobanana image generation started",
+		"format", in.Format,
+		"style", in.Style,
+		"generation_key", in.GenerationKey,
+	)
+
 	taskID, err := p.createTask(ctx, in)
 	if err != nil {
+		logger.GetLoggerFromCtx(ctx).Warnw("nanobanana create task failed", "generation_key", in.GenerationKey, "err", err)
 		return nil, err
 	}
-	return p.waitForResult(ctx, taskID, p.pollTimeout)
+	logger.GetLoggerFromCtx(ctx).Infow("nanobanana task created", "generation_key", in.GenerationKey, "task_id", taskID)
+
+	result, err := p.waitForResult(ctx, taskID, p.pollTimeout)
+	if err != nil {
+		logger.GetLoggerFromCtx(ctx).Warnw("nanobanana wait for result failed", "generation_key", in.GenerationKey, "task_id", taskID, "err", err)
+		return nil, err
+	}
+	logger.GetLoggerFromCtx(ctx).Infow("nanobanana image generation finished", "generation_key", in.GenerationKey, "task_id", taskID)
+	return result, nil
 }
 
 func (p *NanoBananaImageProvider) createTask(ctx context.Context, in GenerateAdImageInput) (string, error) {
 	finalPrompt := BuildNanoBananaImagePrompt(in)
+	logger.GetLoggerFromCtx(ctx).Debugw(
+		"nanobanana create task request",
+		"generation_key", in.GenerationKey,
+		"image_size", mapAdFormatToAspectRatio(in.Format),
+	)
 
 	payload := nanoBananaGenerateRequest{
 		Prompt:      finalPrompt,
@@ -134,6 +156,7 @@ func (p *NanoBananaImageProvider) waitForResult(ctx context.Context, taskID stri
 	if timeout <= 0 {
 		timeout = p.pollTimeout
 	}
+	logger.GetLoggerFromCtx(ctx).Infow("nanobanana polling started", "task_id", taskID, "timeout", timeout.String(), "interval", p.pollInterval.String())
 	deadlineCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -146,6 +169,7 @@ func (p *NanoBananaImageProvider) waitForResult(ctx context.Context, taskID stri
 			return nil, err
 		}
 		if done {
+			logger.GetLoggerFromCtx(ctx).Infow("nanobanana polling finished", "task_id", taskID)
 			return result, nil
 		}
 

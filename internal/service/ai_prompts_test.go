@@ -78,4 +78,26 @@ func TestBuildNanoBananaImagePrompt(t *testing.T) {
 	if !strings.Contains(prompt, "Strictly no text, no letters, no typography") {
 		t.Fatalf("negative instructions missing: %s", prompt)
 	}
+	if !strings.Contains(prompt, "digital product visual") {
+		t.Fatalf("digital prompt should preserve product UI hints: %s", prompt)
+	}
+}
+
+func TestBuildNanoBananaImagePromptLifestyle(t *testing.T) {
+	prompt := BuildNanoBananaImagePrompt(GenerateAdImageInput{
+		Prompt:        "уютная кофейня на набережной",
+		Style:         "clean",
+		Format:        "feed",
+		GenerationKey: "draft-1",
+	})
+
+	if !strings.Contains(prompt, "realistic commercial lifestyle advertising image") {
+		t.Fatalf("lifestyle prompt should request commercial photo style: %s", prompt)
+	}
+	if !strings.Contains(prompt, "Strictly no tablet, no laptop, no phone screen") {
+		t.Fatalf("lifestyle prompt should ban devices: %s", prompt)
+	}
+	if strings.Contains(prompt, "digital product visual") {
+		t.Fatalf("lifestyle prompt must not mention digital product visuals: %s", prompt)
+	}
 }

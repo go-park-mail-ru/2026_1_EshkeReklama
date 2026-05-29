@@ -114,10 +114,11 @@ func New(configPath string) *App {
 			Password: cfg.ClickHouse.Password,
 		})
 		if err != nil {
-			logger.Fatalf("Failed to init ClickHouse stats reader: %v", err)
+			logger.Warnf("Failed to init ClickHouse stats reader, continue without analytics: %v", err)
+		} else {
+			closers = append(closers, reader)
+			statsReader = reader
 		}
-		closers = append(closers, reader)
-		statsReader = reader
 	}
 
 	s3Client, err := s3.NewClient(context.Background(), s3.Config{

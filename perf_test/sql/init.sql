@@ -1,10 +1,5 @@
--- perf_test/init.sql
--- Снимок DDL до оптимизаций под нагрузочное тестирование.
--- Сгенерировано: 2026-05-29T17:48:05Z (UTC)
--- Git commit: 2d5fc01
--- Источник: db/migrations/*.up.sql (по порядку имени файла)
---
--- Пересборка: ./perf_test/generate_init_sql.sh
+-- perf_test/sql/init.sql
+-- Пересборка: ./perf_test/scripts/generate_init_sql.sh
 
 -- >>> 000001_initial_schema.up.sql
 BEGIN;

@@ -13,19 +13,22 @@
 
 ```
 perf_test/
-  README.md            — этот файл (отчёты по итерациям ниже)
-  init.sql             — DDL до оптимизаций (generate_init_sql.sh)
-  generate_init_sql.sh — собрать init.sql из миграций
-  env.example          — шаблон переменных
-  setup.sh             — логин, кампания, группа
-  run_create.sh        — wrk: CREATE
-  run_read.sh          — wrk: READ
-  discover_ad_ids.sh   — min/max id после сида
-  cleanup.sql          — SQL удаления LOADTEST_*
-  reset.sh             — cleanup.sql + сброс .env + setup.sh
-  wrk/create.lua
-  wrk/read.lua
-  results/             — вывод wrk по итерациям
+  README.md
+  env.example
+  scripts/
+    setup.sh
+    reset.sh
+    run_create.sh
+    run_read.sh
+    discover_ad_ids.sh
+    generate_init_sql.sh
+  sql/
+    cleanup.sql
+    init.sql
+  wrk/
+    create.lua
+    read.lua
+  results/
 ```
 
 ## Подготовка (один раз)
@@ -49,7 +52,7 @@ perf_test/
    
 4. Собрать **`init.sql`** один раз до оптимизаций:
    ```bash
-   ./perf_test/generate_init_sql.sh
+   ./perf_test/scripts/generate_init_sql.sh
    ```
    После старта perf-работы не перезаписывайте без веской причины.
 
@@ -57,16 +60,16 @@ perf_test/
 
 ```bash
 # 1) Подготовка сессии и LOADTEST кампании/группы
-./perf_test/setup.sh
+./perf_test/scripts/setup.sh
 
 # 2) Нагрузка на CREATE (крутить, пока в БД не ~100k)
-./perf_test/run_create.sh <N>  # N -- номер оптимизации
+./perf_test/scripts/run_create.sh <N>  # N -- номер оптимизации
 
 # 3) Обязательная проверка и сохранение крайних id для последующего удаления:
-./perf_test/discover_ad_ids.sh
+./perf_test/scripts/discover_ad_ids.sh
 
 # 4) Нагрузка на READ
-./perf_test/run_read.sh <N>  # N -- номер оптимизации
+./perf_test/scripts/run_read.sh <N>  # N -- номер оптимизации
 ```
 
 Логи wrk сохраняются в `perf_test/results/iteration_*_*.txt`.
@@ -115,7 +118,7 @@ _Заполните после первого прогона._
 ## Очистка и сброс
 
 ```bash
-./perf_test/reset.sh
+./perf_test/scripts/reset.sh
 ```
 
 ## Примечания по данным

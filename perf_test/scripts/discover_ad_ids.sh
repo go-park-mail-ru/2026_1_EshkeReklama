@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-ENV="${ROOT}/perf_test/.env"
-[[ -f "$ENV" ]] || { echo "missing $ENV" >&2; exit 1; }
+PERF="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT="$(cd "$PERF/.." && pwd)"
+ENV="${PERF}/.env"
 
-# shellcheck disable=SC1090
+[[ -f "$ENV" ]] || { echo "missing $ENV" >&2; exit 1; }
 source "$ENV"
 : "${POSTGRES_USER:?}" "${POSTGRES_DB:?}"
 

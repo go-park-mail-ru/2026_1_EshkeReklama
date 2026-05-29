@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT="${ROOT}/perf_test/init.sql"
+PERF="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT="$(cd "$PERF/.." && pwd)"
+OUT="${PERF}/sql/init.sql"
 
 {
   echo "-- $(date -u +%Y-%m-%dT%H:%M:%SZ)"

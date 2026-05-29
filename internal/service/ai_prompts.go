@@ -152,6 +152,9 @@ func BuildGenerateAdImagePrompt(in GenerateAdImageInput) AIPromptSet {
 Желаемый стиль:
 %s
 
+Формат объявления:
+%s
+
 Нужно:
 - современный рекламный стиль
 - чистая композиция
@@ -161,6 +164,7 @@ func BuildGenerateAdImagePrompt(in GenerateAdImageInput) AIPromptSet {
 - если продукт физический, сфокусируйся на товаре как главном объекте`,
 		in.Prompt,
 		normalizeImageStyle(in.Style),
+		normalizeAdFormatDescription(in.Format),
 	)
 
 	return AIPromptSet{
@@ -169,6 +173,32 @@ func BuildGenerateAdImagePrompt(in GenerateAdImageInput) AIPromptSet {
 			{Role: "user", Content: user},
 		},
 	}
+}
+
+func BuildNanoBananaImagePrompt(in GenerateAdImageInput) string {
+	in = normalizeGenerateAdImageInput(in)
+
+	formatInstruction := "16:9 horizontal marketing creative for feed placement"
+	compositionInstruction := "leave clean breathing space, strong focal point, balanced composition for a feed ad"
+	switch in.Format {
+	case "stories":
+		formatInstruction = "9:16 vertical marketing creative for stories placement"
+		compositionInstruction = "vertical composition, subject centered or slightly lower, enough empty space near top and bottom for UI overlays"
+	}
+
+	styleInstruction := normalizeImageStyle(in.Style)
+	productDescription := strings.TrimSpace(in.Prompt)
+	if productDescription == "" {
+		productDescription = "digital product advertising creative"
+	}
+
+	return fmt.Sprintf(
+		"Create a premium modern advertising creative for %s. %s. Style: %s. Show a believable digital-product visual, polished interface elements, subtle growth or analytics cues only if relevant, clean lighting, premium SaaS aesthetic, simple background, high visual clarity. %s. Strictly no text, no letters, no typography, no words, no slogans, no CTA buttons, no logo, no watermark, no fake brand names, no UI labels, no captions, no poster layout, no stock ad template. Make it look like a polished visual asset background for an ad, not a finished banner with copy.",
+		productDescription,
+		formatInstruction,
+		styleInstruction,
+		compositionInstruction,
+	)
 }
 
 func normalizeToneDescription(tone string) string {
@@ -189,9 +219,25 @@ func normalizeToneDescription(tone string) string {
 }
 
 func normalizeImageStyle(style string) string {
-	style = strings.TrimSpace(style)
-	if style == "" {
-		return "clean modern advertising visual"
+	switch strings.ToLower(strings.TrimSpace(style)) {
+	case "", "clean":
+		return "clean modern advertising visual, soft gradients, minimal premium SaaS look"
+	case "bold":
+		return "bold modern advertising visual, high contrast, strong focal point, premium marketing look"
+	case "minimal":
+		return "minimal polished product visual, restrained composition, elegant and uncluttered"
+	default:
+		return strings.TrimSpace(style)
 	}
-	return style
+}
+
+func normalizeAdFormatDescription(format string) string {
+	switch strings.ToLower(strings.TrimSpace(format)) {
+	case "stories":
+		return "stories, вертикальный 1080x1920"
+	case "feed", "":
+		return "лента, горизонтальный 1200x628"
+	default:
+		return format
+	}
 }

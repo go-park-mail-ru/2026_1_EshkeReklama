@@ -260,6 +260,7 @@ type GeneratedAdVariants struct {
 type GenerateAdImageInput struct {
 	Prompt string
 	Style  string
+	Format string
 }
 
 type GeneratedAdImage struct {

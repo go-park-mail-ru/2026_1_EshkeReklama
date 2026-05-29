@@ -84,11 +84,13 @@ func (p *NanoBananaImageProvider) GenerateAdImage(ctx context.Context, in Genera
 }
 
 func (p *NanoBananaImageProvider) createTask(ctx context.Context, in GenerateAdImageInput) (string, error) {
+	finalPrompt := BuildNanoBananaImagePrompt(in)
+
 	payload := nanoBananaGenerateRequest{
-		Prompt:      strings.TrimSpace(in.Prompt),
+		Prompt:      finalPrompt,
 		NumImages:   1,
 		Type:        "TEXTTOIAMGE",
-		ImageSize:   mapImageStyleToAspectRatio(in.Style),
+		ImageSize:   mapAdFormatToAspectRatio(in.Format),
 		CallbackURL: p.callbackURL,
 	}
 
@@ -200,14 +202,14 @@ func (p *NanoBananaImageProvider) fetchTaskResult(ctx context.Context, taskID st
 	}
 }
 
-func mapImageStyleToAspectRatio(style string) string {
-	switch strings.ToLower(strings.TrimSpace(style)) {
-	case "story", "portrait", "vertical":
+func mapAdFormatToAspectRatio(format string) string {
+	switch strings.ToLower(strings.TrimSpace(format)) {
+	case "stories", "story":
 		return "9:16"
-	case "banner", "landscape", "wide":
+	case "feed", "":
 		return "16:9"
 	default:
-		return "1:1"
+		return "16:9"
 	}
 }
 

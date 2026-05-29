@@ -113,7 +113,8 @@ func TestGenerateAdImage_OK(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/ai/ad-image", bytes.NewBufferString(`{
 		"prompt":"Светлый баннер с ноутбуком и графиком роста",
-		"style":"clean"
+		"style":"clean",
+		"format":"feed"
 	}`))
 	req.AddCookie(csrf)
 	req.AddCookie(session)

@@ -49,6 +49,7 @@ func TestBuildGenerateAdVariantsPrompt(t *testing.T) {
 func TestBuildGenerateAdImagePrompt(t *testing.T) {
 	prompt := BuildGenerateAdImagePrompt(GenerateAdImageInput{
 		Prompt: "Платформа для аналитики рекламы",
+		Format: "feed",
 	})
 
 	if !strings.Contains(prompt.Messages[1].Content, "Платформа для аналитики рекламы") {
@@ -56,5 +57,23 @@ func TestBuildGenerateAdImagePrompt(t *testing.T) {
 	}
 	if !strings.Contains(prompt.Messages[1].Content, "clean modern advertising visual") {
 		t.Fatalf("default image style missing: %s", prompt.Messages[1].Content)
+	}
+	if !strings.Contains(prompt.Messages[1].Content, "лента, горизонтальный 1200x628") {
+		t.Fatalf("format description missing: %s", prompt.Messages[1].Content)
+	}
+}
+
+func TestBuildNanoBananaImagePrompt(t *testing.T) {
+	prompt := BuildNanoBananaImagePrompt(GenerateAdImageInput{
+		Prompt: "платформы аналитики рекламы",
+		Style:  "clean",
+		Format: "stories",
+	})
+
+	if !strings.Contains(prompt, "9:16 vertical marketing creative for stories placement") {
+		t.Fatalf("format instruction missing: %s", prompt)
+	}
+	if !strings.Contains(prompt, "Strictly no text, no letters, no typography") {
+		t.Fatalf("negative instructions missing: %s", prompt)
 	}
 }

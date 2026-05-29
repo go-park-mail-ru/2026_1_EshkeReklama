@@ -43,11 +43,13 @@ func (r GenerateAdVariantsRequest) ToInput() service.GenerateAdVariantsInput {
 type GenerateAdImageRequest struct {
 	Prompt string `json:"prompt"`
 	Style  string `json:"style"`
+	Format string `json:"format"`
 }
 
 func (r GenerateAdImageRequest) ToInput() service.GenerateAdImageInput {
 	return service.GenerateAdImageInput{
 		Prompt: r.Prompt,
 		Style:  r.Style,
+		Format: r.Format,
 	}
 }

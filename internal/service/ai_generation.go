@@ -114,6 +114,11 @@ func validateGenerateAdImageInput(in GenerateAdImageInput) error {
 	if strings.TrimSpace(in.Prompt) == "" {
 		return fmt.Errorf("%w: prompt is required", errs.ErrInvalidAdvertiserArg)
 	}
+	switch strings.ToLower(strings.TrimSpace(in.Format)) {
+	case "", "feed", "stories", "story":
+	default:
+		return fmt.Errorf("%w: format must be feed or stories", errs.ErrInvalidAdvertiserArg)
+	}
 	return nil
 }
 
@@ -134,5 +139,9 @@ func normalizeGenerateAdVariantsInput(in GenerateAdVariantsInput) GenerateAdVari
 func normalizeGenerateAdImageInput(in GenerateAdImageInput) GenerateAdImageInput {
 	in.Prompt = strings.TrimSpace(in.Prompt)
 	in.Style = strings.TrimSpace(in.Style)
+	in.Format = strings.TrimSpace(strings.ToLower(in.Format))
+	if in.Format == "story" {
+		in.Format = "stories"
+	}
 	return in
 }

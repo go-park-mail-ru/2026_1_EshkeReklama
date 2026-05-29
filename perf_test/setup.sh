@@ -62,7 +62,7 @@ if [[ -z "${CAMPAIGN_ID:-}" ]]; then
     -H "Content-Type: application/json" \
     -H "X-CSRF-Token: ${CSRF}" \
     -d '{"name":"LOADTEST_campaign","daily_budget":1000000,"cpm_price":1000,"main_action":"look"}')"
-  CAMPAIGN_ID="$(python3 -c "import json,sys; print(json.load(sys.stdin)['id'])" <<<"$CAMP_RESP")"
+  CAMPAIGN_ID="$(python3 -c "import json,sys; d=json.load(sys.stdin); print((d.get('data') or d)['id'])" <<<"$CAMP_RESP")"
 fi
 
 if [[ -z "${GROUP_ID:-}" ]]; then
@@ -71,7 +71,7 @@ if [[ -z "${GROUP_ID:-}" ]]; then
     -H "Content-Type: application/json" \
     -H "X-CSRF-Token: ${CSRF}" \
     -d '{"topic":"Технологии","region":"Москва","name":"LOADTEST_group","age_from":18,"age_to":65,"gender":"any"}')"
-  GROUP_ID="$(python3 -c "import json,sys; print(json.load(sys.stdin)['id'])" <<<"$GROUP_RESP")"
+  GROUP_ID="$(python3 -c "import json,sys; d=json.load(sys.stdin); print((d.get('data') or d)['id'])" <<<"$GROUP_RESP")"
 fi
 
 # Обновляем .env (macOS/Linux compatible)

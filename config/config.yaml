@@ -103,6 +103,6 @@ nanobanana:
   api_key: ${NANOBANANA_API_KEY}
   base_url: ${NANOBANANA_BASE_URL}
   callback_url: ${NANOBANANA_CALLBACK_URL}
-  timeout: 60s
-  poll_interval: 2s
-  poll_timeout: 60s
+  timeout: 90s
+  poll_interval: 3s
+  poll_timeout: 120s

@@ -88,7 +88,7 @@ func (p *NanoBananaImageProvider) createTask(ctx context.Context, in GenerateAdI
 
 	payload := nanoBananaGenerateRequest{
 		Prompt:      finalPrompt,
-		NumImages:   1,
+		NumImages:   in.Count,
 		Type:        "TEXTTOIAMGE",
 		ImageSize:   mapAdFormatToAspectRatio(in.Format),
 		CallbackURL: p.callbackURL,
@@ -186,11 +186,24 @@ func (p *NanoBananaImageProvider) fetchTaskResult(ctx context.Context, taskID st
 	case 0:
 		return nil, false, nil
 	case 1:
-		imageURL := strings.TrimSpace(decoded.Data.Response.ResultImageURL)
-		if imageURL == "" {
+		images := make([]GeneratedAdImageVariant, 0, len(decoded.Data.Response.ResultImageURLs))
+		for _, rawURL := range decoded.Data.Response.ResultImageURLs {
+			if imageURL := strings.TrimSpace(rawURL); imageURL != "" {
+				images = append(images, GeneratedAdImageVariant{ImageURL: imageURL})
+			}
+		}
+		if len(images) == 0 {
+			if imageURL := strings.TrimSpace(decoded.Data.Response.ResultImageURL); imageURL != "" {
+				images = append(images, GeneratedAdImageVariant{ImageURL: imageURL})
+			}
+		}
+		if len(images) == 0 {
 			return nil, false, fmt.Errorf("%w: nanobanana returned success without result image url", errs.InternalServiceError)
 		}
-		return &GeneratedAdImage{ImageURL: imageURL}, true, nil
+		return &GeneratedAdImage{
+			ImageURL: images[0].ImageURL,
+			Images:   images,
+		}, true, nil
 	case 2, 3:
 		message := strings.TrimSpace(decoded.Data.ErrorMessage)
 		if message == "" {
@@ -238,8 +251,9 @@ type nanoBananaStatusResponse struct {
 		ErrorCode    int    `json:"errorCode"`
 		ErrorMessage string `json:"errorMessage"`
 		Response     struct {
-			OriginImageURL string `json:"originImageUrl"`
-			ResultImageURL string `json:"resultImageUrl"`
+			OriginImageURL  string   `json:"originImageUrl"`
+			ResultImageURL  string   `json:"resultImageUrl"`
+			ResultImageURLs []string `json:"resultImageUrls"`
 		} `json:"response"`
 	} `json:"data"`
 }

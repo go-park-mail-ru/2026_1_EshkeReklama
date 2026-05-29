@@ -102,7 +102,12 @@ func TestGenerateAdImage_OK(t *testing.T) {
 				t.Fatalf("unexpected input: advertiserID=%d input=%+v", advertiserID, in)
 			}
 			return &service.GeneratedAdImage{
-				ImageURL: "https://cdn.example.com/generated/ad-image.png",
+				ImageURL: "https://cdn.example.com/generated/ad-image-1.png",
+				Images: []service.GeneratedAdImageVariant{
+					{ImageURL: "https://cdn.example.com/generated/ad-image-1.png"},
+					{ImageURL: "https://cdn.example.com/generated/ad-image-2.png"},
+					{ImageURL: "https://cdn.example.com/generated/ad-image-3.png"},
+				},
 			}, nil
 		},
 	}
@@ -114,7 +119,8 @@ func TestGenerateAdImage_OK(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/api/ai/ad-image", bytes.NewBufferString(`{
 		"prompt":"Светлый баннер с ноутбуком и графиком роста",
 		"style":"clean",
-		"format":"feed"
+		"format":"feed",
+		"count":3
 	}`))
 	req.AddCookie(csrf)
 	req.AddCookie(session)

@@ -68,6 +68,7 @@ func TestBuildNanoBananaImagePrompt(t *testing.T) {
 		Prompt: "платформы аналитики рекламы",
 		Style:  "clean",
 		Format: "stories",
+		Count:  3,
 	})
 
 	if !strings.Contains(prompt, "9:16 vertical marketing creative for stories placement") {

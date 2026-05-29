@@ -74,6 +74,9 @@ func TestNanoBananaImageProviderGenerateAdImage(t *testing.T) {
 			if payload.ImageSize != "16:9" {
 				t.Fatalf("unexpected image size: %s", payload.ImageSize)
 			}
+			if payload.NumImages != 3 {
+				t.Fatalf("unexpected num images: %d", payload.NumImages)
+			}
 			if payload.Prompt == "Платформа аналитики" || payload.Prompt == "" {
 				t.Fatalf("expected enriched prompt, got %q", payload.Prompt)
 			}
@@ -90,7 +93,7 @@ func TestNanoBananaImageProviderGenerateAdImage(t *testing.T) {
 					"successFlag":1,
 					"errorCode":0,
 					"errorMessage":"",
-					"response":{"resultImageUrl":"https://cdn.example.com/generated.jpg"}
+					"response":{"resultImageUrls":["https://cdn.example.com/generated-1.jpg","https://cdn.example.com/generated-2.jpg","https://cdn.example.com/generated-3.jpg"]}
 				}
 			}`), nil
 		default:
@@ -103,12 +106,16 @@ func TestNanoBananaImageProviderGenerateAdImage(t *testing.T) {
 		Prompt: "Платформа аналитики",
 		Style:  "clean",
 		Format: "feed",
+		Count:  3,
 	})
 	if err != nil {
 		t.Fatalf("generate ad image: %v", err)
 	}
-	if out.ImageURL != "https://cdn.example.com/generated.jpg" {
+	if out.ImageURL != "https://cdn.example.com/generated-1.jpg" {
 		t.Fatalf("unexpected image url: %s", out.ImageURL)
+	}
+	if len(out.Images) != 3 {
+		t.Fatalf("expected 3 images, got %+v", out.Images)
 	}
 }
 

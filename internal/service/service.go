@@ -261,10 +261,16 @@ type GenerateAdImageInput struct {
 	Prompt string
 	Style  string
 	Format string
+	Count  int
+}
+
+type GeneratedAdImageVariant struct {
+	ImageURL string `json:"image_url"`
 }
 
 type GeneratedAdImage struct {
-	ImageURL string `json:"image_url"`
+	ImageURL string                    `json:"image_url,omitempty"`
+	Images   []GeneratedAdImageVariant `json:"images,omitempty"`
 }
 
 type AIProvider interface {

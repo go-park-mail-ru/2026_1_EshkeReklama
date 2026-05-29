@@ -71,10 +71,19 @@ func (s *Service) GenerateAdImage(ctx context.Context, advertiserID int, in Gene
 	if err != nil {
 		return nil, err
 	}
-	if out == nil || strings.TrimSpace(out.ImageURL) == "" {
+	if out == nil {
 		return nil, fmt.Errorf("%w: empty ai response", errs.InternalServiceError)
 	}
 	out.ImageURL = strings.TrimSpace(out.ImageURL)
+	for i := range out.Images {
+		out.Images[i].ImageURL = strings.TrimSpace(out.Images[i].ImageURL)
+	}
+	if out.ImageURL == "" && len(out.Images) == 0 {
+		return nil, fmt.Errorf("%w: empty ai response", errs.InternalServiceError)
+	}
+	if out.ImageURL == "" && len(out.Images) > 0 {
+		out.ImageURL = out.Images[0].ImageURL
+	}
 	return out, nil
 }
 
@@ -119,6 +128,9 @@ func validateGenerateAdImageInput(in GenerateAdImageInput) error {
 	default:
 		return fmt.Errorf("%w: format must be feed or stories", errs.ErrInvalidAdvertiserArg)
 	}
+	if in.Count != 0 && (in.Count < 1 || in.Count > 3) {
+		return fmt.Errorf("%w: count must be between 1 and 3", errs.ErrInvalidAdvertiserArg)
+	}
 	return nil
 }
 
@@ -142,6 +154,9 @@ func normalizeGenerateAdImageInput(in GenerateAdImageInput) GenerateAdImageInput
 	in.Format = strings.TrimSpace(strings.ToLower(in.Format))
 	if in.Format == "story" {
 		in.Format = "stories"
+	}
+	if in.Count <= 0 {
+		in.Count = 3
 	}
 	return in
 }

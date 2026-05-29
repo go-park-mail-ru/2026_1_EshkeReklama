@@ -117,10 +117,7 @@ func (p *OpenAITextProvider) doChatCompletion(ctx context.Context, prompt AIProm
 
 	messages := make([]openAIChatMessage, 0, len(prompt.Messages))
 	for _, msg := range prompt.Messages {
-		messages = append(messages, openAIChatMessage{
-			Role:    msg.Role,
-			Content: msg.Content,
-		})
+		messages = append(messages, openAIChatMessage(msg))
 	}
 
 	payload := openAIChatCompletionRequest{

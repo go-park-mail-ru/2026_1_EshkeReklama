@@ -110,6 +110,7 @@ func (a *API) ExportCampaignStats(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"campaign_%d_stats.csv\"", campaignID))
 	w.WriteHeader(http.StatusOK)
+	// #nosec G705 -- csvData is an intended downloadable report payload.
 	_, _ = w.Write(csvData)
 }
 

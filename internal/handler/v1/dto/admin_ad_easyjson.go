@@ -110,21 +110,21 @@ func easyjsonAcbdbae7DecodeEshkereInternalHandlerV1Dto1(in *jlexer.Lexer, out *L
 				in.Delim('[')
 				if out.Ads == nil {
 					if !in.IsDelim(']') {
-						out.Ads = make([]*AdResponse, 0, 8)
+						out.Ads = make([]*AdminAdResponse, 0, 8)
 					} else {
-						out.Ads = []*AdResponse{}
+						out.Ads = []*AdminAdResponse{}
 					}
 				} else {
 					out.Ads = (out.Ads)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v1 *AdResponse
+					var v1 *AdminAdResponse
 					if in.IsNull() {
 						in.Skip()
 						v1 = nil
 					} else {
 						if v1 == nil {
-							v1 = new(AdResponse)
+							v1 = new(AdminAdResponse)
 						}
 						(*v1).UnmarshalEasyJSON(in)
 					}
@@ -192,4 +192,112 @@ func (v *ListAdminAdsResponse) UnmarshalJSON(data []byte) error {
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ListAdminAdsResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonAcbdbae7DecodeEshkereInternalHandlerV1Dto1(l, v)
+}
+func easyjsonAcbdbae7DecodeEshkereInternalHandlerV1Dto2(in *jlexer.Lexer, out *AdminAdResponse) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "id":
+			out.ID = int(in.Int())
+		case "status":
+			out.Status = string(in.String())
+		case "title":
+			out.Title = string(in.String())
+		case "short_desc":
+			out.ShortDesc = string(in.String())
+		case "image_url":
+			out.ImageURL = string(in.String())
+		case "target_url":
+			out.TargetURL = string(in.String())
+		case "priority_moderation":
+			out.PriorityModeration = bool(in.Bool())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjsonAcbdbae7EncodeEshkereInternalHandlerV1Dto2(out *jwriter.Writer, in AdminAdResponse) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"id\":"
+		out.RawString(prefix[1:])
+		out.Int(int(in.ID))
+	}
+	{
+		const prefix string = ",\"status\":"
+		out.RawString(prefix)
+		out.String(string(in.Status))
+	}
+	{
+		const prefix string = ",\"title\":"
+		out.RawString(prefix)
+		out.String(string(in.Title))
+	}
+	{
+		const prefix string = ",\"short_desc\":"
+		out.RawString(prefix)
+		out.String(string(in.ShortDesc))
+	}
+	{
+		const prefix string = ",\"image_url\":"
+		out.RawString(prefix)
+		out.String(string(in.ImageURL))
+	}
+	{
+		const prefix string = ",\"target_url\":"
+		out.RawString(prefix)
+		out.String(string(in.TargetURL))
+	}
+	{
+		const prefix string = ",\"priority_moderation\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.PriorityModeration))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v AdminAdResponse) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjsonAcbdbae7EncodeEshkereInternalHandlerV1Dto2(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v AdminAdResponse) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjsonAcbdbae7EncodeEshkereInternalHandlerV1Dto2(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *AdminAdResponse) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjsonAcbdbae7DecodeEshkereInternalHandlerV1Dto2(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *AdminAdResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjsonAcbdbae7DecodeEshkereInternalHandlerV1Dto2(l, v)
 }

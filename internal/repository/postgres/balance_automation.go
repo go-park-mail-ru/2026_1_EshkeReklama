@@ -121,22 +121,26 @@ func NewAdvertiserNotificationSettingsRepository(db *sql.DB) *AdvertiserNotifica
 
 const (
 	upsertAdvertiserNotificationSettings = `INSERT INTO eshkere.advertiser_notification_settings
-		(advertiser_id, email_enabled, warning_threshold, critical_threshold, updated_at)
-		VALUES ($1, $2, $3, $4, NOW())
+		(advertiser_id, email_enabled, telegram_enabled, telegram_chat_id, warning_threshold, critical_threshold, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, NOW())
 		ON CONFLICT (advertiser_id) DO UPDATE SET
 			email_enabled = EXCLUDED.email_enabled,
+			telegram_enabled = EXCLUDED.telegram_enabled,
+			telegram_chat_id = EXCLUDED.telegram_chat_id,
 			warning_threshold = EXCLUDED.warning_threshold,
 			critical_threshold = EXCLUDED.critical_threshold,
 			updated_at = NOW()`
 
 	selectAdvertiserNotificationSettings = `SELECT
-		advertiser_id, email_enabled, warning_threshold, critical_threshold, updated_at
+		advertiser_id, email_enabled, telegram_enabled, telegram_chat_id, warning_threshold, critical_threshold, updated_at
 	FROM eshkere.advertiser_notification_settings
 	WHERE advertiser_id = $1`
 
 	selectEmailNotificationCandidates = `SELECT
 		ans.advertiser_id,
 		ans.email_enabled,
+		ans.telegram_enabled,
+		ans.telegram_chat_id,
 		ans.warning_threshold,
 		ans.critical_threshold,
 		ans.updated_at
@@ -149,6 +153,8 @@ func (r *AdvertiserNotificationSettingsRepository) GetByAdvertiserID(ctx context
 	err := r.db.QueryRowContext(ctx, selectAdvertiserNotificationSettings, advertiserID).Scan(
 		&settings.AdvertiserID,
 		&settings.EmailEnabled,
+		&settings.TelegramEnabled,
+		&settings.TelegramChatID,
 		&settings.WarningThreshold,
 		&settings.CriticalThreshold,
 		&settings.UpdatedAt,
@@ -177,7 +183,14 @@ func (r *AdvertiserNotificationSettingsRepository) Upsert(ctx context.Context, s
 		return fmt.Errorf("%w: warning threshold must be greater than critical threshold", errs.ErrInvalidAdvertiserArg)
 	}
 
-	if _, err := r.db.ExecContext(ctx, upsertAdvertiserNotificationSettings, settings.AdvertiserID, settings.EmailEnabled, settings.WarningThreshold, settings.CriticalThreshold); err != nil {
+	if _, err := r.db.ExecContext(ctx, upsertAdvertiserNotificationSettings,
+		settings.AdvertiserID,
+		settings.EmailEnabled,
+		settings.TelegramEnabled,
+		nullStringParam(settings.TelegramChatID),
+		settings.WarningThreshold,
+		settings.CriticalThreshold,
+	); err != nil {
 		return fmt.Errorf("upsert advertiser notification settings: %w", err)
 	}
 
@@ -197,6 +210,8 @@ func (r *AdvertiserNotificationSettingsRepository) ListEnabled(ctx context.Conte
 		if err := rows.Scan(
 			&settings.AdvertiserID,
 			&settings.EmailEnabled,
+			&settings.TelegramEnabled,
+			&settings.TelegramChatID,
 			&settings.WarningThreshold,
 			&settings.CriticalThreshold,
 			&settings.UpdatedAt,
@@ -211,4 +226,11 @@ func (r *AdvertiserNotificationSettingsRepository) ListEnabled(ctx context.Conte
 	}
 
 	return out, nil
+}
+
+func nullStringParam(v sql.NullString) any {
+	if !v.Valid {
+		return nil
+	}
+	return v.String
 }

@@ -157,17 +157,19 @@ func (s *Service) ListAds(ctx context.Context, advertiserID, groupID int) ([]*mo
 	return ads, nil
 }
 
-func (s *Service) ListModerationAds(ctx context.Context) ([]*models.Ad, error) {
-	ads, err := s.adRepo.ListByStatus(ctx, models.AdStatusModeration)
+func (s *Service) ListModerationAds(ctx context.Context) ([]*models.ModerationQueueItem, error) {
+	items, err := s.adRepo.ListModerationQueue(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, ad := range ads {
-		s.decorateAdImageURL(ad)
+	for _, item := range items {
+		if item != nil && item.Ad != nil {
+			s.decorateAdImageURL(item.Ad)
+		}
 	}
 
-	return ads, nil
+	return items, nil
 }
 
 func (s *Service) DeleteAd(ctx context.Context, advertiserID, adID int) error {

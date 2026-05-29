@@ -131,16 +131,16 @@ func TestListModerationAds_UsesModerationStatus(t *testing.T) {
 	repo := NewMockAdRepository(ctrl)
 	svc, _ := NewService(&Config{AdRepo: repo})
 
-	repo.EXPECT().ListByStatus(gomock.Any(), models.AdStatusModeration).Return([]*models.Ad{
-		{ID: 1, Status: models.AdStatusModeration},
+	repo.EXPECT().ListModerationQueue(gomock.Any()).Return([]*models.ModerationQueueItem{
+		{Ad: &models.Ad{ID: 1, Status: models.AdStatusModeration}},
 	}, nil)
 
-	ads, err := svc.ListModerationAds(context.Background())
+	items, err := svc.ListModerationAds(context.Background())
 	if err != nil {
 		t.Fatalf("ListModerationAds: %v", err)
 	}
-	if len(ads) != 1 || ads[0].Status != models.AdStatusModeration {
-		t.Fatalf("unexpected ads: %+v", ads)
+	if len(items) != 1 || items[0].Ad == nil || items[0].Ad.Status != models.AdStatusModeration {
+		t.Fatalf("unexpected items: %+v", items)
 	}
 }
 

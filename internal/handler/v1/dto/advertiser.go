@@ -131,15 +131,19 @@ type AutopaySettingsResponse struct {
 }
 
 type NotificationSettingsRequest struct {
-	EmailEnabled      bool  `json:"email_enabled"`
-	WarningThreshold  int64 `json:"warning_threshold"`
-	CriticalThreshold int64 `json:"critical_threshold"`
+	EmailEnabled      bool   `json:"email_enabled"`
+	TelegramEnabled   bool   `json:"telegram_enabled"`
+	TelegramChatID    string `json:"telegram_chat_id"`
+	WarningThreshold  int64  `json:"warning_threshold"`
+	CriticalThreshold int64  `json:"critical_threshold"`
 }
 
 type NotificationSettingsResponse struct {
-	EmailEnabled      bool  `json:"email_enabled"`
-	WarningThreshold  int64 `json:"warning_threshold"`
-	CriticalThreshold int64 `json:"critical_threshold"`
+	EmailEnabled      bool   `json:"email_enabled"`
+	TelegramEnabled   bool   `json:"telegram_enabled"`
+	TelegramChatID    string `json:"telegram_chat_id,omitempty"`
+	WarningThreshold  int64  `json:"warning_threshold"`
+	CriticalThreshold int64  `json:"critical_threshold"`
 }
 
 type DeliveryAlertResponse struct {

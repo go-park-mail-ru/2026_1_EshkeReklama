@@ -11,12 +11,13 @@ import (
 )
 
 type TariffInfo struct {
-	Tariff        string  `json:"tariff"`
-	IsProActive   bool    `json:"is_pro_active"`
-	ExpiresAt     *string `json:"expires_at,omitempty"`
-	MaxCampaigns  int     `json:"max_campaigns"`
-	UsedCampaigns int     `json:"used_campaigns"`
-	PriceRub      int     `json:"price_rub"`
+	Tariff        string         `json:"tariff"`
+	IsProActive   bool           `json:"is_pro_active"`
+	ExpiresAt     *string        `json:"expires_at,omitempty"`
+	MaxCampaigns  int            `json:"max_campaigns"`
+	UsedCampaigns int            `json:"used_campaigns"`
+	PriceRub      int            `json:"price_rub"`
+	Features      TariffFeatures `json:"features"`
 }
 
 func checkActiveCampaignLimit(adv *models.Advertiser, activeCount int) error {
@@ -79,6 +80,7 @@ func (s *Service) GetTariffInfo(ctx context.Context, advertiserID int) (*TariffI
 		MaxCampaigns:  adv.MaxCampaigns(),
 		UsedCampaigns: count,
 		PriceRub:      0,
+		Features:      tariffFeaturesFor(adv),
 	}
 
 	if adv.Tariff != models.TariffTypeCheater {
@@ -162,6 +164,7 @@ func (s *Service) ActivatePro(ctx context.Context, advertiserID int) (*TariffInf
 		MaxCampaigns:  models.MaxCampaignsPro,
 		UsedCampaigns: count,
 		PriceRub:      models.SubscriptionPriceRub,
+		Features:      tariffFeaturesFor(adv),
 	}, nil
 }
 

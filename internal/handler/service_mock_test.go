@@ -73,6 +73,51 @@ func (mr *MockServiceMockRecorder) CreateAd(ctx, advertiserID, in any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAd", reflect.TypeOf((*MockService)(nil).CreateAd), ctx, advertiserID, in)
 }
 
+// GenerateAdImage mocks base method.
+func (m *MockService) GenerateAdImage(ctx context.Context, advertiserID int, in service.GenerateAdImageInput) (*service.GeneratedAdImage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateAdImage", ctx, advertiserID, in)
+	ret0, _ := ret[0].(*service.GeneratedAdImage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GenerateAdImage indicates an expected call of GenerateAdImage.
+func (mr *MockServiceMockRecorder) GenerateAdImage(ctx, advertiserID, in any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateAdImage", reflect.TypeOf((*MockService)(nil).GenerateAdImage), ctx, advertiserID, in)
+}
+
+// GenerateAdText mocks base method.
+func (m *MockService) GenerateAdText(ctx context.Context, advertiserID int, in service.GenerateAdTextInput) (*service.GeneratedAdText, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateAdText", ctx, advertiserID, in)
+	ret0, _ := ret[0].(*service.GeneratedAdText)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GenerateAdText indicates an expected call of GenerateAdText.
+func (mr *MockServiceMockRecorder) GenerateAdText(ctx, advertiserID, in any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateAdText", reflect.TypeOf((*MockService)(nil).GenerateAdText), ctx, advertiserID, in)
+}
+
+// GenerateAdVariants mocks base method.
+func (m *MockService) GenerateAdVariants(ctx context.Context, advertiserID int, in service.GenerateAdVariantsInput) (*service.GeneratedAdVariants, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateAdVariants", ctx, advertiserID, in)
+	ret0, _ := ret[0].(*service.GeneratedAdVariants)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GenerateAdVariants indicates an expected call of GenerateAdVariants.
+func (mr *MockServiceMockRecorder) GenerateAdVariants(ctx, advertiserID, in any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateAdVariants", reflect.TypeOf((*MockService)(nil).GenerateAdVariants), ctx, advertiserID, in)
+}
+
 // GetAdByID mocks base method.
 func (m *MockService) GetAdByID(ctx context.Context, adID int) (*models.Ad, error) {
 	m.ctrl.T.Helper()
@@ -104,12 +149,27 @@ func (mr *MockServiceMockRecorder) GetAdStats(ctx, advertiserID, campaignID, gro
 }
 
 // ListModerationAds mocks base method.
-func (m *MockService) ListModerationAds(ctx context.Context) ([]*models.Ad, error) {
+func (m *MockService) ListModerationAds(ctx context.Context) ([]*models.ModerationQueueItem, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListModerationAds", ctx)
-	ret0, _ := ret[0].([]*models.Ad)
+	ret0, _ := ret[0].([]*models.ModerationQueueItem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
+}
+
+// ExportCampaignStatsCSV mocks base method.
+func (m *MockService) ExportCampaignStatsCSV(ctx context.Context, advertiserID, campaignID int, from, to time.Time) ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExportCampaignStatsCSV", ctx, advertiserID, campaignID, from, to)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExportCampaignStatsCSV indicates an expected call of ExportCampaignStatsCSV.
+func (mr *MockServiceMockRecorder) ExportCampaignStatsCSV(ctx, advertiserID, campaignID, from, to any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportCampaignStatsCSV", reflect.TypeOf((*MockService)(nil).ExportCampaignStatsCSV), ctx, advertiserID, campaignID, from, to)
 }
 
 // ListModerationAds indicates an expected call of ListModerationAds.

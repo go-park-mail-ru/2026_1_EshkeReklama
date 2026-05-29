@@ -24,6 +24,7 @@ type GenericSettingsRequest interface {
 		dto.VerifyRegistrationRequest |
 		dto.ChangePasswordRequest | dto.PasswordResetRequest | dto.ConfirmPasswordResetRequest |
 		dto.CreatePaymentRequest | dto.AutopaySettingsRequest | dto.NotificationSettingsRequest |
+		dto.GenerateAdTextRequest | dto.GenerateAdVariantsRequest | dto.GenerateAdImageRequest |
 		dto.UpdateAdRequest | dto.CreateAppealRequest |
 		dto.PartnerRegisterRequest | dto.PartnerLoginRequest | dto.UpdatePartnerProfileRequest |
 		dto.CreatePartnerSiteRequest | dto.UpdatePartnerSiteRequest |

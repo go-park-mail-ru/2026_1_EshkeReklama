@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	errs "eshkere/internal/errors"
 	"eshkere/internal/models"
@@ -44,6 +45,20 @@ func (s *Service) UpdateAdvertiserNotificationSettings(ctx context.Context, sett
 	if settings.WarningThreshold <= settings.CriticalThreshold {
 		return fmt.Errorf("%w: warning threshold must be greater than critical threshold", errs.ErrInvalidAdvertiserArg)
 	}
+
+	if settings.TelegramEnabled {
+		adv, err := s.advertiserRepo.GetByID(ctx, settings.AdvertiserID)
+		if err != nil {
+			return err
+		}
+		if !adv.IsProActive() {
+			return fmt.Errorf("%w: telegram alerts require active pro subscription", errs.ErrProRequired)
+		}
+		if !settings.TelegramChatID.Valid || strings.TrimSpace(settings.TelegramChatID.String) == "" {
+			return fmt.Errorf("%w: telegram chat id is required when telegram alerts are enabled", errs.ErrInvalidAdvertiserArg)
+		}
+	}
+
 	return s.notificationSettingsRepo.Upsert(ctx, settings)
 }
 

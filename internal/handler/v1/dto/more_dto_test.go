@@ -41,7 +41,9 @@ func TestAdditionalDTOConverters(t *testing.T) {
 		t.Fatalf("unexpected group update input: %+v", groupUpdate)
 	}
 
-	adminResp := ToListAdminAdsResponse([]*models.Ad{{ID: 3, Title: "ad"}})
+	adminResp := ToListAdminAdsResponse([]*models.ModerationQueueItem{{
+		Ad: &models.Ad{ID: 3, Title: "ad"},
+	}})
 	if len(adminResp.Ads) != 1 || adminResp.Ads[0].ID != 3 {
 		t.Fatalf("unexpected admin ads response: %+v", adminResp)
 	}

@@ -40,6 +40,9 @@ type Service interface {
 
 	GetTariffInfo(ctx context.Context, advertiserID int) (*service.TariffInfo, error)
 	PurchaseProSubscription(ctx context.Context, advertiserID int) (*service.TariffInfo, error)
+	GenerateAdText(ctx context.Context, advertiserID int, in service.GenerateAdTextInput) (*service.GeneratedAdText, error)
+	GenerateAdVariants(ctx context.Context, advertiserID int, in service.GenerateAdVariantsInput) (*service.GeneratedAdVariants, error)
+	GenerateAdImage(ctx context.Context, advertiserID int, in service.GenerateAdImageInput) (*service.GeneratedAdImage, error)
 
 	GenerateFeedLink(ctx context.Context, campaignID int) (string, error)
 	GetAdByFeedToken(ctx context.Context, token string) (*models.Ad, error)
@@ -61,7 +64,8 @@ type Service interface {
 
 	CreateAd(ctx context.Context, advertiserID int, in *serviceinput.CreateAd) (*models.Ad, error)
 	GetAdByID(ctx context.Context, adID int) (*models.Ad, error)
-	ListModerationAds(ctx context.Context) ([]*models.Ad, error)
+	ListModerationAds(ctx context.Context) ([]*models.ModerationQueueItem, error)
+	ExportCampaignStatsCSV(ctx context.Context, advertiserID, campaignID int, from, to time.Time) ([]byte, error)
 	UpdateAd(ctx context.Context, advertiserID int, in *serviceinput.UpdateAd) error
 	UpdateAdModerationStatus(ctx context.Context, in *serviceinput.UpdateAdStatus) error
 	ListAds(ctx context.Context, advertiserID, groupID int) ([]*models.Ad, error)
@@ -171,6 +175,7 @@ func (a *API) RegisterRoutes(r *mux.Router) {
 	a.RegisterPaymentHandlers(r)
 	a.RegisterAdvertiserHandlers(r)
 	a.RegisterSubscriptionHandlers(r)
+	a.RegisterAIHandlers(r)
 	a.RegisterPartnerHandlers(r)
 	a.RegisterPartnerDictionaryHandlers(r)
 	a.RegisterPartnerSiteHandlers(r)

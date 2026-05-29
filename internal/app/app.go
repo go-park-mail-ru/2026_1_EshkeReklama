@@ -146,6 +146,23 @@ func New(configPath string) *App {
 	emailVerificationStore := redisrepo.NewEmailVerificationStore(redisPool)
 	passwordResetStore := redisrepo.NewPasswordResetStore(redisPool)
 	credentialsManager := authsvc.NewCredentialsService(credentialsRepo, nil)
+	openAITextProvider := service.NewOpenAITextProvider(service.OpenAITextProviderConfig{
+		APIKey:       cfg.OpenAI.APIKey,
+		BaseURL:      cfg.OpenAI.BaseURL,
+		Model:        cfg.OpenAI.TextModel,
+		Organization: cfg.OpenAI.Organization,
+		Project:      cfg.OpenAI.Project,
+		Timeout:      cfg.OpenAI.Timeout,
+	})
+	nanoBananaImageProvider := service.NewNanoBananaImageProvider(service.NanoBananaImageProviderConfig{
+		APIKey:       cfg.NanoBanana.APIKey,
+		BaseURL:      cfg.NanoBanana.BaseURL,
+		CallbackURL:  cfg.NanoBanana.CallbackURL,
+		Timeout:      cfg.NanoBanana.Timeout,
+		PollInterval: cfg.NanoBanana.PollInterval,
+		PollTimeout:  cfg.NanoBanana.PollTimeout,
+	})
+	aiProvider := service.NewHybridAIProvider(openAITextProvider, nanoBananaImageProvider)
 
 	svc, err := service.NewService(&service.Config{
 		AdvertiserRepo:           advertiserRepo,
@@ -173,6 +190,7 @@ func New(configPath string) *App {
 		AdEventPublisher:         adEventPublisher,
 		StatsReader:              statsReader,
 		YookassaClient:           yookassaClient,
+		AIProvider:               aiProvider,
 	})
 	if err != nil {
 		logger.Fatalf("Failed to init service: %v", err)

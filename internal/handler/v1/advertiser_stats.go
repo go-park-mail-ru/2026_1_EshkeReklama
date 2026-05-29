@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -19,6 +20,7 @@ func (a *API) RegisterAdvertiserStatsHandlers(r *mux.Router) {
 
 	stats.Use(middleware.Auth(a.authClient, a.cookieConfig.Name))
 	stats.HandleFunc("/{ad_campaign_id}/stats", a.GetCampaignStats).Methods(http.MethodGet)
+	stats.HandleFunc("/{ad_campaign_id}/stats/export", a.ExportCampaignStats).Methods(http.MethodGet)
 	stats.HandleFunc("/{ad_campaign_id}/ad_groups/{ad_group_id}/stats", a.GetGroupStats).Methods(http.MethodGet)
 	stats.HandleFunc("/{ad_campaign_id}/ad_groups/{ad_group_id}/ads/{ad_id}/stats", a.GetAdStats).Methods(http.MethodGet)
 }
@@ -65,6 +67,50 @@ func (a *API) GetCampaignStats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.JSON(w, http.StatusOK, dto.ToCampaignStatsResponse(stats))
+}
+
+// ExportCampaignStats выгружает статистику кампании в CSV (Pro).
+// @Summary      Экспорт статистики кампании
+// @Tags         stats
+// @Produce      text/csv
+// @Param        ad_campaign_id  path      int     true   "ID кампании"
+// @Param        from            query     string  false  "Дата начала периода в формате YYYY-MM-DD"
+// @Param        to              query     string  false  "Дата конца периода в формате YYYY-MM-DD"
+// @Success      200
+// @Failure      401  {object}  httpx.Error
+// @Failure      402  {object}  httpx.Error
+// @Failure      404  {object}  httpx.Error
+// @Router       /api/ad_campaigns/{ad_campaign_id}/stats/export [get]
+// @Security     CookieAuth
+func (a *API) ExportCampaignStats(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	advertiserID, err := ctxutils.AdvertiserIDFromContext(ctx)
+	if err != nil {
+		handler.HandleError(w, r, "unauthorized", err)
+		return
+	}
+	campaignID, err := strconv.Atoi(mux.Vars(r)["ad_campaign_id"])
+	if err != nil {
+		handler.HandleError(w, r, "parsing campaign id", err)
+		return
+	}
+	from, to, err := parseStatsPeriod(r)
+	if err != nil {
+		httpx.BadRequest(w, "invalid stats period")
+		return
+	}
+
+	csvData, err := a.service.ExportCampaignStatsCSV(ctx, advertiserID, campaignID, from, to)
+	if err != nil {
+		handler.HandleError(w, r, "exporting campaign stats", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"campaign_%d_stats.csv\"", campaignID))
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(csvData)
 }
 
 // GetGroupStats возвращает статистику группы объявлений.

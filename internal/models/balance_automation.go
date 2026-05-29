@@ -1,13 +1,18 @@
 package models
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 type AdvertiserNotificationSettings struct {
-	AdvertiserID      int       `db:"advertiser_id"`
-	EmailEnabled      bool      `db:"email_enabled"`
-	WarningThreshold  int64     `db:"warning_threshold"`
-	CriticalThreshold int64     `db:"critical_threshold"`
-	UpdatedAt         time.Time `db:"updated_at"`
+	AdvertiserID      int            `db:"advertiser_id"`
+	EmailEnabled      bool           `db:"email_enabled"`
+	TelegramEnabled   bool           `db:"telegram_enabled"`
+	TelegramChatID    sql.NullString `db:"telegram_chat_id"`
+	WarningThreshold  int64          `db:"warning_threshold"`
+	CriticalThreshold int64          `db:"critical_threshold"`
+	UpdatedAt         time.Time      `db:"updated_at"`
 }
 
 type AdvertiserAutopaySettings struct {

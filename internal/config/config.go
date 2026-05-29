@@ -123,6 +123,24 @@ type PasswordResetConfig struct {
 	TTL time.Duration `yaml:"ttl"`
 }
 
+type OpenAIConfig struct {
+	APIKey       string        `yaml:"api_key"`
+	BaseURL      string        `yaml:"base_url"`
+	TextModel    string        `yaml:"text_model"`
+	Timeout      time.Duration `yaml:"timeout"`
+	Organization string        `yaml:"organization"`
+	Project      string        `yaml:"project"`
+}
+
+type NanoBananaConfig struct {
+	APIKey       string        `yaml:"api_key"`
+	BaseURL      string        `yaml:"base_url"`
+	CallbackURL  string        `yaml:"callback_url"`
+	Timeout      time.Duration `yaml:"timeout"`
+	PollInterval time.Duration `yaml:"poll_interval"`
+	PollTimeout  time.Duration `yaml:"poll_timeout"`
+}
+
 type Config struct {
 	HTTPServer               HTTPServerConfig               `yaml:"http_server"`
 	Postgres                 PostgresConfig                 `yaml:"postgres"`
@@ -140,6 +158,8 @@ type Config struct {
 	BalanceAutomation        BalanceAutomationConfig        `yaml:"balance_automation"`
 	RegistrationVerification RegistrationVerificationConfig `yaml:"registration_verification"`
 	PasswordReset            PasswordResetConfig            `yaml:"password_reset"`
+	OpenAI                   OpenAIConfig                   `yaml:"openai"`
+	NanoBanana               NanoBananaConfig               `yaml:"nanobanana"`
 	GracefulTimeout          time.Duration                  `yaml:"graceful_timeout"`
 }
 

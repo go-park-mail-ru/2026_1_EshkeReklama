@@ -791,6 +791,21 @@ func (mr *MockAdRepositoryMockRecorder) ListByStatus(ctx, status any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByStatus", reflect.TypeOf((*MockAdRepository)(nil).ListByStatus), ctx, status)
 }
 
+// ListModerationQueue mocks base method.
+func (m *MockAdRepository) ListModerationQueue(ctx context.Context) ([]*models.ModerationQueueItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListModerationQueue", ctx)
+	ret0, _ := ret[0].([]*models.ModerationQueueItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListModerationQueue indicates an expected call of ListModerationQueue.
+func (mr *MockAdRepositoryMockRecorder) ListModerationQueue(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListModerationQueue", reflect.TypeOf((*MockAdRepository)(nil).ListModerationQueue), ctx)
+}
+
 // ListByAdGroupID mocks base method.
 func (m *MockAdRepository) ListByAdGroupID(ctx context.Context, adGroupID int) ([]*models.Ad, error) {
 	m.ctrl.T.Helper()

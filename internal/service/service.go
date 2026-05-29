@@ -100,6 +100,7 @@ type AdRepository interface {
 	ListByAdGroupID(ctx context.Context, adGroupID int) ([]*models.Ad, error)
 	ListByAdCampaignID(ctx context.Context, campaignID int) ([]*models.Ad, error)
 	ListByStatus(ctx context.Context, status models.AdStatus) ([]*models.Ad, error)
+	ListModerationQueue(ctx context.Context) ([]*models.ModerationQueueItem, error)
 	UpdateStatusByCampaignID(ctx context.Context, campaignID int, status models.AdStatus) error
 	GetRandomWorking(ctx context.Context) (*models.Ad, error)
 	ListAdCandidates(ctx context.Context, spendDate time.Time) ([]*models.AdCandidate, error)
@@ -225,6 +226,52 @@ type StatsReader interface {
 	Breakdown(ctx context.Context, filter StatsFilter, dimension string) ([]StatsBreakdownRow, error)
 }
 
+type GenerateAdTextInput struct {
+	ProductName        string
+	ProductDescription string
+	Tone               string
+	HeadlineMaxLen     int
+	BodyMaxLen         int
+}
+
+type GeneratedAdText struct {
+	Headline string `json:"headline"`
+	Body     string `json:"body"`
+}
+
+type GenerateAdVariantsInput struct {
+	ProductName        string
+	ProductDescription string
+	Tone               string
+	Count              int
+	HeadlineMaxLen     int
+	BodyMaxLen         int
+}
+
+type AdVariant struct {
+	Headline string `json:"headline"`
+	Body     string `json:"body"`
+}
+
+type GeneratedAdVariants struct {
+	Variants []AdVariant `json:"variants"`
+}
+
+type GenerateAdImageInput struct {
+	Prompt string
+	Style  string
+}
+
+type GeneratedAdImage struct {
+	ImageURL string `json:"image_url"`
+}
+
+type AIProvider interface {
+	GenerateAdText(ctx context.Context, in GenerateAdTextInput) (*GeneratedAdText, error)
+	GenerateAdVariants(ctx context.Context, in GenerateAdVariantsInput) (*GeneratedAdVariants, error)
+	GenerateAdImage(ctx context.Context, in GenerateAdImageInput) (*GeneratedAdImage, error)
+}
+
 type AdRequestRecord struct {
 	RequestID       string
 	VisitorID       string
@@ -274,6 +321,7 @@ type Config struct {
 	AdEventPublisher         AdEventPublisher
 	YookassaClient           YookassaClient
 	StatsReader              StatsReader
+	AIProvider               AIProvider
 }
 
 type Service struct {
@@ -302,6 +350,7 @@ type Service struct {
 	adEventPublisher         AdEventPublisher
 	yookassaClient           YookassaClient
 	statsReader              StatsReader
+	aiProvider               AIProvider
 }
 
 func NewService(cfg *Config) (*Service, error) {
@@ -335,6 +384,7 @@ func NewService(cfg *Config) (*Service, error) {
 		adEventPublisher:         cfg.AdEventPublisher,
 		yookassaClient:           cfg.YookassaClient,
 		statsReader:              cfg.StatsReader,
+		aiProvider:               cfg.AIProvider,
 	}, nil
 }
 

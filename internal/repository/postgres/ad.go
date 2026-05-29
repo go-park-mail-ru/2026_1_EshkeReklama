@@ -48,6 +48,22 @@ const (
 	WHERE status = $1
 	ORDER BY created_at ASC, id ASC`
 
+	selectAdsModerationQueue = `SELECT
+		a.id, a.ad_group_id, a.status, a.title, a.short_desc, a.image_url, a.target_url, a.created_at, a.updated_at,
+		CASE
+			WHEN adv.tariff = 'cheater' THEN true
+			WHEN adv.tariff = 'pro'
+				AND adv.tariff_expires_at IS NOT NULL
+				AND adv.tariff_expires_at > NOW() THEN true
+			ELSE false
+		END AS priority_moderation
+	FROM eshkere.ad a
+	INNER JOIN eshkere.ad_group g ON g.id = a.ad_group_id
+	INNER JOIN eshkere.ad_campaign c ON c.id = g.ad_campaign_id
+	INNER JOIN eshkere.advertiser adv ON adv.id = c.advertiser_id
+	WHERE a.status = $1
+	ORDER BY priority_moderation DESC, a.created_at ASC, a.id ASC`
+
 	selectRandomWorkingAd = `SELECT
 		a.id, a.ad_group_id, a.status, a.title, a.short_desc, a.image_url, a.target_url, a.created_at, a.updated_at
 	FROM eshkere.ad a
@@ -257,6 +273,45 @@ func (r *AdRepository) ListByStatus(ctx context.Context, status models.AdStatus)
 	}
 
 	return ads, nil
+}
+
+func (r *AdRepository) ListModerationQueue(ctx context.Context) ([]*models.ModerationQueueItem, error) {
+	logger.GetLoggerFromCtx(ctx).Debug("db: list moderation queue")
+
+	rows, err := r.db.QueryContext(ctx, selectAdsModerationQueue, models.AdStatusModeration)
+	if err != nil {
+		return nil, fmt.Errorf("list moderation queue: %w", err)
+	}
+	defer rows.Close()
+
+	out := make([]*models.ModerationQueueItem, 0)
+	for rows.Next() {
+		var ad models.Ad
+		var priority bool
+		if err = rows.Scan(
+			&ad.ID,
+			&ad.AdGroupID,
+			&ad.Status,
+			&ad.Title,
+			&ad.ShortDesc,
+			&ad.ImageURL,
+			&ad.TargetURL,
+			&ad.CreatedAt,
+			&ad.UpdatedAt,
+			&priority,
+		); err != nil {
+			return nil, fmt.Errorf("scan moderation queue ad: %w", err)
+		}
+		out = append(out, &models.ModerationQueueItem{
+			Ad:                 &ad,
+			PriorityModeration: priority,
+		})
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate moderation queue: %w", err)
+	}
+
+	return out, nil
 }
 
 func (r *AdRepository) GetRandomWorking(ctx context.Context) (*models.Ad, error) {

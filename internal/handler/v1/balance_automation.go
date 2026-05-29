@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"database/sql"
 	"net"
 	"net/http"
 	"strings"
@@ -120,11 +121,7 @@ func (a *API) GetNotificationSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.JSON(w, http.StatusOK, dto.NotificationSettingsResponse{
-		EmailEnabled:      settings.EmailEnabled,
-		WarningThreshold:  settings.WarningThreshold,
-		CriticalThreshold: settings.CriticalThreshold,
-	})
+	httpx.JSON(w, http.StatusOK, toNotificationSettingsResponse(settings))
 }
 
 func (a *API) UpdateNotificationSettings(w http.ResponseWriter, r *http.Request) {
@@ -141,22 +138,37 @@ func (a *API) UpdateNotificationSettings(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = a.service.UpdateAdvertiserNotificationSettings(ctx, &models.AdvertiserNotificationSettings{
+	settings := &models.AdvertiserNotificationSettings{
 		AdvertiserID:      advertiserID,
 		EmailEnabled:      req.EmailEnabled,
+		TelegramEnabled:   req.TelegramEnabled,
 		WarningThreshold:  req.WarningThreshold,
 		CriticalThreshold: req.CriticalThreshold,
-	})
+	}
+	if chatID := strings.TrimSpace(req.TelegramChatID); chatID != "" {
+		settings.TelegramChatID = sql.NullString{String: chatID, Valid: true}
+	}
+
+	err = a.service.UpdateAdvertiserNotificationSettings(ctx, settings)
 	if err != nil {
 		handler.HandleError(w, r, "updating advertiser notification settings", err)
 		return
 	}
 
-	httpx.JSON(w, http.StatusOK, dto.NotificationSettingsResponse{
-		EmailEnabled:      req.EmailEnabled,
-		WarningThreshold:  req.WarningThreshold,
-		CriticalThreshold: req.CriticalThreshold,
-	})
+	httpx.JSON(w, http.StatusOK, toNotificationSettingsResponse(settings))
+}
+
+func toNotificationSettingsResponse(settings *models.AdvertiserNotificationSettings) dto.NotificationSettingsResponse {
+	resp := dto.NotificationSettingsResponse{
+		EmailEnabled:      settings.EmailEnabled,
+		TelegramEnabled:   settings.TelegramEnabled,
+		WarningThreshold:  settings.WarningThreshold,
+		CriticalThreshold: settings.CriticalThreshold,
+	}
+	if settings.TelegramChatID.Valid {
+		resp.TelegramChatID = settings.TelegramChatID.String
+	}
+	return resp
 }
 
 func (a *API) YookassaWebhook(w http.ResponseWriter, r *http.Request) {

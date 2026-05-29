@@ -222,6 +222,9 @@ type stubService struct {
 	getNotificationSettingsFn    func(ctx context.Context, advertiserID int) (*models.AdvertiserNotificationSettings, error)
 	updateNotificationSettingsFn func(ctx context.Context, settings *models.AdvertiserNotificationSettings) error
 	runAutopayCycleFn            func(ctx context.Context) (int, error)
+	generateAdTextFn             func(ctx context.Context, advertiserID int, in service.GenerateAdTextInput) (*service.GeneratedAdText, error)
+	generateAdVariantsFn         func(ctx context.Context, advertiserID int, in service.GenerateAdVariantsInput) (*service.GeneratedAdVariants, error)
+	generateAdImageFn            func(ctx context.Context, advertiserID int, in service.GenerateAdImageInput) (*service.GeneratedAdImage, error)
 	generateFeedLinkFn           func(ctx context.Context, campaignID int) (string, error)
 	getAdsByFeedTokenFn          func(ctx context.Context, token string) ([]*models.Ad, error)
 	requestAdFn                  func(ctx context.Context, embedToken, visitorID string) (*service.AdRequestResult, error)
@@ -239,7 +242,7 @@ type stubService struct {
 	getGroupStatsFn              func(ctx context.Context, advertiserID, campaignID, groupID int, from, to time.Time) (*service.GroupStats, error)
 	createAdFn                   func(ctx context.Context, advertiserID int, in *serviceinput.CreateAd) (*models.Ad, error)
 	getAdByIDFn                  func(ctx context.Context, adID int) (*models.Ad, error)
-	listModerationAdsFn          func(ctx context.Context) ([]*models.Ad, error)
+	listModerationAdsFn          func(ctx context.Context) ([]*models.ModerationQueueItem, error)
 	updateAdFn                   func(ctx context.Context, advertiserID int, in *serviceinput.UpdateAd) error
 	updateAdModerationStatusFn   func(ctx context.Context, in *serviceinput.UpdateAdStatus) error
 	listAdsFn                    func(ctx context.Context, advertiserID, groupID int) ([]*models.Ad, error)
@@ -356,6 +359,27 @@ func (s *stubService) RunAutopayCycle(ctx context.Context) (int, error) {
 		return s.runAutopayCycleFn(ctx)
 	}
 	return 0, nil
+}
+
+func (s *stubService) GenerateAdText(ctx context.Context, advertiserID int, in service.GenerateAdTextInput) (*service.GeneratedAdText, error) {
+	if s.generateAdTextFn != nil {
+		return s.generateAdTextFn(ctx, advertiserID, in)
+	}
+	return &service.GeneratedAdText{}, nil
+}
+
+func (s *stubService) GenerateAdVariants(ctx context.Context, advertiserID int, in service.GenerateAdVariantsInput) (*service.GeneratedAdVariants, error) {
+	if s.generateAdVariantsFn != nil {
+		return s.generateAdVariantsFn(ctx, advertiserID, in)
+	}
+	return &service.GeneratedAdVariants{}, nil
+}
+
+func (s *stubService) GenerateAdImage(ctx context.Context, advertiserID int, in service.GenerateAdImageInput) (*service.GeneratedAdImage, error) {
+	if s.generateAdImageFn != nil {
+		return s.generateAdImageFn(ctx, advertiserID, in)
+	}
+	return &service.GeneratedAdImage{}, nil
 }
 
 func (s *stubService) GetTariffInfo(ctx context.Context, advertiserID int) (*service.TariffInfo, error) {
@@ -499,11 +523,15 @@ func (s *stubService) GetAdByID(ctx context.Context, adID int) (*models.Ad, erro
 	return nil, nil
 }
 
-func (s *stubService) ListModerationAds(ctx context.Context) ([]*models.Ad, error) {
+func (s *stubService) ListModerationAds(ctx context.Context) ([]*models.ModerationQueueItem, error) {
 	if s.listModerationAdsFn != nil {
 		return s.listModerationAdsFn(ctx)
 	}
 	return nil, nil
+}
+
+func (s *stubService) ExportCampaignStatsCSV(ctx context.Context, advertiserID, campaignID int, from, to time.Time) ([]byte, error) {
+	return []byte("period_from,2026-01-01\n"), nil
 }
 
 func (s *stubService) UpdateAd(ctx context.Context, advertiserID int, in *serviceinput.UpdateAd) error {

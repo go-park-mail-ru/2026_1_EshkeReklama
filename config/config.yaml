@@ -90,3 +90,19 @@ registration_verification:
 
 password_reset:
   ttl: 15m
+
+openai:
+  api_key: ${OPENAI_API_KEY}
+  base_url: ${OPENAI_BASE_URL}
+  text_model: ${OPENAI_TEXT_MODEL}
+  timeout: 30s
+  organization: ${OPENAI_ORGANIZATION}
+  project: ${OPENAI_PROJECT}
+
+nanobanana:
+  api_key: ${NANOBANANA_API_KEY}
+  base_url: ${NANOBANANA_BASE_URL}
+  callback_url: ${NANOBANANA_CALLBACK_URL}
+  timeout: 60s
+  poll_interval: 2s
+  poll_timeout: 60s

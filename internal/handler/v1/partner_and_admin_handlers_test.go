@@ -144,8 +144,11 @@ func TestAdminHandlers(t *testing.T) {
 			}
 			return nil
 		},
-		listModerationAdsFn: func(_ context.Context) ([]*models.Ad, error) {
-			return []*models.Ad{{ID: 9, Title: "Ad title", Status: models.AdStatusModeration}}, nil
+		listModerationAdsFn: func(_ context.Context) ([]*models.ModerationQueueItem, error) {
+			return []*models.ModerationQueueItem{{
+				Ad:                 &models.Ad{ID: 9, Title: "Ad title", Status: models.AdStatusModeration},
+				PriorityModeration: true,
+			}}, nil
 		},
 	}
 	r := newTestRouter(ac, svc)

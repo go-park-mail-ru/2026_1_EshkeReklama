@@ -123,16 +123,16 @@ func TestAdvertiserNotificationSettingsRepository(t *testing.T) {
 	repo := NewAdvertiserNotificationSettingsRepository(db)
 	now := time.Now()
 
-	mock.ExpectQuery("SELECT\\s+advertiser_id, email_enabled, warning_threshold, critical_threshold, updated_at").
+	mock.ExpectQuery("SELECT\\s+advertiser_id, email_enabled, telegram_enabled, telegram_chat_id, warning_threshold, critical_threshold, updated_at").
 		WithArgs(21).
-		WillReturnRows(sqlmock.NewRows([]string{"advertiser_id", "email_enabled", "warning_threshold", "critical_threshold", "updated_at"}).
-			AddRow(21, true, int64(900), int64(300), now))
+		WillReturnRows(sqlmock.NewRows([]string{"advertiser_id", "email_enabled", "telegram_enabled", "telegram_chat_id", "warning_threshold", "critical_threshold", "updated_at"}).
+			AddRow(21, true, false, nil, int64(900), int64(300), now))
 	settings, err := repo.GetByAdvertiserID(context.Background(), 21)
 	if err != nil || settings.AdvertiserID != 21 || !settings.EmailEnabled {
 		t.Fatalf("unexpected notification settings: %+v err=%v", settings, err)
 	}
 
-	mock.ExpectQuery("SELECT\\s+advertiser_id, email_enabled, warning_threshold, critical_threshold, updated_at").
+	mock.ExpectQuery("SELECT\\s+advertiser_id, email_enabled, telegram_enabled, telegram_chat_id, warning_threshold, critical_threshold, updated_at").
 		WithArgs(22).
 		WillReturnError(sql.ErrNoRows)
 	settings, err = repo.GetByAdvertiserID(context.Background(), 22)
@@ -155,7 +155,7 @@ func TestAdvertiserNotificationSettingsRepository(t *testing.T) {
 	}
 
 	mock.ExpectExec("INSERT INTO eshkere.advertiser_notification_settings").
-		WithArgs(21, true, int64(900), int64(300)).
+		WithArgs(21, true, false, nil, int64(900), int64(300)).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	if err := repo.Upsert(context.Background(), &models.AdvertiserNotificationSettings{
 		AdvertiserID:      21,
@@ -167,8 +167,8 @@ func TestAdvertiserNotificationSettingsRepository(t *testing.T) {
 	}
 
 	mock.ExpectQuery("SELECT\\s+ans.advertiser_id,").
-		WillReturnRows(sqlmock.NewRows([]string{"advertiser_id", "email_enabled", "warning_threshold", "critical_threshold", "updated_at"}).
-			AddRow(21, true, int64(900), int64(300), now))
+		WillReturnRows(sqlmock.NewRows([]string{"advertiser_id", "email_enabled", "telegram_enabled", "telegram_chat_id", "warning_threshold", "critical_threshold", "updated_at"}).
+			AddRow(21, true, false, nil, int64(900), int64(300), now))
 	enabled, err := repo.ListEnabled(context.Background())
 	if err != nil || len(enabled) != 1 || enabled[0].AdvertiserID != 21 {
 		t.Fatalf("unexpected enabled notification settings: %+v err=%v", enabled, err)

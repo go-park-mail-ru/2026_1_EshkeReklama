@@ -20,13 +20,27 @@ source "$ENV_FILE"
 : "${ADVERTISER_EMAIL:?}"
 : "${ADVERTISER_PASSWORD:?}"
 
+cookie_value() {
+  awk -F'\t' -v name="$2" '$6 == name { print $7 }' "$1" | tail -1
+}
+
 COOKIE_JAR="$(mktemp)"
 trap 'rm -f "$COOKIE_JAR"' EXIT
 
-curl -sS -c "$COOKIE_JAR" -b "$COOKIE_JAR" "${BASE_URL}/healthz" -o /dev/null
-CSRF="$(awk '$6=="csrf_token"{print $7}' "$COOKIE_JAR" | tail -1)"
+curl -sS -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
+  "${BASE_URL}/api/ad_campaigns" -o /dev/null -w "%{http_code}" >"${COOKIE_JAR}.code" || true
+HTTP_CODE="$(cat "${COOKIE_JAR}.code")"
+rm -f "${COOKIE_JAR}.code"
+
+CSRF="$(cookie_value "$COOKIE_JAR" csrf_token)"
 if [[ -z "$CSRF" ]]; then
-  echo "csrf_token not received" >&2
+  echo "csrf_token not received (GET ${BASE_URL}/api/ad_campaigns → HTTP ${HTTP_CODE:-?})" >&2
+  echo "Проверьте BASE_URL в perf_test/.env и что API отвечает:" >&2
+  echo "  curl -v \"\${BASE_URL}/healthz\"" >&2
+  if [[ -s "$COOKIE_JAR" ]]; then
+    echo "Cookie jar:" >&2
+    grep -v '^#' "$COOKIE_JAR" >&2 || true
+  fi
   exit 1
 fi
 
@@ -36,7 +50,7 @@ LOGIN_RESP="$(curl -sS -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
   -H "X-CSRF-Token: ${CSRF}" \
   -d "{\"identifier\":\"${ADVERTISER_EMAIL}\",\"password\":\"${ADVERTISER_PASSWORD}\"}")"
 
-SESSION_ID="$(awk '$6=="session_id"{print $7}' "$COOKIE_JAR" | tail -1)"
+SESSION_ID="$(cookie_value "$COOKIE_JAR" session_id)"
 if [[ -z "$SESSION_ID" ]]; then
   echo "login failed: ${LOGIN_RESP}" >&2
   exit 1

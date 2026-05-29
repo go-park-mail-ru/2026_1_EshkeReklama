@@ -30,7 +30,10 @@ perf_test/
 ## Подготовка (один раз)
 
 1. **Установка wrk:**
-    `brew install wrk`
+
+    MacOS:`brew install wrk`
+
+    Ubuntu:`sudo apt install wrk`
 
 2. **Конфиг**:
    ```bash

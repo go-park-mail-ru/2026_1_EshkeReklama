@@ -7,7 +7,7 @@ ENV="${PERF}/.env"
 [[ -f "$ENV" ]] || { echo "missing $ENV" >&2; exit 1; }
 source "$ENV"
 
-: "${BASE_URL:?}" "${ADMIN_SESSION_ID:?}" "${READ_MIN_AD_ID:?}" "${READ_MAX_AD_ID:?}"
+: "${BASE_URL:?}" "${SESSION_ID:?}" "${READ_MIN_AD_ID:?}" "${READ_MAX_AD_ID:?}"
 
 export READ_MIN_AD_ID READ_MAX_AD_ID
 
@@ -16,4 +16,4 @@ mkdir -p "${PERF}/results"
 
 wrk -t"${WRK_THREADS:-8}" -c"${WRK_CONNECTIONS:-200}" -d"${WRK_DURATION_READ:-60s}" \
   -s "${PERF}/wrk/read.lua" \
-  -H "Cookie: session_id=${ADMIN_SESSION_ID}" "$BASE_URL" | tee "$OUT"
+  -H "Cookie: session_id=${SESSION_ID}" "$BASE_URL" | tee "$OUT"

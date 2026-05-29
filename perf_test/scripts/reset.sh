@@ -12,7 +12,7 @@ source "$ENV"
 docker compose -f "${ROOT}/docker-compose.yml" exec -T postgres \
   psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f - <"${PERF}/sql/cleanup.sql"
 
-for key in CSRF_TOKEN SESSION_ID ADMIN_SESSION_ID LOADTEST_CAMPAIGN LOADTEST_GROUP READ_MIN_AD_ID READ_MAX_AD_ID; do
+for key in CSRF_TOKEN SESSION_ID LOADTEST_CAMPAIGN LOADTEST_GROUP READ_MIN_AD_ID READ_MAX_AD_ID; do
   grep -q "^${key}=" "$ENV" && sed -i "s|^${key}=.*|${key}=|" "$ENV" || true
 done
 

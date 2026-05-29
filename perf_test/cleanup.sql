@@ -1,6 +1,3 @@
--- Удаление данных нагрузочного теста (title LIKE 'LOADTEST_%').
--- psql ... -f perf_test/cleanup.sql
-
 BEGIN;
 
 DELETE FROM eshkere.ad_action

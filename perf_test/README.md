@@ -2,36 +2,35 @@
 
 ## Основная сущность
 
-**Объявление (`ad`)** — ядро продукта (рекламодатель → кампания → группа → объявление).
+**Объявление (`ad`)** — основная сущность продукта (рекламодатель → кампания → группа → объявление).
 
 | Этап ДЗ | Endpoint | Метод |
 |---------|----------|--------|
-| Создание 100k | `/api/ad_campaigns/{campaign}/ad_groups/{group}/ads` | `POST` (multipart) |
+| Создание | `/api/ad_campaigns/{campaign}/ad_groups/{group}/ads` | `POST` (multipart) |
 | Чтение под нагрузкой | `/api/admin/ads/{ad_id}` | `GET` |
 
 ## Структура каталога
 
 ```
 perf_test/
-  README.md           — этот файл (отчёты по итерациям ниже)
-  init.sql            — DDL до оптимизаций (generate_init_sql.sh)
+  README.md            — этот файл (отчёты по итерациям ниже)
+  init.sql             — DDL до оптимизаций (generate_init_sql.sh)
   generate_init_sql.sh — собрать init.sql из миграций
-  env.example         — шаблон переменных
-  setup.sh            — логин, кампания, группа
-  run_create.sh       — wrk: CREATE
-  run_read.sh         — wrk: READ
-  discover_ad_ids.sh  — min/max id после сида
-  cleanup.sql         — удаление LOADTEST_*
+  env.example          — шаблон переменных
+  setup.sh             — логин, кампания, группа
+  run_create.sh        — wrk: CREATE
+  run_read.sh          — wrk: READ
+  discover_ad_ids.sh   — min/max id после сида
+  cleanup.sql          — SQL удаления LOADTEST_*
+  reset.sh             — cleanup.sql + сброс .env + setup.sh
   wrk/create.lua
   wrk/read.lua
-  results/            — вывод wrk по итерациям
+  results/             — вывод wrk по итерациям
 ```
 
 ## Подготовка (один раз)
 
 1. **Установка wrk:**
-
-    MacOS:`brew install wrk`
 
     Ubuntu:`sudo apt install wrk`
 
@@ -39,6 +38,7 @@ perf_test/
    ```bash
    cp perf_test/env.example perf_test/.env
    # отредактировать BASE_URL, логин, пароль
+   
    source perf_test/.env
    ```
 
@@ -46,9 +46,8 @@ perf_test/
    ```sql
    UPDATE eshkere.advertiser SET role = 'admin' WHERE id = <ваш_id>;
    ```
-   Залогиниться этим пользователем, положить `session_id` в `ADMIN_SESSION_ID` в `.env`.
-
-4. Собрать **`init.sql`** один раз (baseline до оптимизаций):
+   
+4. Собрать **`init.sql`** один раз до оптимизаций:
    ```bash
    ./perf_test/generate_init_sql.sh
    ```
@@ -61,25 +60,22 @@ perf_test/
 ./perf_test/setup.sh
 
 # 2) Нагрузка на CREATE (крутить, пока в БД не ~100k)
-./perf_test/run_create.sh 1
-# Проверка:
-./perf_test/discover_ad_ids.sh   # или SELECT count(*) ...
+./perf_test/run_create.sh <N>  # N -- номер оптимизации
 
-# 3) Прописать READ_MIN_AD_ID / READ_MAX_AD_ID в .env
+# 3) Обязательная проверка и сохранение крайних id для последующего удаления:
+./perf_test/discover_ad_ids.sh
 
 # 4) Нагрузка на READ
-./perf_test/run_read.sh 1
+./perf_test/run_read.sh <N>  # N -- номер оптимизации
 ```
 
 Логи wrk сохраняются в `perf_test/results/iteration_*_*.txt`.
 
-## Что писать в отчёт (шаблон итерации)
-
-Скопируйте блок на каждую итерацию оптимизации.
+## Шаблон отчёта
 
 ### Итерация N
 
-#### CREATE (заполнение ~100k)
+#### CREATE
 
 - Дата, ВМ, версия коммита
 - Параметры wrk: `-t`, `-c`, `-d`
@@ -87,7 +83,7 @@ perf_test/
 - Сколько объявлений в БД: `SELECT count(*) ... LIKE 'LOADTEST_%'`
 - Файл: `perf_test/results/iteration_N_create_*.txt`
 
-#### READ (после заполнения)
+#### READ
 
 - Диапазон id: `READ_MIN_AD_ID` … `READ_MAX_AD_ID`
 - **Requests/sec**, latency, errors
@@ -116,10 +112,10 @@ perf_test/
 
 _Заполните после первого прогона._
 
-## Очистка
+## Очистка и сброс
 
 ```bash
-psql ... -f perf_test/cleanup.sql
+./perf_test/reset.sh
 ```
 
 ## Примечания по данным
@@ -127,11 +123,3 @@ psql ... -f perf_test/cleanup.sql
 - Заголовки объявлений: `LOADTEST_1`, `LOADTEST_2`, … — валидные строки, удобно чистить.
 - `short_desc`, `target_url` — фиксированные допустимые значения (см. `wrk/create.lua`).
 - Для CREATE wrk нужны cookie `session_id` и заголовок `X-CSRF-Token` (выдаёт `setup.sh`).
-
-## Цикл по заданию
-
-1. `run_create.sh` → отчёт CREATE  
-2. Убедиться в ~100k строк в БД  
-3. `run_read.sh` → отчёт READ  
-4. Анализ → оптимизация (по желанию)  
-5. Повтор с п.3 (`run_read.sh 2`, …)

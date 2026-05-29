@@ -81,7 +81,7 @@ func (p *NanoBananaImageProvider) GenerateAdImage(ctx context.Context, in Genera
 		if err != nil {
 			return nil, err
 		}
-		return p.waitForResult(ctx, taskID)
+		return p.waitForResult(ctx, taskID, p.pollTimeout)
 	}
 
 	images := make([]GeneratedAdImageVariant, count)
@@ -94,7 +94,7 @@ func (p *NanoBananaImageProvider) GenerateAdImage(ctx context.Context, in Genera
 			return nil, err
 		}
 
-		result, err := p.waitForResult(ctx, taskID)
+		result, err := p.waitForResult(ctx, taskID, p.pollTimeout*time.Duration(count))
 		if err != nil {
 			return nil, err
 		}
@@ -163,13 +163,16 @@ func (p *NanoBananaImageProvider) createTask(ctx context.Context, in GenerateAdI
 	}
 	taskID := strings.TrimSpace(decoded.Data.TaskID)
 	if taskID == "" {
-		return "", fmt.Errorf("%w: nanobanana returned empty task id", errs.InternalServiceError)
+		return "", fmt.Errorf("%w: nanobanana returned empty task id, code=%d msg=%s", errs.InternalServiceError, decoded.Code, strings.TrimSpace(decoded.Msg))
 	}
 	return taskID, nil
 }
 
-func (p *NanoBananaImageProvider) waitForResult(ctx context.Context, taskID string) (*GeneratedAdImage, error) {
-	deadlineCtx, cancel := context.WithTimeout(ctx, p.pollTimeout)
+func (p *NanoBananaImageProvider) waitForResult(ctx context.Context, taskID string, timeout time.Duration) (*GeneratedAdImage, error) {
+	if timeout <= 0 {
+		timeout = p.pollTimeout
+	}
+	deadlineCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	ticker := time.NewTicker(p.pollInterval)

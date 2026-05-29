@@ -75,12 +75,49 @@ func (p *NanoBananaImageProvider) GenerateAdImage(ctx context.Context, in Genera
 		return nil, fmt.Errorf("%w: nanobanana callback url is not configured", errs.NotImplementedError)
 	}
 
-	taskID, err := p.createTask(ctx, in)
-	if err != nil {
-		return nil, err
+	count := in.Count
+	if count <= 1 {
+		taskID, err := p.createTask(ctx, in)
+		if err != nil {
+			return nil, err
+		}
+		return p.waitForResult(ctx, taskID)
 	}
 
-	return p.waitForResult(ctx, taskID)
+	images := make([]GeneratedAdImageVariant, count)
+	for i := 0; i < count; i++ {
+		singleInput := in
+		singleInput.Count = 1
+
+		taskID, err := p.createTask(ctx, singleInput)
+		if err != nil {
+			return nil, err
+		}
+
+		result, err := p.waitForResult(ctx, taskID)
+		if err != nil {
+			return nil, err
+		}
+		if result == nil || len(result.Images) == 0 || strings.TrimSpace(result.Images[0].ImageURL) == "" {
+			return nil, fmt.Errorf("%w: nanobanana returned empty image", errs.InternalServiceError)
+		}
+
+		images[i] = GeneratedAdImageVariant{ImageURL: strings.TrimSpace(result.Images[0].ImageURL)}
+	}
+
+	filtered := make([]GeneratedAdImageVariant, 0, len(images))
+	for _, image := range images {
+		if strings.TrimSpace(image.ImageURL) != "" {
+			filtered = append(filtered, image)
+		}
+	}
+	if len(filtered) == 0 {
+		return nil, fmt.Errorf("%w: nanobanana returned no images", errs.InternalServiceError)
+	}
+
+	return &GeneratedAdImage{
+		Images: filtered,
+	}, nil
 }
 
 func (p *NanoBananaImageProvider) createTask(ctx context.Context, in GenerateAdImageInput) (string, error) {
@@ -88,7 +125,7 @@ func (p *NanoBananaImageProvider) createTask(ctx context.Context, in GenerateAdI
 
 	payload := nanoBananaGenerateRequest{
 		Prompt:      finalPrompt,
-		NumImages:   in.Count,
+		NumImages:   1,
 		Type:        "TEXTTOIAMGE",
 		ImageSize:   mapAdFormatToAspectRatio(in.Format),
 		CallbackURL: p.callbackURL,
@@ -201,8 +238,7 @@ func (p *NanoBananaImageProvider) fetchTaskResult(ctx context.Context, taskID st
 			return nil, false, fmt.Errorf("%w: nanobanana returned success without result image url", errs.InternalServiceError)
 		}
 		return &GeneratedAdImage{
-			ImageURL: images[0].ImageURL,
-			Images:   images,
+			Images: images,
 		}, true, nil
 	case 2, 3:
 		message := strings.TrimSpace(decoded.Data.ErrorMessage)

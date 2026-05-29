@@ -74,15 +74,11 @@ func (s *Service) GenerateAdImage(ctx context.Context, advertiserID int, in Gene
 	if out == nil {
 		return nil, fmt.Errorf("%w: empty ai response", errs.InternalServiceError)
 	}
-	out.ImageURL = strings.TrimSpace(out.ImageURL)
 	for i := range out.Images {
 		out.Images[i].ImageURL = strings.TrimSpace(out.Images[i].ImageURL)
 	}
-	if out.ImageURL == "" && len(out.Images) == 0 {
+	if len(out.Images) == 0 {
 		return nil, fmt.Errorf("%w: empty ai response", errs.InternalServiceError)
-	}
-	if out.ImageURL == "" && len(out.Images) > 0 {
-		out.ImageURL = out.Images[0].ImageURL
 	}
 	return out, nil
 }

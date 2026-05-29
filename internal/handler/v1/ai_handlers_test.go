@@ -102,7 +102,6 @@ func TestGenerateAdImage_OK(t *testing.T) {
 				t.Fatalf("unexpected input: advertiserID=%d input=%+v", advertiserID, in)
 			}
 			return &service.GeneratedAdImage{
-				ImageURL: "https://cdn.example.com/generated/ad-image-1.png",
 				Images: []service.GeneratedAdImageVariant{
 					{ImageURL: "https://cdn.example.com/generated/ad-image-1.png"},
 					{ImageURL: "https://cdn.example.com/generated/ad-image-2.png"},

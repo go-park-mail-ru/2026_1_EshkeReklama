@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -50,6 +51,8 @@ func TestOpenAITextProviderGenerateAdText(t *testing.T) {
 }
 
 func TestNanoBananaImageProviderGenerateAdImage(t *testing.T) {
+	createCalls := 0
+	statusCalls := 0
 	provider := NewNanoBananaImageProvider(NanoBananaImageProviderConfig{
 		APIKey:       "test-nanobanana-key",
 		BaseURL:      "https://nanobanana.test",
@@ -60,6 +63,7 @@ func TestNanoBananaImageProviderGenerateAdImage(t *testing.T) {
 	provider.httpClient = &http.Client{Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
 		switch {
 		case r.Method == http.MethodPost && r.URL.Path == "/api/v1/nanobanana/generate":
+			createCalls++
 			if got := r.Header.Get("Authorization"); got != "Bearer test-nanobanana-key" {
 				t.Fatalf("unexpected auth header: %s", got)
 			}
@@ -74,7 +78,7 @@ func TestNanoBananaImageProviderGenerateAdImage(t *testing.T) {
 			if payload.ImageSize != "16:9" {
 				t.Fatalf("unexpected image size: %s", payload.ImageSize)
 			}
-			if payload.NumImages != 3 {
+			if payload.NumImages != 1 {
 				t.Fatalf("unexpected num images: %d", payload.NumImages)
 			}
 			if payload.Prompt == "Платформа аналитики" || payload.Prompt == "" {
@@ -83,17 +87,19 @@ func TestNanoBananaImageProviderGenerateAdImage(t *testing.T) {
 			if payload.CallbackURL != "https://example.com/callback" {
 				t.Fatalf("unexpected callback url: %s", payload.CallbackURL)
 			}
-			return jsonResponse(http.StatusOK, `{"code":200,"msg":"success","data":{"taskId":"task-123"}}`), nil
+			return jsonResponse(http.StatusOK, `{"code":200,"msg":"success","data":{"taskId":"task-`+strconv.Itoa(createCalls)+`"}}`), nil
 		case r.Method == http.MethodGet && r.URL.Path == "/api/v1/nanobanana/record-info":
+			statusCalls++
+			taskID := r.URL.Query().Get("taskId")
 			return jsonResponse(http.StatusOK, `{
 				"code":200,
 				"msg":"success",
 				"data":{
-					"taskId":"task-123",
+					"taskId":"`+taskID+`",
 					"successFlag":1,
 					"errorCode":0,
 					"errorMessage":"",
-					"response":{"resultImageUrls":["https://cdn.example.com/generated-1.jpg","https://cdn.example.com/generated-2.jpg","https://cdn.example.com/generated-3.jpg"]}
+					"response":{"resultImageUrl":"https://cdn.example.com/generated-`+strconv.Itoa(statusCalls)+`.jpg"}
 				}
 			}`), nil
 		default:
@@ -111,11 +117,14 @@ func TestNanoBananaImageProviderGenerateAdImage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("generate ad image: %v", err)
 	}
-	if out.ImageURL != "https://cdn.example.com/generated-1.jpg" {
-		t.Fatalf("unexpected image url: %s", out.ImageURL)
-	}
 	if len(out.Images) != 3 {
 		t.Fatalf("expected 3 images, got %+v", out.Images)
+	}
+	if out.Images[0].ImageURL != "https://cdn.example.com/generated-1.jpg" {
+		t.Fatalf("unexpected first image: %+v", out.Images)
+	}
+	if createCalls != 3 || statusCalls != 3 {
+		t.Fatalf("expected 3 create and 3 status calls, got create=%d status=%d", createCalls, statusCalls)
 	}
 }
 

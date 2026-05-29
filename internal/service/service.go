@@ -269,8 +269,7 @@ type GeneratedAdImageVariant struct {
 }
 
 type GeneratedAdImage struct {
-	ImageURL string                    `json:"image_url,omitempty"`
-	Images   []GeneratedAdImageVariant `json:"images,omitempty"`
+	Images []GeneratedAdImageVariant `json:"images,omitempty"`
 }
 
 type AIProvider interface {

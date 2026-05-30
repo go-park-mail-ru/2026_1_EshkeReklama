@@ -34,8 +34,9 @@ perf_test/
 ## Подготовка (один раз)
 
 1. **Установка wrk:**
-
-    Ubuntu:`sudo apt install wrk`
+    ```bash
+    sudo apt install wrk
+    ```
 
 2. **Конфиг**:
    ```bash
@@ -56,7 +57,7 @@ perf_test/
    ```
    После старта perf-работы не перезаписывайте без веской причины.
 
-## Запуск тестов (автоматизация)
+## Запуск тестов
 
 ```bash
 # 1) Подготовка сессии и LOADTEST кампании/группы
@@ -80,22 +81,36 @@ perf_test/
 
 #### CREATE
 
-- Дата, ВМ, версия коммита
-- Параметры wrk: `-t`, `-c`, `-d`
-- **Requests/sec**, latency (avg / stdev / max), errors
-- Сколько объявлений в БД: `SELECT count(*) ... LIKE 'LOADTEST_%'`
-- Файл: `perf_test/results/iteration_N_create_*.txt`
+| Параметр                  | Значение |
+|---------------------------|----------|
+| Дата                      | |
+| URL ВМ                    | |
+| Параметры wrk             | `-t8 -c200 -d30m` |
+| Requests/sec              | |
+| Latency avg / stdev / max | |
+| Всего запросов            | |
+| Socket errors             | connect , read , write , timeout |
+| Объявлений в БД           | |
+| Файл                      | `perf_test/results/iteration_N_create_*.txt` |
 
 #### READ
 
-- Диапазон id: `READ_MIN_AD_ID` … `READ_MAX_AD_ID`
-- **Requests/sec**, latency, errors
-- Файл: `perf_test/results/iteration_N_read_*.txt`
+| Параметр | Значение |
+|----------|----------|
+| Диапазон id | … |
+| Параметры wrk | `-t8 -c200 -d1m` |
+| Requests/sec | |
+| Latency avg / stdev / max | |
+| Всего запросов | |
+| Socket errors | connect , read , write , timeout |
+| Файл | `perf_test/results/iteration_N_read_*.txt` |
 
 #### Анализ
 
-- Узкое место (CPU / PostgreSQL / сеть / auth / S3 …)
-- Как подтвердили (логи, `EXPLAIN ANALYZE`, метрики Grafana, pprof)
+- **CREATE:** узкое место — …; подтверждение — …
+- **READ:** узкое место — …; подтверждение — …
+
+**Вывод для итерации:**
 
 #### Оптимизация (если делали)
 
@@ -106,14 +121,75 @@ perf_test/
 
 | Метрика | N-1 | N | Δ |
 |---------|-----|---|-----|
+| CREATE RPS | | | |
+| CREATE latency avg | | | |
 | READ RPS | | | |
-| READ p99 | | | |
+| READ latency avg | | | |
 
 ---
 
-### Итерация 0 (базовая, до оптимизаций)
+### Итерация 1 (базовая, до оптимизаций)
 
-_Заполните после первого прогона._
+#### CREATE
+
+| Параметр                  | Значение |
+|---------------------------|----------|
+| Дата                      | 2026-05-30 |
+| URL ВМ                    | `212.233.96.112:8000` |
+| Параметры wrk             | `-t8 -c200 -d30m` |
+| Requests/sec              | **60.86** |
+| Latency avg / stdev / max | 178.84 ms / 99.15 ms / 1.99 s |
+| Всего запросов            | 109 560 за 30 min |
+| Socket errors             | connect 0, read 957, write 0, **timeout 33 958** |
+| Объявлений в БД           | 110 534 |
+| Файл                      | `perf_test/results/iteration_1_create_20260530_000303.txt` |
+
+#### READ
+
+| Параметр | Значение |
+|----------|----------|
+| Диапазон id | 3866 … 114399 |
+| Параметры wrk | `-t8 -c200 -d1m` |
+| Requests/sec | **132.11** |
+| Latency avg / stdev / max | 57.69 ms / 124.57 ms / 1.97 s |
+| Всего запросов | 7 939 за 1 min |
+| Socket errors | connect 0, read 0, write 0, **timeout 1 527** |
+| Файл | `perf_test/results/iteration_1_read_20260530_004125.txt` |
+
+#### Анализ
+
+**CREATE (~61 RPS, avg 179 ms, ~24% timeout)**
+
+- **Узкое место:** насыщение приложения и БД при 200 одновременных соединений, а не один «медленный» SQL.
+- На каждый запрос: проверка сессии (Redis), CSRF, разбор multipart, затем в PostgreSQL цепочка `ownedGroup` — `SELECT ad_group` + `SELECT ad_campaign` — и `INSERT INTO ad`. Картинка в нагрузке не передаётся (S3 не участвует).
+- **33 958 timeout** при ~110k завершённых запросов — wrk ждёт ответ дольше лимита; очередь растёт быстрее, чем сервер успевает обрабатывать. **957 read errors** — симптом перегруза, а не «плохого» запроса.
+- Пул соединений к PostgreSQL в коде не настраивается (`sql.Open` без `SetMaxOpenConns`), при 200 wrk-коннектах возможна конкуренция за соединения к БД.
+- **Как подтвердить дальше:** `EXPLAIN ANALYZE` для insert/select group/campaign; метрики PostgreSQL (active connections, wait events); pprof CPU приложения под CREATE-нагрузкой.
+
+**READ (~132 RPS, avg 58 ms, ~16% timeout)**
+
+- **Узкое место:** накладные расходы на каждый запрос + конкуренция при высокой параллельности; сам `SELECT … FROM ad WHERE id = $1` по PK при ~110k строк должен быть быстрым.
+- Цепочка: Redis (сессия) → `GetAdvertiserByID` (проверка роли admin в middleware **на каждый запрос**) → `GetByID` объявления по первичному ключу → JSON.
+- READ быстрее CREATE (~2× RPS, ~3× меньше latency): меньше SQL на запрос, нет multipart и проверки владения группой/кампанией.
+- **1 527 timeout** из 7 939 успевших — та же картина очереди при `-c200`.
+- **Как подтвердить дальше:** `EXPLAIN ANALYZE SELECT … FROM eshkere.ad WHERE id = …`; сравнить RPS при `-c50` vs `-c200`; замерить долю времени в auth/IsAdmin vs SQL.
+
+**Вывод для итерации 1:** приоритет — снять очередь (лимит wrk-соединений / пул PG / кэш роли admin), затем точечно оптимизировать лишние запросы на CREATE (`ownedGroup`).
+
+#### Оптимизация
+
+_Не проводилась — 0 итерация._
+
+#### Сравнение с итерацией N-1
+
+
+| Метрика | N-1 | N | Δ |
+|---------|-----|---|-----|
+| CREATE RPS | — | 60.86 | — |
+| CREATE latency avg | — | 178.84 ms | — |
+| READ RPS | — | 132.11 | — |
+| READ latency avg | — | 57.69 ms | — |
+
 
 ## Очистка и сброс
 

@@ -11,4 +11,3 @@
  - [Figma](https://www.figma.com/design/rbnwxrv896e0UNpOAswobu/Esketit-Ad-web-design?node-id=0-1&p=f&t=HQEMbsCg4WYOV4FC-0)
  - [Frontend](https://github.com/frontend-park-mail-ru/2026_1_Eshkere)
  - [Deploy](http://eshkereklama.ru/)
- - [Jira](https://a4-code.yougile.com/team/e78120020d9d/Eshkere-Ads?lang=ru)
